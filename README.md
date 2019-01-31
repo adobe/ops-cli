@@ -77,8 +77,8 @@ pip2 install -U virtualenv
 virtualenv ops
 source ops/bin/activate
 
-# install opswrapper v0.19 stable release
-pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/0.19/ops-0.19.tar.gz
+# install opswrapper v0.20 stable release
+pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/0.20/ops-0.20.tar.gz
 
 # Optionally, install terraform to be able to access terraform plugin
 # See https://www.terraform.io/intro/getting-started/install.html
@@ -103,7 +103,7 @@ env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/
 git add .
 git commit -m "[RELEASE] - Release version 0.x"
 git tag -m "[RELEASE] - Release version 0.x" 0.x
-git push --tags
+git push --follow-tags
 ```
 4. Wait for Travis to build at https://www.travis-ci.com/adobe/ops-cli
 5. Update version number in `setup.py` to the next development version and commit in master branch and update Installation section in this README.md with the actual version
@@ -117,7 +117,7 @@ git push --tags
 git add .
 git commit -m "[RELEASE] - Development version 0.x.dev"
 git tag -m "[RELEASE] - Development version 0.x.dev" 0.x.dev
-git push --tags
+git push --follow-tags
 ```
 4. Wait for Travis to build at https://www.travis-ci.com/adobe/ops-cli
 It will create a new release: https://github.com/adobe/ops-cli/releases
