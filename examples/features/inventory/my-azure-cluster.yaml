@@ -1,0 +1,6 @@
+---
+inventory:
+  - plugin: azr
+    args:
+      tags: environment=prod
+      locations: westeurope,northeurope

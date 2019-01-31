@@ -1,0 +1,8 @@
+---
+inventory:
+  - plugin: cns
+    args:
+      clusters:
+        - region: us-east-1
+          boto_profile: aam-npe # make sure you have this profile in your ~/.aws/credentials files
+          names: [mycluster1] # this is the "cluster" tag present on the EC2 nodes

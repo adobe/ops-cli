@@ -1,0 +1,14 @@
+---
+- hosts: all
+  sudo: yes
+  gather_facts: no
+  vars:
+    admins_pub_keys:
+      vlascean: ssh-rsa mykey
+  tasks:
+    - file: path=~/.ssh state=directory mode=500
+    - lineinfile: dest=~/.ssh/authorized_keys line="{{ item.value }}"
+      with_dict: "{{ admins_pub_keys }}"
+
+    - lineinfile: dest=/home/ec2-user/.ssh/authorized_keys line="{{ item.value }}"
+      with_dict: "{{ admins_pub_keys }}"

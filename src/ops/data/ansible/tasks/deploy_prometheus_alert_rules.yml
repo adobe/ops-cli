@@ -1,0 +1,31 @@
+---
+# Deploy alert rules on Prometheus
+# vars:
+# - rules_path: the rpm package to be updated
+
+# Usage example:
+#
+#- name: Deploy service alerts
+#  become: True
+#  become_user: ddxadmin
+#  include: {{ ops_tasks_dir }}/deploy_prometheus_alert_rules.yml
+#  vars:
+#    rules_path: ../roles/prometheus/rules/
+
+- name: Verify rules_path parameter is defined
+  assert:
+    that: rules_path is defined
+
+- name: "Copying alert rules to Prometheus servers"
+  copy: src="{{ rules_path }}" dest=/etc/prometheus/rules/ owner=prometheus group=prometheus mode=0644
+
+- name: "Validating configs"
+  shell: /usr/local/bin/promtool check config /etc/prometheus/prometheus.yaml
+  register: result
+- debug: var=result.stdout_lines
+
+- name: "Reloading Prometheus"
+  uri: url=http://127.0.0.1:8080/-/reload method=POST return_content=yes status_code=200 timeout=300
+  register: response
+  retries: 5
+  delay: 5

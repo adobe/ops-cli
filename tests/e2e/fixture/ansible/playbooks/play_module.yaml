@@ -1,0 +1,8 @@
+- hosts: web
+  gather_facts: no
+  tasks:
+    - debug: msg="{{ 'filter_this' | my_filter }}"
+    - my_module:
+        set_facts:
+          the_module_works: yep
+    - debug: var=the_module_works

@@ -1,0 +1,18 @@
+
+
+inventory:
+  - plugin: cns
+    args:
+      clusters:
+        - region: us-west-2
+          boto_profile: aprofile_111
+          names: ['{{ cluster }}', 'another_cluster']
+
+  - plugin: ec2
+    args:
+      region: us-west-2
+      boto_profile: aprofile_111
+      filters:
+        "tag:CMDB_role": '{{ cluster }}'
+      bastion:
+        "tag:Name": usw2-bastion1

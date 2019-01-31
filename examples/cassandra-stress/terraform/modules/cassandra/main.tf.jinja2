@@ -1,0 +1,63 @@
+{{ macros.iam_role("cassandra") }}
+{{ macros.subnet("cassandra", terraform.vars.cassandra_subnets, public_ip=True) }}
+
+resource "aws_security_group" "cassandra_sg" {
+  description = "cassandra sg"
+  name        = "{{ cluster }}-{{ environment }}-cassandra"
+  vpc_id      = "${aws_vpc.vpc.id}"
+  tags {
+    Name = "{{ cluster }}-{{ environment }}-cassandra"
+  }
+
+  ingress {
+    cidr_blocks  = ["{{ terraform.vars.vpc_cidr }}"]
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+  }
+
+  egress {
+    // Allow all outbound traffic
+    // TODO: convert this to an aws_security_group_rule when possible to do so
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_instance" "cassandra" {
+    count                = "{{ terraform.cassandra_instance_count }}"
+    ami                  = "{{ variables.amazon_linux_hvm_ami[terraform.vars.region] }}"
+    iam_instance_profile = "${aws_iam_instance_profile.profile_cassandra.name}"
+    instance_type        = "{{ terraform.cassandra_instance_type }}"
+    key_name             = "${aws_key_pair.ssh_key.key_name}"
+    security_groups      = ["${aws_security_group.cassandra_sg.id}"]
+    subnet_id            = "${element(aws_subnet.subnet_cassandra.*.id, count.index)}"
+    user_data            = "${lookup(var.user_data, 0)}"
+    root_block_device {
+      volume_size = 50
+    }
+    ephemeral_block_device {
+      device_name = "/dev/xvdb"
+      virtual_name = "ephemeral0"
+    }
+    tags {
+      Name        = "cassandra-${count.index+1}"
+      hostname    = "cassandra-${count.index+1}.{{ terraform.domain }}"
+      role        = "cassandra"
+      group       = "TechOps"
+      cluster     = "{{ cluster }}"
+      environment = "{{ environment }}"
+    }
+}
+
+{% for i in range(0, terraform.cassandra_instance_count) %}
+resource "aws_route53_record" "cassandra{{ i }}" {
+    zone_id = "${aws_route53_zone.vpc_private_zone.zone_id}"
+    name = "cassandra-{{ i + 1 }}.{{ terraform.domain }}"
+    type = "A"
+    ttl = "60"
+    records = ["${aws_instance.cassandra.{{ i }}.private_ip}"]
+}
+{% endfor %}

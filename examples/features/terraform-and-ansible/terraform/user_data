@@ -1,0 +1,4 @@
+#cloud-config
+  repo_releasever: 2014.09
+  runcmd:
+      - echo 'Defaults:ec2-user !requiretty' > /etc/sudoers.d/ec2-user-tty

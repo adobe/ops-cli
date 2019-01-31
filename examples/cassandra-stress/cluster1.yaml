@@ -1,0 +1,36 @@
+---
+inventory:
+  - plugin: ec2
+    args:
+      region: us-east-1
+      boto_profile: mcis
+      filters:
+        "tag:cluster": "{{ cluster }}"
+      bastion:
+        "tag:cluster": "{{ cluster }}"
+        "tag:role": "bastion"
+
+terraform:
+  path: terraform/main
+  boto_profile: mcis
+
+  cassandra_instance_count: 3
+  cassandra_instance_type: r3.xlarge
+
+  domain: "{{ cluster }}.{{ environment }}.demdex.com"
+
+  vars:
+    cluster_prefix: '{{cluster}}'
+    region: us-east-1
+
+    vpc_cidr: "172.16.0.0/19"
+    dmz_subnets:
+      172.16.1.0/25
+      172.16.1.128/25
+    cassandra_subnets:
+      172.16.2.0/24
+      172.16.3.0/24
+
+    public_key: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDPoftvk6oT5adTX+3aCgS956Jech/9t/ykXUoV63/tXaDbQ+r3anmXxrwcdQyCkbGPkAg9N02DhrrEK5LUuCyCYm66+/DBH0RshM9ZASb6PSTyawJpSM3PomXyCHV0YqmruvGyTnQVY5C809BEWs6bFZzOdu6PKPPkhdA3NBgu5fzslH1BfgR58M1bSAYaVrGhORsGwQeXkfsv59T8+9P2Jaw90y64svYE/ykW6Foh0L5jklGMUEihZIXUeZrm9sFJ4yOnVTvYT2eDI9FQs1A1+tVpW6HDZ0/2zNWKiKjiRuDI684INsc09aZSrPPWGpA/4XZ5637rfAU55x1S7RlH debugger'
+
+environment: 'dev'

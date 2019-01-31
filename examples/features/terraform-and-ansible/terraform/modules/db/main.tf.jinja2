@@ -1,0 +1,32 @@
+variable "db_subnets" {}
+
+{% include "terraform/modules/db/instance.tf.jinja2" %}
+{% import "terraform/modules/macros.tf.jinja2" as macros %}
+
+{{ macros.iam_role("db") }}
+{{ macros.private_subnet("db", terraform.vars.db_subnets) }}
+
+resource "aws_security_group" "db_sg" {
+  description = "db sg"
+  name        = "${var.cluster_prefix}-${var.environment}-db"
+  vpc_id      = "${aws_vpc.vpc.id}"
+  tags {
+    Name = "${var.cluster_prefix}-${var.environment}-db"
+  }
+
+  ingress {
+    cidr_blocks  = ["${var.vpc_cidr}"]
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+  }
+
+  egress {
+    // Allow all outbound traffic
+    // TODO: convert this to an aws_security_group_rule when possible to do so
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}

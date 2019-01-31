@@ -1,0 +1,4 @@
+---
+- hostname: name={{ ec2_tag_hostname | default(ansible_hostname) }}
+  sudo: yes
+  tags: hostname

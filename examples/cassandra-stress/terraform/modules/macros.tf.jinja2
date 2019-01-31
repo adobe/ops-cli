@@ -1,0 +1,54 @@
+{% macro subnet(name, cidrs, public_ip=False) %}
+
+    resource "aws_subnet" "subnet_{{ name }}" {
+        availability_zone       = "${element(split(" ", "{{ variables.azs[terraform.vars.region] }}"), count.index)}"
+        cidr_block              = "${element(split(" ", "{{ cidrs }}"), count.index)}"
+        count                   = 2
+        map_public_ip_on_launch = {{ "true" if public_ip else "false" }}
+        vpc_id                  = "${aws_vpc.vpc.id}"
+        tags {
+            Name = "{{ cluster }}-{{ environment }}-{{ name }}${count.index+1}"
+        }
+    }
+
+    resource "aws_route_table_association" "subnet_route_table_association_{{ name }}" {
+        count          = 2 // this must be the same number as count in subnet creation
+        route_table_id = "${aws_route_table.route_table_public.id}"
+        subnet_id      = "${element(aws_subnet.subnet_{{ name }}.*.id, count.index)}"
+    }
+{% endmacro %}
+
+{% macro iam_role(role_name) %}
+
+    // Roles
+    resource "aws_iam_role" "role_{{ role_name }}" {
+        name = "{{ cluster }}-role-{{ role_name }}"
+        assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": {
+        "Effect": "Allow",
+        "Principal": {"Service": "ec2.amazonaws.com"},
+        "Action": "sts:AssumeRole"
+    }
+}
+EOF
+    }
+
+    resource "aws_iam_instance_profile" "profile_{{ role_name }}" {
+      name = "{{ cluster }}-{{ environment }}-role-{{ role_name }}"
+      roles = ["${aws_iam_role.role_{{ role_name }}.name}"]
+      // Instance profiles can take a few seconds to propagate, this will prevent
+      // needing to run Terraform multiple times to get to the state desired
+      provisioner "local-exec" {
+        command = "/bin/sleep 7"
+      }
+    }
+
+    resource "aws_iam_role_policy" "role_{{ role_name }}_policy" {
+      name = "{{ cluster }}-{{ environment }}-role-{{ role_name }}-policy"
+      role = "${aws_iam_role.role_{{ role_name }}.id}"
+      policy = "${file("../modules/shared_iam/default_policy.json")}"
+    }
+
+{% endmacro %}

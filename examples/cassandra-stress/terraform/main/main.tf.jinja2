@@ -1,0 +1,18 @@
+variable "user_data" {
+  description = "The user-data passed to the instance. Changing this will re-create the instances."
+  default = {
+    "0" = "{{ 'terraform/user_data' | read_file | escape_new_lines }}"
+  }
+}
+
+provider "aws" {
+    access_key = "{{ access_key }}"
+    secret_key = "{{ secret_key }}"
+    region     = "{{ terraform.vars.region }}"
+}
+
+{% import "terraform/main/variables.tf.jinja2" as variables with context %}
+{% import "terraform/modules/macros.tf.jinja2" as macros with context %}
+
+{% include "terraform/modules/vpc/main.tf.jinja2" %}
+{% include "terraform/modules/cassandra/main.tf.jinja2" %}

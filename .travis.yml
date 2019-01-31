@@ -1,0 +1,20 @@
+language: python
+python:
+- '2.7'
+install:
+- pip install -r requirements.txt
+script:
+# test
+- export HOME=`pwd`/tmptests && rm -rf $HOME && export PATH=$HOME/.local/bin:$PATH && nosetests --with-xunit tests/unit
+# build artifact
+- export HOME=`pwd`/build && rm -rf $HOME && python setup.py sdist bdist_wheel
+- ls -l dist/
+
+deploy:
+  provider: releases
+  api_key: '$GITHUB_API_KEY'
+  skip_cleanup: true
+  file_glob: true
+  file: "dist/**/*"
+  on:
+    tags: true

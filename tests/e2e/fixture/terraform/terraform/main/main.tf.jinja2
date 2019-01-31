@@ -1,0 +1,11 @@
+
+variable "user_data" {
+    description = "The user-data passed to the instance. Changing this will re-create the instances."
+    default = {
+        "0" = "{{ 'terraform/user_data' | read_file | escape_new_lines }}"
+    }
+}
+
+output "user_data_out" {
+    value = "${var.user_data}"
+}

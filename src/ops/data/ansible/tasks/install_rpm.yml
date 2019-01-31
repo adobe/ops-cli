@@ -1,0 +1,68 @@
+---
+
+## Update rpm to specific version
+# vars:
+# - rpm_package: the rpm package to be updated
+# - rpm_version: the rpm package version
+# - notify: the called handler
+
+# Usage example:
+#
+#- name: Update aam-keystone
+#  become: True
+#  become_user: ddxadmin
+#  include: {{ ops_tasks_dir }}/install_rpm.yml
+#  vars:
+#    rpm_package: aam-keystone
+#    rpm_version: "{{ package_version }}"
+#    notify: "my jar updated"
+
+- name: Verify rpm package name is defined
+  assert:
+    that: rpm_package is defined
+
+- name: Verify version is defined
+  assert:
+    that: rpm_version is defined
+
+- name: Update rpm {{ rpm_package }} to {{ rpm_version }}
+  shell: |
+          new_version="{{ rpm_version }}"
+          rpm_package="{{ rpm_package }}"
+          current_version=$(rpm -qa "${rpm_package}" | sed -r "s/${rpm_package}-(.+).(noarch|x86_64)/\1/g")
+
+          if [[ -z $current_version ]]; then
+            # First install of the rpm
+            sudo yum -y install ${rpm_package}-${new_version}
+          else
+            # If patch version is not specified - check X.Y.Z version only
+            if ! [[ ${new_version} =~ .*-.* ]]; then
+              current_version=$(echo $current_version | sed -r "s/(.+)-(.+)/\1/g")
+            fi
+            # Updating rpm?
+            if [[ "${new_version}" == "${current_version}" ]]; then
+              echo "Package ${rpm_package} version ${new_version} is already installed."
+              exit 0
+            fi
+            if [[ `printf "${new_version}\n${current_version}" | sort -V | head -1` == "${new_version}" ]]; then
+               sudo yum -y downgrade ${rpm_package}-${new_version}
+            else
+               sudo yum -y update ${rpm_package}-${new_version}
+            fi
+          fi
+          #check installed version
+          current_version=$(rpm -qa "${rpm_package}" | sed -r "s/${rpm_package}-(.+).(noarch|x86_64)/\1/g")
+            if ! [[ ${new_version} =~ .*-.* ]]; then
+              current_version=$(echo $current_version | sed -r "s/(.+)-(.+)/\1/g")
+            fi
+          if [ "${new_version}" == "${current_version}" ]; then
+            echo "Success"
+          else
+            echo "Failed."
+          fi
+  register: result
+  failed_when: "'Fail' in result.stdout"
+  changed_when: "'Success' in result.stdout"
+  notify:
+    - "{{ notify | default(None) }}"
+

@@ -1,0 +1,3 @@
+terraform.version: override_version
+
+vars.region: us-west-1

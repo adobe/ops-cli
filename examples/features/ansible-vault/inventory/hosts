@@ -1,0 +1,6 @@
+web1 ansible_connection=local
+web2 ansible_connection=local
+
+[web]
+web1
+

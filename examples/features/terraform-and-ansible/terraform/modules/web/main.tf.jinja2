@@ -1,0 +1,48 @@
+variable "web_subnets" {}
+
+{% include "terraform/modules/web/elb.tf.jinja2" %}
+{% include "terraform/modules/web/instance.tf.jinja2" %}
+
+{% import "terraform/modules/macros.tf.jinja2" as macros %}
+
+{{ macros.iam_role("web") }}
+{{ macros.public_subnet("web", terraform.vars.web_subnets, public_ip=True) }}
+
+resource "aws_security_group" "web_sg" {
+  description = "web sg"
+  name        = "${var.cluster_prefix}-${var.environment}-web"
+  vpc_id      = "${aws_vpc.vpc.id}"
+  tags {
+    Name = "${var.cluster_prefix}-${var.environment}-web"
+  }
+
+  ingress {
+    cidr_blocks  = ["${var.vpc_cidr}"]
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+  }
+
+  ingress {
+     from_port = 80
+     to_port = 80
+     protocol = "tcp"
+     cidr_blocks = ["0.0.0.0/0"]
+    }
+
+  ingress {
+     from_port = 443
+     to_port = 443
+     protocol = "tcp"
+     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    // Allow all outbound traffic
+    // TODO: convert this to an aws_security_group_rule when possible to do so
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}

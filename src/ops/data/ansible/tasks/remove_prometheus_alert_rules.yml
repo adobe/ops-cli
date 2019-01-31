@@ -1,0 +1,48 @@
+## Remove specific rules from Prometheus
+# vars:
+# - delete_rule_files: a list of glob patterns to match the rule files to be deleted
+
+# Usage example:
+#
+#- name: Remove stale prometheus rules
+#  become: True
+#  include: {{ ops_tasks_dir }}/remove_prometheus_alert_rules.yml
+#  vars:
+#    delete_rule_files: '["some_rule*", "some_other_rule*", "specific_rule.rule"]'
+
+- name: "Verify delete_rule_files parameter is defined"
+  assert:
+    that: delete_rule_files is defined
+
+- name: "List rules files"
+  find:
+    paths: "/etc/prometheus/rules/"
+    patterns: "{{ delete_rule_files }}"
+  register: rule_files
+
+- debug:
+    msg: "delete_rule_files: {{ delete_rule_files }} rule_files: {{ rule_files }}"
+    verbosity: 1
+
+- name: "Delete rule files matching the patterns"
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ rule_files.files }}"
+
+- name: "Validating configs"
+  shell: /usr/local/bin/promtool check config /etc/prometheus/prometheus.yaml
+  register: result
+- debug: var=result.stdout_lines
+
+- name: "Reloading Prometheus"
+  uri:
+    url: http://127.0.0.1:8080/-/reload
+    method: POST
+    return_content: yes
+    status_code: 200
+    timeout: 300
+  register: response
+  retries: 5
+  delay: 5
+  

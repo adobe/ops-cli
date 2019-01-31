@@ -1,0 +1,4 @@
+---
+# tasks for the db role
+- debug: msg="Running db tasks"
+

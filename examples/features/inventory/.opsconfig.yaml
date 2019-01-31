@@ -1,0 +1,2 @@
+terraform.version: v0.6.3
+inventory.max_age: 604800 # 7 days

@@ -1,0 +1,11 @@
+ops.egg-info/
+.cache/
+*.pyc
+.terraform
+*.tfstate
+*.tfstate.backup
+build/
+dist/
+buildrunner.results
+.idea
+.env

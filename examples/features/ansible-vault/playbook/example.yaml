@@ -1,0 +1,6 @@
+- hosts: web
+  tasks:
+    - debug: var=env
+    - include_vars: "../../vault/vault_{{ env }}.yaml"
+
+    - debug: var=vault_variable

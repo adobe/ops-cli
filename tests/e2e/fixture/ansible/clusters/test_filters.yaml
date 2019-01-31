@@ -1,0 +1,6 @@
+inventory:
+  - directory: inventory
+
+test_standard_filters: "{{ [1, 2, 3] | sum }}"
+test_custom_filters: "{{ 'value' | my_filter }}"
+test_ops_filters: "{{ 'escape\ntest' | escape_new_lines }}"

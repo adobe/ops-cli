@@ -1,0 +1,3 @@
+
+terraform:
+  path: terraform/main

@@ -1,0 +1,62 @@
+resource "aws_security_group" "web_elb_sg" {
+    name = "${var.cluster_prefix}-${var.environment}-web_elb"
+    description = "DCS ELB Security Group"
+    vpc_id = "${aws_vpc.vpc.id}"
+    tags {
+      Name = "${var.cluster_prefix}-${var.environment}-web_elb"
+    }
+    ingress {
+     from_port = 80
+     to_port = 80
+     protocol = "tcp"
+     cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    ingress {
+     from_port = 443
+     to_port = 443
+     protocol = "tcp"
+     cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    egress {
+     from_port = 0
+     to_port = 0
+     protocol = "-1"
+     cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+/* ELB Creation */
+
+resource "aws_elb" "web_elb" {
+  name = "web-${var.cluster_prefix}"
+  subnets = ["${aws_subnet.subnet_web.*.id}"]
+  security_groups = ["${aws_security_group.web_elb_sg.id}"]
+
+  listener {
+    instance_port = 80
+    instance_protocol = "http"
+    lb_port = 80
+    lb_protocol = "http"
+  }
+
+  health_check {
+    healthy_threshold = 2
+    unhealthy_threshold = 2
+    timeout = 2
+    target = "HTTP:80/login"
+    interval = 5
+  }
+
+  instances = ["${aws_instance.web.*.id}"]
+  cross_zone_load_balancing = true
+  idle_timeout = 60
+  connection_draining = true
+  connection_draining_timeout = 300
+
+  tags {
+   role    = "web"
+   cluster = "${var.cluster_prefix}"
+  }
+}

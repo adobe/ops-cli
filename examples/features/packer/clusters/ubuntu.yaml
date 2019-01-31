@@ -1,0 +1,11 @@
+packer:
+  clouds:
+    aws:
+      boto_profile: yourbotoprofile
+  template: 'packer/ubuntu.json'
+  variables:
+    ami_name: 'packer-example'
+    instance_type: t2.micro
+    region: "us-east-1"
+    source_ami: 'ami-fce3c696'
+    ssh_username: "ubuntu"

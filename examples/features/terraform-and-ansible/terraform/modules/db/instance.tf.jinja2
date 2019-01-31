@@ -1,0 +1,25 @@
+resource "aws_instance" "db" {
+    count                = "{{ terraform.db_instance_count | default(1) }}"
+    ami                  = "${lookup(var.amazon_linux_hvm_ami, var.region)}"
+    iam_instance_profile = "${aws_iam_instance_profile.profile_db.name}"
+    instance_type        = "{{ terraform.db_instance_size | default("t2.micro") }}"
+    key_name             = "${aws_key_pair.ssh_key.key_name}"
+    security_groups      = ["${aws_security_group.db_sg.id}"]
+    subnet_id            = "${element(aws_subnet.subnet_db.*.id, count.index)}"
+    user_data            = "${lookup(var.user_data, 0)}"
+    root_block_device {
+      volume_size = 50
+    }
+    ephemeral_block_device {
+      device_name = "/dev/xvdb"
+      virtual_name = "ephemeral0"
+    }
+    tags {
+      Name        = "${var.cluster_prefix}-${var.environment}-db-${count.index+1}"
+      hostname    = "${var.cluster_prefix}-${var.environment}-db-${count.index+1}.${var.cluster_prefix}.debug.mycompany.com"
+      role        = "db"
+      group       = "TechOps"
+      cluster     = "${var.cluster_prefix}"
+      environment = "${var.environment}"
+    }
+}

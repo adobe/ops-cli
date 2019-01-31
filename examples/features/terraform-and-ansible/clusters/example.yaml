@@ -1,0 +1,36 @@
+---
+ssh_user: ec2-user
+
+inventory_settings:
+  max_age: 60
+
+inventory:
+  - plugin: cns
+    args:
+      clusters:
+        - region: us-west-2
+          boto_profile: debug
+          names: ['{{ cluster }}']
+
+terraform:
+  path: terraform/main
+  boto_profile: debug
+  vars:
+    cluster_prefix: '{{ cluster }}'
+    region: us-west-2
+
+    vpc_cidr: "172.16.0.0/19"
+    number_of_az: 2
+    dmz_subnets:
+      172.16.1.0/25
+      172.16.1.128/25
+    web_subnets:
+      172.16.2.0/24
+      172.16.3.0/24
+    db_subnets:
+      172.16.4.0/24
+      172.16.5.0/24
+
+    environment: 'dev'
+
+    public_key: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDPoftvk6oT5adTX+3aCgS956Jech/9t/ykXUoV63/tXaDbQ+r3anmXxrwcdQyCkbGPkAg9N02DhrrEK5LUuCyCYm66+/DBH0RshM9ZASb6PSTyawJpSM3PomXyCHV0YqmruvGyTnQVY5C809BEWs6bFZzOdu6PKPPkhdA3NBgu5fzslH1BfgR58M1bSAYaVrGhORsGwQeXkfsv59T8+9P2Jaw90y64svYE/ykW6Foh0L5jklGMUEihZIXUeZrm9sFJ4yOnVTvYT2eDI9FQs1A1+tVpW6HDZ0/2zNWKiKjiRuDI684INsc09aZSrPPWGpA/4XZ5637rfAU55x1S7RlH debugger'

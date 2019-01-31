@@ -1,0 +1,232 @@
+{{ macros.iam_role("nat") }}
+{{ macros.iam_role("bastion") }}
+{{ macros.subnet("dmz", terraform.vars.dmz_subnets, public_ip=False) }}
+
+// VPC Creation
+resource "aws_vpc" "vpc" {
+  cidr_block           = "{{ terraform.vars.vpc_cidr }}"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags {
+    Name = "{{ cluster }}-{{ environment }}-vpc"
+  }
+}
+resource "aws_internet_gateway" "internet_gateway" {
+  vpc_id = "${aws_vpc.vpc.id}"
+  tags {
+    Name = "{{ cluster }}-{{ environment }}-internet_gateway${count.index+1}"
+  }
+}
+
+resource "aws_vpc_dhcp_options" "dhcp_setup" {
+  domain_name = "{{ terraform.domain }}"
+  domain_name_servers = ["AmazonProvidedDNS"]
+  tags {
+    Name = "{{ cluster }}"
+  }
+}
+
+resource "aws_vpc_dhcp_options_association" "dhcp_association" {
+  vpc_id = "${aws_vpc.vpc.id}"
+  dhcp_options_id = "${aws_vpc_dhcp_options.dhcp_setup.id}"
+}
+
+resource "aws_route53_zone" "vpc_private_zone" {
+   name = "{{ terraform.domain }}"
+   vpc_id = "${aws_vpc.vpc.id}"
+   comment = "Private zone for vpc ${aws_vpc.vpc.id}"
+}
+
+resource "aws_route53_zone" "vpc_private_reverse_zone" {
+  name = "in-addr.arpa."
+  vpc_id = "${aws_vpc.vpc.id}"
+  comment = "Private reverse zone for vpc ${aws_vpc.vpc.id}"
+}
+
+// Routing
+//// Public Routing
+resource "aws_route_table" "route_table_public" {
+  vpc_id = "${aws_vpc.vpc.id}"
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = "${aws_internet_gateway.internet_gateway.id}"
+  }
+
+  tags {
+    Name = "{{ cluster }}-{{ environment }}-public_route_table${count.index+1}"
+  }
+}
+//// Private Routing
+resource "aws_route_table" "route_table_private" {
+  vpc_id = "${aws_vpc.vpc.id}"
+  route {
+    cidr_block  = "0.0.0.0/0"
+    instance_id = "${aws_instance.nat.id}"
+  }
+  tags {
+    Name = "{{ cluster }}-{{ environment }}-private_route_table${count.index+1}"
+  }
+}
+
+// Keypairs
+resource "aws_key_pair" "ssh_key" {
+  key_name   = "{{ cluster }}-{{ environment }}"
+  public_key = "{{ terraform.vars.public_key }}"
+}
+
+
+// Security groups
+//// Public SG
+resource "aws_security_group" "nat" {
+  description = "nat security group"
+  name        = "{{ cluster }}-{{ environment }}-nat"
+  vpc_id      = "${aws_vpc.vpc.id}"
+  tags {
+    Name = "{{ cluster }}-{{ environment }}-nat"
+  }
+  ingress {
+    // TODO: aws_security_group_rule's are broken right now, this is a hack
+    // to get around the fact that we can't make dynamic SG rules. Allow all.
+    // TODO: convert this to an aws_security_group_rule when possible to do so
+    cidr_blocks  = ["{{ terraform.vars.vpc_cidr }}"]
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+  }
+  egress {
+    // Allow all outbound traffic
+    // TODO: convert this to an aws_security_group_rule when possible to do so
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "bastion" {
+  description = "bastion security group"
+  name        = "{{ cluster }}-{{ environment }}-bastion"
+  vpc_id      = "${aws_vpc.vpc.id}"
+  tags {
+    Name = "{{ cluster }}-{{ environment }}-bastion"
+  }
+  ingress {
+    // TODO: aws_security_group_rule's are broken right now, this is a hack
+    // to get around the fact that we can't make dynamic SG rules. Allow all.
+    // TODO: convert this to an aws_security_group_rule when possible to do so
+    cidr_blocks = [
+      "{{ terraform.vars.vpc_cidr }}",
+      "192.150.9.200/31", // Lehi
+      "64.132.56.34/32", // Old NYC
+      "192.150.10.200/29", // SF/SJ
+      "192.150.10.208/30", // SF/SJ
+      "192.150.11.4/32", // SF/SJ
+      "192.150.19.4/32", // SF/SJ
+      "193.105.140.131/32", // Bucharest
+      "192.147.118.2/32", // VA (NYC)
+      "192.147.118.6/32", // VA (NYC)
+      "192.147.118.254/32", // VA (NYC)
+      "109.100.193.83/32"
+    ]
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+  }
+  egress {
+    // Allow all outbound traffic
+    // TODO: convert this to an aws_security_group_rule when possible to do so
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
+// Instances
+resource "aws_instance" "nat" {
+  ami                         = "{{  variables.amazon_linux_nat_ami[terraform.vars.region] }}"
+  associate_public_ip_address = true
+  iam_instance_profile        = "${aws_iam_instance_profile.profile_nat.name}"
+  instance_type               = "{{ terraform.nat_instance_size | default("t2.micro") }}"
+  key_name                    = "${aws_key_pair.ssh_key.key_name}"
+  security_groups             = ["${aws_security_group.nat.id}"]
+  source_dest_check           = false
+  subnet_id                   = "${element(aws_subnet.subnet_dmz.*.id, 1)}" // second subnet/AZ
+  user_data                   = "${lookup(var.user_data, 0)}"
+  tags {
+    Name        = "nat-${count.index+1}"
+    hostname    = "nat-${count.index+1}.{{ terraform.domain }}"
+    role        = "nat"
+    group       = "TechOps"
+    cluster     = "{{ cluster }}"
+    environment = "{{ environment }}"
+  }
+}
+
+resource "aws_route53_record" "nat" {
+    zone_id = "${aws_route53_zone.vpc_private_zone.zone_id}"
+    name = "nat-1.{{ terraform.domain }}"
+    type = "A"
+    ttl = "60"
+    records = ["${aws_instance.nat.private_ip}"]
+}
+
+resource "aws_instance" "bastion" {
+  ami                         = "{{ variables.amazon_linux_hvm_ami[terraform.vars.region] }}"
+  associate_public_ip_address = true
+  iam_instance_profile        = "${aws_iam_instance_profile.profile_bastion.name}"
+  instance_type               = "{{ terraform.bastion_instance_size | default("t2.micro") }}"
+  key_name                    = "${aws_key_pair.ssh_key.key_name}"
+  security_groups             = ["${aws_security_group.bastion.id}"]
+  subnet_id                   = "${element(aws_subnet.subnet_dmz.*.id, 0)}" // first subnet/AZ
+  user_data                   = "${lookup(var.user_data, 0)}"
+  tags {
+    Name        = "bastion-${count.index+1}"
+    hostname    = "bastion-${count.index+1}.{{ terraform.domain }}"
+    role        = "bastion"
+    group       = "TechOps"
+    cluster     = "{{ cluster }}"
+    environment = "{{ environment }}"
+  }
+}
+
+resource "aws_route53_record" "bastion" {
+    zone_id = "${aws_route53_zone.vpc_private_zone.zone_id}"
+    name = "bastion-1.{{ terraform.domain }}"
+    type = "A"
+    ttl = "60"
+    records = ["${aws_instance.bastion.private_ip}"]
+}
+
+// Output
+output "vpc_id" {
+  value = "${aws_vpc.vpc.id}"
+}
+output "route_table_private_id" {
+  value = "${aws_route_table.route_table_private.id}"
+}
+output "security_group_bastion_id" {
+  value = "${aws_security_group.bastion.id}"
+}
+output "security_group_nat_id" {
+  value = "${aws_security_group.nat.id}"
+}
+output "subnet_dmz_cidr_blocks" {
+  value = "${join(",", aws_subnet.subnet_dmz.*.cidr_block)}"
+}
+output "ssh_key_name" {
+  value = "${aws_key_pair.ssh_key.key_name}"
+}
+output "route_table_public_id" {
+  value = "${aws_route_table.route_table_public.id}"
+}
+output "private_zone_id" {
+  value = "${aws_route53_zone.vpc_private_zone.zone_id}"
+}
+output "private_reverse_zone_id" {
+  value = "${aws_route53_zone.vpc_private_reverse_zone.zone_id}"
+}
+output "bastion_sg_id" {
+  value = "${aws_security_group.bastion.id}"
+}

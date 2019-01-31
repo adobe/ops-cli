@@ -1,0 +1,25 @@
+- hosts: cassandra
+  sudo: yes
+  tasks:
+    - hostname: name="{{ ec2_private_dns_name }}"
+
+    - name: download cassandra
+      get_url:
+        url: https://rpm.datastax.com/community/noarch/cassandra12-1.2.19-1.noarch.rpm
+        dest: /tmp/cassandra12.rpm
+      register: status
+
+    - name: install
+      shell: rpm -iUvh /tmp/cassandra12.rpm
+      when: status.changed
+
+    - template: src=templates/cassandra_defaults_12.yaml dest=/etc/cassandra/conf/cassandra.yaml
+
+    - file: path=/cass state=directory owner=cassandra
+
+    - service: name=cassandra state=restarted
+
+- include: install_stress_tool.yaml
+
+
+

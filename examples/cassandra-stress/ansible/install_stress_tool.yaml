@@ -1,0 +1,15 @@
+- hosts: bastion
+  sudo: yes
+  tasks:
+    - name: download cassandra
+      get_url:
+        url: https://rpm.datastax.com/community/noarch/cassandra22-2.2.3-1.noarch.rpm
+        dest: /tmp/cassandra.rpm
+      register: status
+
+    - name: install
+      shell: rpm -iUvh /tmp/cassandra.rpm
+      when: status.changed
+
+    - template: src=templates/stress.yaml dest=/etc/cassandra/conf/stress.yaml
+      tags: stress

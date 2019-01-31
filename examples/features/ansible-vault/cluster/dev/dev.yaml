@@ -1,0 +1,4 @@
+inventory:
+  - directory: inventory
+
+env: dev

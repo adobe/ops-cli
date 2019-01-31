@@ -1,0 +1,26 @@
+variable "access_key" {}
+variable "secret_key" {}
+variable "cluster_prefix" {}
+variable "environment" {}
+variable "region" {}
+variable "vpc_cidr" {}
+variable "dmz_subnets" {}
+variable "public_key" {}
+variable "number_of_az" {}
+
+variable "user_data" {
+  description = "The user-data passed to the instance. Changing this will re-create the instances."
+  default = {
+    "0" = "{{ 'terraform/user_data' | read_file | escape_new_lines }}"
+  }
+}
+
+provider "aws" {
+    access_key = "${var.access_key}"
+    secret_key = "${var.secret_key}"
+    region     = "${var.region}"
+}
+
+{% include "terraform/modules/vpc/main.tf.jinja2" %}
+{% include "terraform/modules/web/main.tf.jinja2" %}
+{% include "terraform/modules/db/main.tf.jinja2" %}

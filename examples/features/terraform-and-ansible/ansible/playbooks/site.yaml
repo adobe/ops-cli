@@ -1,0 +1,23 @@
+---
+- hosts: all
+
+  # include custom variables before each run
+  pre_tasks:
+    - name: include os vars
+      include_vars: "{{ item }}"
+      with_first_found:
+        - "./vars/dist/{{ ansible_distribution }}.yaml"
+      tags: always
+
+  roles:
+    - { role: common, tags: common}
+
+- hosts: web
+  sudo: yes
+  roles:
+    - { role: web, tags: web}
+
+- hosts: db
+  sudo: yes
+  roles:
+    - { role: db, tags: db}
