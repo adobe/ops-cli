@@ -4,5 +4,5 @@ inventory:
     args:
       clusters:
         - region: us-east-1
-          boto_profile: aam-npe # make sure you have this profile in your ~/.aws/credentials files
-          names: [mycluster1] # this is the "cluster" tag present on the EC2 nodes
+          boto_profile: aam-npe # make sure you have this profile in your ~/.aws/credentials file
+          names: [mycluster1] # this assumes the EC2 nodes have the Tag Name "cluster" with Value "mycluster1"

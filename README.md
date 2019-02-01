@@ -3,8 +3,8 @@
 ## Ops CLI 
 
 **ops-cli** is a python wrapper for [Terraform](https://www.terraform.io/), [Ansible](https://www.ansible.com/) and SSH for cloud automation. 
-It also integrates with the AWS cli, in order to provide inventory, ssh, sync and the possibility to run ansible playbooks on top of EC2 instances.
-It can be used to add a layer of templating (using jinja2) on top of Terraform files. This is useful for removing duplicated code when it comes to spinning up infrastructure across multiple environments (stage/sandbox/prod) and teams. Useful for both AWS and Kubernetes deployments, given that Terraform has support for Amazon Elastic Kubernetes (EKS).
+It also integrates with the AWS cli, in order to provide inventory, ssh, sync, tunnel and the possibility to run ansible playbooks on top of EC2 instances.
+It can be used to add a layer of templating (using jinja2) on top of Terraform files. This is useful for removing duplicated code when it comes to spinning up infrastructure across multiple environments (stage/sandbox/prod) and across teams. Useful for both AWS and Kubernetes deployments, given that Terraform has support for Amazon Elastic Kubernetes (EKS).
 
 ## How it works?
 
@@ -37,6 +37,9 @@ ops clusters/mycluster.yaml run "sudo yum upgrade myawesomeapp; sudo service mya
 
 # copy file to all servers
 ops clusters/mycluster.yaml sync /tmp/myfile webapp: -l ec2-user
+
+# create a tunnel
+ops clusters/stage.yaml ssh --tunnel --local 8080 --remote 8080 stage-thanos-1 -l ec2-user
 ```
 
 See [examples/features/inventory](https://github.com/adobe/ops-cli/tree/master/examples/features/inventory)
