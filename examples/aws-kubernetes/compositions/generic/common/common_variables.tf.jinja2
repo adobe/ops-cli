@@ -1,0 +1,30 @@
+#
+# Variables Configuration
+#
+
+variable "cluster-id" {
+  default = "{{ terraform.kubernetes.cluster_id }}"
+  type    = "string"
+}
+
+variable "environment" {
+  default = "{{ terraform.kubernetes.environment }}"
+  type    = "string"
+}
+
+variable "region" {
+  default = "{{ terraform.kubernetes.aws.region }}"
+  type    = "string"
+}
+
+variable "short-region" {
+  default = "{{ terraform.kubernetes.aws.short_region }}"
+  type    = "string"
+}
+
+variable "whitelist_cidrs" {
+  default = [
+    "{{ terraform.kubernetes.aws.whitelist_my_ip }}"
+  ]
+  type = "list"
+}

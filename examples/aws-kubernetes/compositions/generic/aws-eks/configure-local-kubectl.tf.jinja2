@@ -1,0 +1,22 @@
+resource "null_resource" "configure-kubectl-local" {
+
+  provisioner "local-exec" {
+    command = <<EOT
+      aws eks update-kubeconfig --name ${var.short-region}-${var.environment}-eks-${var.cluster-id} --profile ${var.aws-profile} --region ${var.region} --kubeconfig ${path.module}/../../../clusters/kubeconfigs/${var.environment}-${var.cluster-id}.config;
+   EOT
+  }
+  depends_on = [
+    "aws_eks_cluster.aam-eks-cluster",
+    "aws_autoscaling_group.aam-eks-node"
+  ]
+}
+
+
+resource "null_resource" "cleanup-kubectl-local" {
+
+  provisioner "local-exec" {
+    when = "destroy"
+    command = "rm  ${path.module}/../../../clusters/kubeconfigs/${var.environment}-${var.cluster-id}.config"
+  }
+}
+

@@ -1,0 +1,40 @@
+
+
+data "external" "eks-config-file-exists" {
+  program = ["${path.module}/scripts/fileexist.sh"]
+
+  query {
+    file = "${path.module}/../../../clusters/kubeconfigs/${var.environment}-${var.cluster-id}.config"
+  }
+}
+
+
+provider "kubernetes" {
+    config_path = "${path.module}/../../../clusters/kubeconfigs/${var.environment}-${var.cluster-id}.config"
+}
+
+
+resource "kubernetes_config_map" "eks-worker-nodes-auth_configmap" {
+
+  metadata {
+    name      = "aws-auth"
+    namespace = "kube-system"
+  }
+
+  count = "${data.external.eks-config-file-exists.result["exists"]}"
+  data {
+    mapRoles = <<ROLES
+- rolearn: ${aws_iam_role.aam-eks-node.arn}
+  username: system:node:{% raw -%}{{EC2PrivateDNSName}}{%- endraw %}
+  groups:
+    - system:bootstrappers
+    - system:nodes
+ROLES
+}
+
+  depends_on = [
+    "aws_eks_cluster.aam-eks-cluster",
+    "aws_autoscaling_group.aam-eks-node",
+    "null_resource.configure-kubectl-local",
+  ]
+}

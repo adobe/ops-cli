@@ -1,0 +1,174 @@
+#
+# EKS Worker Nodes Resources
+#  * IAM role allowing Kubernetes actions to access other AWS services
+#  * EC2 Security Group to allow networking traffic
+#  * Data source to fetch latest EKS worker AMI
+#  * AutoScaling Launch Configuration to configure worker instances
+#  * AutoScaling Group to launch worker instances
+#
+
+resource "aws_iam_role" "aam-eks-node" {
+  name = "${var.short-region}-${var.environment}-eks-${var.cluster-id}-node"
+
+  assume_role_policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+POLICY
+}
+
+resource "aws_iam_policy" "aam-eks-node-allow-assume-role" {
+  name        = "${var.short-region}-${var.environment}-eks-${var.cluster-id}-node"
+  path        = "/"
+  description = "Allow the Kubernetes worker node to assume role to other (application) IAM role"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Action": [
+          "sts:AssumeRole"
+        ],
+        "Effect": "Allow",
+        "Resource": "*"
+      }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "aam-eks-node-allow-assume-role-policy-attachment" {
+  policy_arn = "${aws_iam_policy.aam-eks-node-allow-assume-role.arn}"
+  role       = "${aws_iam_role.aam-eks-node.name}"
+}
+
+resource "aws_iam_role_policy_attachment" "aam-eks-node-AmazonEKSWorkerNodePolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+  role       = "${aws_iam_role.aam-eks-node.name}"
+}
+
+resource "aws_iam_role_policy_attachment" "aam-eks-node-AmazonEKS_CNI_Policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  role       = "${aws_iam_role.aam-eks-node.name}"
+}
+
+resource "aws_iam_role_policy_attachment" "aam-eks-node-AmazonEC2ContainerRegistryReadOnly" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  role       = "${aws_iam_role.aam-eks-node.name}"
+}
+
+resource "aws_iam_instance_profile" "aam-eks-node" {
+  name = "${var.short-region}-${var.environment}-eks-${var.cluster-id}-node"
+  role = "${aws_iam_role.aam-eks-node.name}"
+}
+
+resource "aws_security_group" "aam-eks-node" {
+  name        = "${var.short-region}-${var.environment}-eks-${var.cluster-id}-node"
+  description = "Security group for all nodes in the cluster"
+  vpc_id      = "${aws_vpc.aam-eks.id}"
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = "${merge(
+    var.tags,
+    map(
+      "Name", "${var.short-region}-${var.environment}-eks-${var.cluster-id}-node",
+      "kubernetes.io/cluster/${var.short-region}-${var.environment}-eks-${var.cluster-id}", "owned"
+    )
+  )}"
+}
+
+resource "aws_security_group_rule" "aam-eks-node-ingress-self" {
+  description              = "Allow node to communicate with each other"
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = "${aws_security_group.aam-eks-node.id}"
+  source_security_group_id = "${aws_security_group.aam-eks-node.id}"
+  to_port                  = 65535
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "aam-eks-node-ingress-cluster" {
+  description              = "Allow worker Kubelets and pods to receive communication from the cluster control plane"
+  from_port                = 1025
+  protocol                 = "tcp"
+  security_group_id        = "${aws_security_group.aam-eks-node.id}"
+  source_security_group_id = "${aws_security_group.aam-eks-cluster.id}"
+  to_port                  = 65535
+  type                     = "ingress"
+}
+
+# EKS currently documents this required userdata for EKS worker nodes to
+# properly configure Kubernetes applications on the EC2 instance.
+# We utilize a Terraform local here to simplify Base64 encoding this
+# information into the AutoScaling Launch Configuration.
+# More information: https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-06-05/amazon-eks-nodegroup.yaml
+locals {
+  aam-eks-node-userdata = <<USERDATA
+#!/bin/bash -xe
+
+/etc/eks/bootstrap.sh \
+  ${aws_eks_cluster.aam-eks-cluster.id}
+USERDATA
+}
+
+resource "aws_launch_configuration" "aam-eks-node" {
+  associate_public_ip_address = true
+  iam_instance_profile        = "${aws_iam_instance_profile.aam-eks-node.name}"
+  image_id                    = "${var.worker_nodes["ami_id"]}"
+  instance_type               = "${var.worker_nodes["instance_type"]}"
+  name_prefix                 = "${var.short-region}-${var.environment}-eks-${var.cluster-id}-node"
+  security_groups             = ["${aws_security_group.aam-eks-node.id}"]
+  user_data_base64            = "${base64encode(local.aam-eks-node-userdata)}"
+  key_name                    = "kscluster-stage-stage-aamtesting"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_autoscaling_group" "aam-eks-node" {
+  launch_configuration = "${aws_launch_configuration.aam-eks-node.id}"
+  max_size             = "${var.worker_nodes["max_size"]}"
+  min_size             = "${var.worker_nodes["min_size"]}"
+  name                 = "${var.short-region}-${var.environment}-eks-${var.cluster-id}-node"
+  vpc_zone_identifier  = ["${aws_subnet.aam-eks.*.id}"]
+
+  tags = ["${concat(
+    list(
+      map("key", "Name", "value", "${var.short-region}-${var.environment}-eks-${var.cluster-id}-node", "propagate_at_launch", true),
+      map("key", "k8s.io/cluster-autoscaler/enabled", "value", "", "propagate_at_launch", true),
+      map("key", "kubernetes.io/cluster/${var.short-region}-${var.environment}-eks-${var.cluster-id}", "value", "owned", "propagate_at_launch", true)
+    ),
+    local.tags-asg
+   )}"]
+}
+
+locals {
+  tags-asg = ["${null_resource.tags-asg.*.triggers}"]
+}
+
+resource "null_resource" "tags-asg" {
+  count = "${length(keys(var.tags))}"
+
+  triggers = "${map(
+    "key", "${element(keys(var.tags), count.index)}",
+    "value", "${element(values(var.tags), count.index)}",
+    "propagate_at_launch", "true"
+  )}"
+}

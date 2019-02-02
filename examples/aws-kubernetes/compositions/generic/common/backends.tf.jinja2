@@ -1,0 +1,18 @@
+# "terraform.backend" <--- the terraform state files will be stored here. You have the create the bucket first though.
+{% if (terraform.state is mapping and terraform.state.type == 's3') or opsconfig.terraform_s3_state %}
+terraform {
+  backend "s3" {
+    bucket = "aam-npe-devops-challenge-terraform"
+    key    = "terraform.{{ terraform.vars.cluster }}-{{ selected_terraform_path }}.tfstate"
+    dynamodb_table = "terraform_lock_devops-challenge"
+    region = "us-east-1"
+    shared_credentials_file={{ terraform.vars.shared_credentials_file }}
+    profile = "{{ terraform.boto_profile }}"
+    {% if terraform.state.assume_account is mapping %}
+    role_arn = "arn:aws:iam::{{ terraform.state.assume_account }}:role/aam_role_terraform_trust"
+    {% else %}
+    role_arn = ""
+    {% endif %}
+  }
+}
+{% endif %}

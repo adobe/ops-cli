@@ -1,0 +1,60 @@
+# IAM policy for cluster-autoscaler service running in Kubernetes
+# https://github.com/helm/charts/tree/master/stable/cluster-autoscaler
+
+resource "aws_iam_role" "aam-eks-cluster-autoscaler" {
+  name = "${var.short-region}-${var.environment}-eks-${var.cluster-id}-cluster-autoscaler"
+  assume_role_policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    },
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "${aws_iam_role.aam-eks-node.arn}"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+POLICY
+}
+
+resource "aws_iam_policy" "aam-eks-cluster-autoscaler-policy" {
+  name        = "${var.short-region}-${var.environment}-eks-${var.cluster-id}-cluster-autoscaler-policy"
+  path        = "/"
+  description = "Allow the Cluster-Scaler kubernetes service to manage the worker ASG"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeTags",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "aam-eks-cluster-autoscaler-policy-attachment" {
+  policy_arn = "${aws_iam_policy.aam-eks-cluster-autoscaler-policy.arn}"
+  role       = "${aws_iam_role.aam-eks-cluster-autoscaler.name}"
+}

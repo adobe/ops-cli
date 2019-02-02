@@ -1,0 +1,32 @@
+terraform:
+  boto_profile: my-aws-profile
+  paths:
+    aws-eks: compositions/generic/aws-eks
+    helm-init: compositions/generic/helm-init
+    helm: compositions/generic/helm
+  state:
+    type: local # store terraform state files on local disk
+    # type: s3 # store terraform state files on S3 bucket
+    # kms_arn: 'arn:aws:kms:us-east-1:111111222222:key/ddddddddd-3333-4444-aaaa-bbbbbbbbbbbb' # ARN of KMS key used for S3 encryption
+  vars:
+    terraform_var1: ''
+  kubernetes:
+    version: 1.11
+    cluster_id: mykubernetescluster # change the cluster name here
+    environment: stage
+    aws:
+      profile: my-aws-profile # enter the right aws profile
+      region: us-east-1
+      account_id: 11111111111 # enter your AWS account id here. This is used for the cluster-autoscaler helm chart.
+      short_region: va6
+      availability_zones: '["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d"]'
+      whitelist_my_ip: "192.168.0.1/32" # enter your public ip (eg. by using http://ipv4.icanhazip.com)
+      tags:
+        Cluster: mykubernetescluster
+      worker_nodes:
+        instance_type: m5.large
+        ami_id: ami-0b4eb1d8782fc3aea
+        max_size: 2
+        min_size: 2
+  helm:
+    tiller_version: 2.12.3

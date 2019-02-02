@@ -1,0 +1,71 @@
+#
+# VPC Resources
+#  * VPC
+#  * Subnets
+#  * Internet Gateway
+#  * Route Table
+#
+
+resource "aws_vpc" "aam-eks" {
+  cidr_block = "${var.cidr-block}"
+  tags = "${merge(
+    var.tags,
+    map(
+      "Name", "${var.short-region}-${var.environment}-eks-${var.cluster-id}",
+      "kubernetes.io/cluster/${var.short-region}-${var.environment}-eks-${var.cluster-id}", "shared"
+    )
+  )}"
+}
+
+resource "aws_subnet" "aam-eks" {
+  count = "${length(var.availability-zones)}"
+
+  availability_zone = "${var.availability-zones[count.index]}"
+  cidr_block        = "${var.subnets[count.index + 1]}"
+  vpc_id            = "${aws_vpc.aam-eks.id}"
+
+  tags = "${merge(
+    var.tags,
+    map(
+      "Name", "${var.short-region}-${var.environment}-eks-${var.cluster-id}-${count.index + 1}",
+      "kubernetes.io/cluster/${var.short-region}-${var.environment}-eks-${var.cluster-id}", "shared"
+    )
+  )}"
+
+}
+
+resource "aws_internet_gateway" "aam-eks" {
+  vpc_id = "${aws_vpc.aam-eks.id}"
+
+  tags = "${merge(
+    var.tags,
+    map(
+      "Name", "${var.short-region}-${var.environment}-eks-${var.cluster-id}",
+      "kubernetes.io/cluster/${var.short-region}-${var.environment}-eks-${var.cluster-id}", "shared"
+    )
+  )}"
+}
+
+resource "aws_route_table" "aam-eks" {
+  vpc_id = "${aws_vpc.aam-eks.id}"
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = "${aws_internet_gateway.aam-eks.id}"
+  }
+
+  tags = "${merge(
+    var.tags,
+    map(
+      "Name", "${var.short-region}-${var.environment}-eks-${var.cluster-id}",
+      "kubernetes.io/cluster/${var.short-region}-${var.environment}-eks-${var.cluster-id}", "shared"
+    )
+  )}"
+}
+
+resource "aws_route_table_association" "aam-eks" {
+  count = "${length(var.availability-zones)}"
+
+  subnet_id      = "${aws_subnet.aam-eks.*.id[count.index]}"
+  route_table_id = "${aws_route_table.aam-eks.id}"
+}

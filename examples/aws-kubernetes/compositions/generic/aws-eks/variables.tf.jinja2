@@ -1,0 +1,58 @@
+variable "kubernetes-version" {
+  default = "{{ terraform.kubernetes.version }}"
+  type    = "string"
+}
+
+variable "aws-profile" {
+  default = "{{ terraform.kubernetes.aws.profile }}"
+  type    = "string"
+}
+
+variable "availability-zones" {
+  type        = "list"
+  description = "The list of availability zones used by this K8s cluster"
+  default = {{ terraform.kubernetes.aws.availability_zones }}
+}
+
+variable "tags"
+{
+  type  = "map"
+  description = "Default tags for all components"
+  default = {
+    "Cluster" = "{{ terraform.kubernetes.aws.tags.Cluster }}"
+  }
+}
+
+variable "worker_nodes"
+{
+  type  = "map"
+  description = "ASG values for the worker nodes"
+  default = {
+    max_size = "{{ terraform.kubernetes.aws.worker_nodes.max_size }}",
+    min_size = "{{ terraform.kubernetes.aws.worker_nodes.min_size }}",
+    instance_type = "{{ terraform.kubernetes.aws.worker_nodes.instance_type }}",
+    ami_id = "{{ terraform.kubernetes.aws.worker_nodes.ami_id }}"
+  }
+}
+
+variable "cidr-block"
+{
+  default = "10.91.56.0/21"
+  type    = "string"
+}
+
+variable "subnets" {
+  type        = "map"
+  description = "This variable contains the list of all subnets part of this K8s cluster"
+
+  default = {
+    "1" = "10.91.56.0/24"
+    "2" = "10.91.57.0/24"
+    "3" = "10.91.58.0/24"
+    "4" = "10.91.59.0/24"
+    "5" = "10.91.60.0/24"
+    "6" = "10.91.61.0/24"
+    "7" = "10.91.62.0/24"
+    "8" = "10.91.63.0/24"
+  }
+}

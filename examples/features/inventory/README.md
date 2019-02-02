@@ -5,6 +5,14 @@ The following examples lists nodes for the defined AWS profile, that have the ta
 Check `my-aws-cluster.yaml` for configuration.
 
 ```sh
+aws configure --profile aam-npe
+
+AWS Access Key ID [None]:
+AWS Secret Access Key [None]:
+Default region name [None]: us-east-1
+```
+
+```sh
 $ ops my-aws-cluster.yaml inventory
 ```
 

@@ -1,6 +1,6 @@
 [![Build Status](https://www.travis-ci.com/adobe/ops-cli.svg?token=8uHqfhgsxdvJ93qWAxhn&branch=master)](https://www.travis-ci.com/adobe/ops-cli)
 
-## Ops CLI 
+## Ops CLI
 
 **ops-cli** is a python wrapper for [Terraform](https://www.terraform.io/), [Ansible](https://www.ansible.com/) and SSH for cloud automation. 
 It also integrates with the AWS cli, in order to provide inventory, ssh, sync, tunnel and the possibility to run ansible playbooks on top of EC2 instances.
