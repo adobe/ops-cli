@@ -1,8 +1,8 @@
 simpledi>=0.2
-awscli==1.15.4
+awscli==1.16.96
 ansible==2.2.1.0
 boto3==1.7.4
-boto==2.38.0
+boto==2.49.0
 azure-common==1.1.4
 azure==2.0.0rc5
 msrestazure==0.4.6
