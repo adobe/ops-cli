@@ -109,8 +109,7 @@ git tag -m "[RELEASE] - Release version 0.x" 0.x
 git push --follow-tags
 ```
 4. Wait for Travis to build at https://www.travis-ci.com/adobe/ops-cli
-5. Update version number in `setup.py` to the next development version and commit in master branch and update Installation section in this README.md with the actual version
-   `[RELEASE] - Next development version version 0.x.(y+1)dev`
+5. Update version number in `setup.py` to the next development version and commit in master branch and update [Installation](https://github.com/adobe/ops-cli#ops-tool-installation) section in this README.md with the actual version.
 
 ## Create development build
 
