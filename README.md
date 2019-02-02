@@ -80,8 +80,8 @@ pip2 install -U virtualenv
 virtualenv ops
 source ops/bin/activate
 
-# install opswrapper v0.20 stable release
-pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/0.20/ops-0.20.tar.gz
+# install opswrapper v0.21 stable release
+pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/0.21/ops-0.21.tar.gz
 
 # Optionally, install terraform to be able to access terraform plugin
 # See https://www.terraform.io/intro/getting-started/install.html
