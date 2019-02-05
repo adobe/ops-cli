@@ -1,6 +1,6 @@
 [![Build Status](https://www.travis-ci.com/adobe/ops-cli.svg?token=8uHqfhgsxdvJ93qWAxhn&branch=master)](https://www.travis-ci.com/adobe/ops-cli)
 
-## Ops CLI
+# Ops CLI
 
 **ops-cli** is a python wrapper for [Terraform](https://www.terraform.io/), [Ansible](https://www.ansible.com/) and SSH for cloud automation. 
 
@@ -9,13 +9,13 @@ We use multiple tools to manage our infrastructure at Adobe. The purpose of `ops
 `ops-cli` integrates with the Azure and AWS cli, in order to provide inventory, ssh, sync, tunnel and the possibility to run ansible playbooks on a fleet of EC2 instances.
 It can be used to add a layer of templating (using jinja2) on top of Terraform files. This is useful for removing duplicated code when it comes to spinning up infrastructure across multiple environments (stage/sandbox/prod) and across teams. Useful for both AWS and [Kubernetes deployments](https://github.com/adobe/ops-cli/tree/master/examples/aws-kubernetes).
 
-## How it works?
+# How it works?
 
 You define a cluster configuration, using a yaml file. The yaml file contains different kind of sections, one for each plugin. For instance, you could have a section for Terraform files, a section for AWS instructions, Kubernetes Helm charts and so forth.
 
-## Use cases
+# Use cases
 
-### Manage AWS EC2 instances
+## Manage AWS EC2 instances
 
 Once you define your cluster configuration, you can run `ops` commands such as seeing the instance inventory.
 ```sh
@@ -47,7 +47,7 @@ ops clusters/stage.yaml ssh --tunnel --local 8080 --remote 8080 stage-thanos-1 -
 
 See [examples/features/inventory](https://github.com/adobe/ops-cli/tree/master/examples/features/inventory)
 
-### Terraform
+## Terraform
 
 ```sh
 # Performs jinja templating (if any) and runs terraform plan
@@ -59,11 +59,13 @@ ops clusters/mycluster.yaml terraform --path-name aws-eks apply
 
 ![ops-terraform](https://user-images.githubusercontent.com/952836/52021396-9bc1b580-24fd-11e9-9da8-00fb68bd5c72.png)
 
-### Create Kubernetes cluster (using AWS EKS)
+## Create Kubernetes cluster (using AWS EKS)
 
 See [examples/aws-kubernetes](https://github.com/adobe/ops-cli/tree/master/examples/aws-kubernetes)
 
-## Installing
+# Installing
+
+## Local
 
 ### Virtualenv
 Here is a link about how to install and use virtualenv: 
@@ -89,6 +91,34 @@ pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/0.25/o
 # Optionally, install terraform to be able to access terraform plugin
 # See https://www.terraform.io/intro/getting-started/install.html
 # Also for pretty formatting of terraform plan output you can install https://github.com/coinbase/terraform-landscape (use gem install for MacOS)
+```
+
+## Using docker image
+
+You can try out `ops-cli`, by using docker. The docker image has all required prerequisites (python, terraform, helm, git, ops-cli etc).
+
+To start out a container, running the latest `ops-cli` docker image run:
+```sh
+docker run -it costimuraru/ops-cli:0.25 bash
+```
+
+After the container has started, you can start using `ops-cli`:
+```sh
+ops help
+# usage: ops [-h] [--root-dir ROOT_DIR] [--verbose] [-e EXTRA_VARS]
+#           cluster_config_path
+#           {inventory,terraform,packer,ssh,play,run,sync,noop} ...
+
+git clone https://github.com/adobe/ops-cli.git
+cd ops-cli
+ls examples
+# aws-kubernetes
+# cassandra-stress
+# features
+
+cd examples/aws-kubernetes
+ops clusters/my-kubernetes-cluster.yaml terraform --path-name aws-eks plan
+# in order to setup aws-kubernetes follow the steps from https://github.com/adobe/ops-cli/blob/master/examples/aws-kubernetes/README.md
 ```
 
 #### Optional: install `ops` in development mode
