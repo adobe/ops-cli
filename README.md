@@ -3,12 +3,15 @@
 ## Ops CLI
 
 **ops-cli** is a python wrapper for [Terraform](https://www.terraform.io/), [Ansible](https://www.ansible.com/) and SSH for cloud automation. 
-It also integrates with the AWS cli, in order to provide inventory, ssh, sync, tunnel and the possibility to run ansible playbooks on top of EC2 instances.
-It can be used to add a layer of templating (using jinja2) on top of Terraform files. This is useful for removing duplicated code when it comes to spinning up infrastructure across multiple environments (stage/sandbox/prod) and across teams. Useful for both AWS and Kubernetes deployments, given that Terraform has support for Amazon Elastic Kubernetes (EKS).
+
+We use multiple tools to manage our infrastructure at Adobe. The purpose of `ops-cli` is to gather the common cluster configurations in a single place and, based on these, interact with the above mentioned tools. In this way, we can avoid duplication and can quickly spin up new clusters (either production or development ones). All we need to do is customize the cluster configuration file ([example here](https://github.com/adobe/ops-cli/blob/master/examples/aws-kubernetes/clusters/my-kubernetes-cluster.yaml)).
+
+`ops-cli` integrates with the Azure and AWS cli, in order to provide inventory, ssh, sync, tunnel and the possibility to run ansible playbooks on a fleet of EC2 instances.
+It can be used to add a layer of templating (using jinja2) on top of Terraform files. This is useful for removing duplicated code when it comes to spinning up infrastructure across multiple environments (stage/sandbox/prod) and across teams. Useful for both AWS and [Kubernetes deployments](https://github.com/adobe/ops-cli/tree/master/examples/aws-kubernetes).
 
 ## How it works?
 
-You define a cluster configuration, using a yaml file. The yaml file can contain different kind of sections. For instance, you could have a section for terraform files, a section for AWS instructions and so forth.
+You define a cluster configuration, using a yaml file. The yaml file contains different kind of sections, one for each plugin. For instance, you could have a section for Terraform files, a section for AWS instructions, Kubernetes Helm charts and so forth.
 
 ## Use cases
 
@@ -80,8 +83,8 @@ pip2 install -U virtualenv
 virtualenv ops
 source ops/bin/activate
 
-# install opswrapper v0.22 stable release
-pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/0.22/ops-0.22.tar.gz
+# install opswrapper v0.23 stable release
+pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/0.23/ops-0.23.tar.gz
 
 # Optionally, install terraform to be able to access terraform plugin
 # See https://www.terraform.io/intro/getting-started/install.html
