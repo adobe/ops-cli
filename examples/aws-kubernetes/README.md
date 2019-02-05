@@ -14,7 +14,7 @@ This example allows you to create, manage and explore Kubernetes clusters in Ama
 
 The following software and plugins are required for cluster provisioning:
 
-* [Homebrew](http://brew.sh) - for MacOS
+* [Homebrew](http://brew.sh) - for MacOS/Linux
 * ops - https://github.com/adobe/ops-cli#installing
 * [Terraform](https://terraform.io/downloads) can be installed via brew or their website
 * [Terraform Helm Provider](https://github.com/terraform-providers/terraform-provider-helm#installation)
@@ -28,13 +28,13 @@ git clone https://github.com/adobe/ops-cli.git
 
 cd ops-cli/examples/aws-kubernetes
 
-# For MacOS only.
-./setup-mac.sh
+# For Mac/Linux
+./update.sh
 ```
 
-The above script uses brew to install dependencies (on Mac). If you're using a different OS, check through the script to see the required dependencies and install them manually. We accept pull requests, if you'd like to add a script for other OS (eg. `setup-linux.sh`).
+The above script uses brew to install dependencies (tested only on Mac; linux *might* work as well, given that Homebrew is now available there as well). If you're using a different OS, check through the script to see the required dependencies and install them manually. We accept pull requests, if you'd like to add a script for another OS.
 
-Before you proceed, make sure you have run the `setup-mac.sh` script, which is present in this repository. The script will install the `kubectl` tool, the AWS IAM authenticator and other required prerequisites.
+Before you proceed, make sure you have run the `update.sh` script, which is present in this repository. The script will install the `kubectl` tool, the AWS IAM authenticator and other required prerequisites.
 
 ### Configure AWS Cli profile
 ```sh
@@ -52,8 +52,8 @@ Default region name [None]: us-east-1
 Please make sure you have `ops-cli` installed before proceeding (https://github.com/adobe/ops-cli#installing)
 
 At this point you should have the following:
-- kubectl installed (via `setup-mac.sh`)
-- aws iam authenticator installed (via `setup-mac.sh`)
+- kubectl installed (via `update.sh`)
+- aws iam authenticator installed (via `update.sh`)
 - aws profile setup (eg. `my-aws-profile`)
 - `ops-cli` installed
 

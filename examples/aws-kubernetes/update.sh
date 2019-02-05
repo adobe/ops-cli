@@ -47,8 +47,10 @@ install_aws_iam_authenticator $AWS_IAM_AUTHENTICATOR_VERSION
 
 brew update
 
+brew_install_or_upgrade wget
 brew_install_or_upgrade kubernetes-helm
 brew_install_or_upgrade kubectl
 brew_install_or_upgrade jq
 
+helm init --client-only
 helm repo update
