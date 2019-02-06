@@ -96,16 +96,7 @@ kubectl get pods --all-namespaces
 ```
 You shoud see a list of pods. If not, check the [FAQ](#faq) below.
 
-### 5. Make worker nodes join the EKS cluster
-
-At this point the Kubernetes master is up (as a managed service in AWS) and the worker nodes are also created. However, the worker nodes are not automatically being added in the Kubernetes cluster. 
-To join the worker nodes to the cluster we need to run terraform again (same as before, with `--path-name aws-eks`).
-This second run will leverage the existence of the Kubernetes cluster config file and will push the aws-auth config map to cluster, which is required to join the worker nodes.
-```sh
-ops clusters/my-kubernetes-cluster.yaml terraform --path-name aws-eks plan
-ops clusters/my-kubernetes-cluster.yaml terraform --path-name aws-eks apply
-```
-
+Check that the worker nodes have joined the cluster: 
 ```sh
 export KUBECONFIG=`pwd`/clusters/kubeconfigs/stage-mykubernetescluster.config
 
@@ -116,7 +107,7 @@ kubectl get nodes
 # ip-10-91-57-197.ec2.internal   Ready     <none>    2m        v1.11.5
 ```
 
-### 6. Add Kubernetes components (via Helm charts)
+### 5. Add Kubernetes components (via Helm charts)
 
 This will configure additional services inside the Kubernetes cluster. This includes:
 - cluster autoscaler (for the worker nodes)
@@ -150,7 +141,7 @@ $ helm list
 # kube2iam          	1       	Feb  2 16:54:16 2019	DEPLOYED	kube2iam-0.9.1            	0.10.0     	kube-system
 ```
 
-### 7. Cluster decommissioning
+### 6. Cluster decommissioning
 To decommission existing cluster terraform destroy commands via ops invocation need to be issued.
 It is very important to destroy helm resources before destroying the underlying AWS worker nodes and AWS EKS control plane.
 This way external resources created by helm for kubernetes consumption also get destroyed.
