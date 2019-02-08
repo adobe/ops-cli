@@ -1,6 +1,7 @@
 ## Remove specific rules from Prometheus
 # vars:
 # - delete_rule_files: a list of glob patterns to match the rule files to be deleted
+# - skip_reload: to skip the "Reloading Prometheus" step, set this variable to "yes"
 
 # Usage example:
 #
@@ -9,6 +10,7 @@
 #  include: {{ ops_tasks_dir }}/remove_prometheus_alert_rules.yml
 #  vars:
 #    delete_rule_files: '["some_rule*", "some_other_rule*", "specific_rule.rule"]'
+#    skip_reload: "yes"
 
 - name: "Verify delete_rule_files parameter is defined"
   assert:
@@ -45,4 +47,7 @@
   register: response
   retries: 5
   delay: 5
-  
+  vars:
+    skip_reload: "no"
+  when:
+    skip_reload != "yes"
