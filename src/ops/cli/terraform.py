@@ -351,6 +351,18 @@ class TerraformRunner(object):
                     terraform_path=terraform_path,
                     vars=vars,
             )
+        elif args.subcommand is not None:
+            # Examples: 
+            #  - command = "state push errored.tfstate"
+            #  - command = "force-unlock <LOCK_ID>"
+            generate_module_templates = True
+            cmd = "cd {root_dir}/{terraform_path} && {terraform_init_command} " \
+                  "terraform {command}".format(
+                    command=args.subcommand,
+                    root_dir=self.root_dir,
+                    terraform_init_command=terraform_init_command,
+                    terraform_path=terraform_path,
+            )
         else:
             display('Terraform subcommand \'%s\' not found' % args.subcommand, color='red')
             return
