@@ -65,12 +65,12 @@ def flatten_tree(d, parent_key='', sep='/'):
     return dict(items)
 
 def read_vault(secret_path, key='value', fetch_all=False, vault_user=None,vault_url=None, token=None, auto_prompt=True):
-    from ops.simplesecrets import SimpleVault
+    from ops.simplevault import SimpleVault
     sv = SimpleVault(vault_user=vault_user, vault_addr=vault_url, vault_token=token,auto_prompt=auto_prompt)
     return sv.get(path=secret_path, key=key, fetch_all=fetch_all)
 
 def write_vault(secret_path, key='value', data="", vault_user=None, vault_url=None, token=None, auto_prompt=True):
-    from ops.simplesecrets import  SimpleVault
+    from ops.simplevault import  SimpleVault
     sv = SimpleVault(vault_user=vault_user, vault_addr=vault_url, vault_token=token, auto_prompt=auto_prompt)
     new_data = {}
     if isinstance(data, dict):
@@ -82,13 +82,18 @@ def write_vault(secret_path, key='value', data="", vault_user=None, vault_url=No
         return False
     return sv.put(path=secret_path, value=new_data )
 
+def read_ssm(key, aws_profile, region_name='us-east-1'):
+    from ops.simplessm import SimpleSSM
+    ssm = SimpleSSM(aws_profile, region_name)
+    return ssm.get(key)
+
 def managed_vault_secret(secret_path,key='value',
                          policy={},
                          vault_user=None,
                          vault_addr=None,
                          vault_token=None,
                          auto_prompt=True):
-    from ops.simplesecrets import ManagedVaultSecret
+    from ops.simplevault import ManagedVaultSecret
     ms = ManagedVaultSecret(path=secret_path,
                             key=key,
                             policy=policy,
@@ -111,5 +116,6 @@ class FilterModule(object):
             'read_yaml': read_yaml,
             'read_vault': read_vault,
             'write_vault': write_vault,
-            'managed_vault_secret': managed_vault_secret
+            'managed_vault_secret': managed_vault_secret,
+            'read_ssm': read_ssm
         }
