@@ -16,7 +16,7 @@ _mydir = os.path.abspath(os.path.dirname(sys.argv[0]))
 _requires = [ r for r in open(os.path.sep.join((_mydir,'requirements.txt')), "r").read().split('\n') if len(r)>1 ]
 setup(
     name='ops',
-    version='0.24',
+    version='0.25',
     description='Ops simple wrapper',
     author='Adobe',
     author_email='noreply@adobe.com',
