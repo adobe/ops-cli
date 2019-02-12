@@ -138,18 +138,11 @@ $ aws configure --profile aws_account_name
 ## Azure
 TBD
 
-## SKMS
-Create a file in `~/.skms/credentials.yaml` which looks like the following:
-```yaml
-endpoint: "api.skms.mycompany.com"
-username: <username>
-password: <password>
-```
+## Examples
 
-## Example
-
-See `examples/` folder:
+See [examples/](https://github.com/adobe/ops-cli/tree/master/examples) folder:
 - cassandra-stress - n-node cassandra cluster used for stress-testing; a basic stress profile is included
+- spin up a Kubernetes clsuter
 - distinct `ops` features
 
 ## Usage help
@@ -526,14 +519,11 @@ optional arguments:
         ops clusters/centos7.yaml packer build
 ```
 
-## Development
-
-### Running tests
-
-- docker: `buildrunner -f buildrunner.yaml`
-- on your machine: `py.test tests`
-
 ## Secrets Management
+
+There are cases where you need to reference sensitive data in your `cluster.yaml` file (credentials, passwords, tokens etc). Given that the cluster configuration file can be stored in a version control system (such as Git), the best practice is to not put sensitive data in the file itself. Instead, we can use `ops-cli` to fetch the desired credentials from a secrets manager such as Vault or Amazon SSM, at runtime.
+
+### Vault
 
 Ops can manage the automatic generation of secrets and their push in Vault, without actually persisting the secrets in the cluster file.
 A cluster file will only need to use a construct like the following:
@@ -547,6 +537,20 @@ Which will translate behind the scenes in :
 - if the value at that path already exist, just return that value.
 This allows us to just refer in cluster files a secret that actually exists in vault and make sure we only generate it once - if it was already created by os or any other system, we will just use what is already there.
 The reference is by means of fixed form jinja call  added to the cluster file, which ends up interpretted later during the templating phase.
+
+### Amazon Secrets Manager (SSM)
+
+Amazon offers the possibility to use their [Secrets Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html) in order to manage configuration data such as credentials, passwords and license keys.
+
+We can use `ops-cli` to fetch the sensitive data from SSM, at runtime. Just define this in your cluster configuration file (eg. `mycluster.yaml`).
+
+```
+db_password: "{{ '/my/ssm/path' | read_ssm(aws_profile='myprofile') }}"
+```
+
+`ops-cli` will read the SSM value by running a command similar to: `AWS_PROFILE=aam-npe aws ssm get-parameter --name "/my/ssm/path"  --region us-east-1 --with-decryption`.
+Note that you can specify the AWS region via `read_ssm(aws_profile='myprofile', region_name='us-west-2')`.
+
 
 ## Using jinja2 filters in playbooks and terraform templates
 
@@ -574,6 +578,20 @@ class FilterModule(object):
 # usage in playbook, templates, cluster config
 # test_custom_filters: "{{ 'value' | my_filter }}"
 ```
+
+## SKMS
+Create a file in `~/.skms/credentials.yaml` which looks like the following:
+```yaml
+endpoint: "api.skms.mycompany.com"
+username: <username>
+password: <password>
+```
+
+## Development
+
+### Running tests
+
+- on your machine: `py.test tests`
 
 ## Troubleshooting
 
