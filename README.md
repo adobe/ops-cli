@@ -190,6 +190,38 @@ All the files found this way are merged together so that you can set some global
 overwrite them for individual envs. Eg: `~/.opsconfig.yaml`, `/project/.opsconfig.yaml`, `/project/clusters/dev/.opsconfig.yaml`
 
 ### Inventory
+
+The `inventory` command will list all the servers in a given cluster and cache the results for further operations on them (for instance, SSHing to a given node or running an ansible playbook).
+
+You can always filter which nodes you want to display or use to run an ansible playbook on, by using the `--limit` argument (eg. `--limit webapp`). The extra filter is applied on the instance tags, which includes the instance name.
+
+The way `inventory` works is by doing a describe command in AWS/Azure. The describe command matches all the nodes that have the tag "cluster" equal to the cluster name you have defined.
+
+In order to configure it, you need to add the `inventory` section in your cluster configuration file ([example here](https://github.com/adobe/ops-cli/blob/master/examples/features/inventory/my-aws-cluster.yaml)).
+
+#### AWS example
+```
+---
+inventory:
+  - plugin: cns
+    args:
+      clusters:
+        - region: us-east-1
+          boto_profile: aam-npe # make sure you have this profile in your ~/.aws/credentials file
+          names: [mycluster1] # this assumes the EC2 nodes have the Tag Name "cluster" with Value "mycluster1"
+```
+
+#### Azure example
+```
+---
+inventory:
+  - plugin: azr
+    args:
+      tags: environment=prod
+      locations: westeurope,northeurope
+```
+
+#### Inventory usage
 ```
 usage: ops cluster_config_path inventory [-h] [-e EXTRA_VARS]
                                          [--refresh-cache] [--limit LIMIT]
