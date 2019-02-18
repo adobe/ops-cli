@@ -17,7 +17,6 @@ The following software and plugins are required for cluster provisioning:
 * [Homebrew](http://brew.sh) - for MacOS/Linux
 * ops - https://github.com/adobe/ops-cli#installing
 * [Terraform](https://terraform.io/downloads) can be installed via brew or their website
-* [Terraform Helm Provider](https://github.com/terraform-providers/terraform-provider-helm#installation)
 * [AWS IAM Authenticator for Kubernetes](https://github.com/kubernetes-sigs/aws-iam-authenticator)
 * kubectl - https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl
 * jq -  https://stedolan.github.io/jq/download
