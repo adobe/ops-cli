@@ -261,6 +261,8 @@ class TerraformRunner(object):
 
         elif args.subcommand == 'destroy':
             generate_module_templates = True
+            remove_local_cache = ''
+
             if self.ops_config['terraform.remove_local_cache']:
                 remove_local_cache = 'rm -rf .terraform && '
             cmd = "cd {root_dir}/{terraform_path} && " \
