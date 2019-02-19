@@ -1,8 +1,11 @@
 simpledi>=0.2
 awscli==1.16.97
 ansible==2.3.1.0
-boto3==1.9.91
+s3transfer==0.1.13
+boto3==1.9.87
 boto==2.49.0
+botocore==1.12.87
+PyYAML==3.13
 azure-common==1.1.4
 azure==2.0.0rc5
 msrestazure==0.4.6
