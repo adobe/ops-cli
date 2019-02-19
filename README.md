@@ -127,7 +127,7 @@ ops clusters/my-kubernetes-cluster.yaml terraform --path-name aws-eks plan
 git clone https://github.com/adobe/ops-cli.git
 cd ops
 # Install openssl
-brew install openssl
+brew install openssl libyaml
 env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" python setup.py develop
 ```
 
