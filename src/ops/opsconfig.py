@@ -102,7 +102,7 @@ class OpsConfig(object):
             if os.path.isfile(config_path):
                 logger.info("parsing %s", config_path)
                 with open(config_path) as f:
-                    config = yaml.load(f.read())
+                    config = yaml.safe_load(f.read())
                     if isinstance(config, dict):
                         parsed_files.append(config_path)
                         self.config.update(config)

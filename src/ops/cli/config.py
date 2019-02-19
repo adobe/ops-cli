@@ -107,7 +107,7 @@ class JinjaConfigGenerator(object):
 
         rendered = self.template.render(self.cluster_config_path, variables)
 
-        return yaml.load(rendered)
+        return yaml.safe_load(rendered)
 
 class ClusterConfigGenerator(object):
     def __init__(self, console_args, cluster_config_path, template):

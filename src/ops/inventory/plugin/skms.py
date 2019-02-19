@@ -41,7 +41,7 @@ def skms(args):
     credentials_file = "%s/.skms/credentials.yaml" % os.path.expanduser('~')
     if os.path.isfile(credentials_file):
         file_stream = open(credentials_file, "r")
-        docs = yaml.load_all(file_stream)
+        docs = yaml.safe_load_all(file_stream)
         for doc in docs:
             args['skms']['username'] = doc['username']
             args['skms']['password'] = doc['password']
