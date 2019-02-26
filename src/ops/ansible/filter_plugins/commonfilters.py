@@ -103,6 +103,13 @@ def managed_vault_secret(secret_path,key='value',
                             auto_prompt=auto_prompt)
     return ms.get()
 
+def escape_json(input):
+    import json
+    escaped = json.dumps(input)
+    if escaped.startswith('"') and escaped.endswith('"'):
+        # trim double quotes
+        return escaped[1:-1]
+    return escaped
 
 class FilterModule(object):
     def filters(self):
@@ -117,5 +124,6 @@ class FilterModule(object):
             'read_vault': read_vault,
             'write_vault': write_vault,
             'managed_vault_secret': managed_vault_secret,
-            'read_ssm': read_ssm
+            'read_ssm': read_ssm,
+            'escape_json': escape_json
         }
