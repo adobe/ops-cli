@@ -25,7 +25,7 @@ Then:
 ```sh
 git clone https://github.com/adobe/ops-cli.git
 
-cd ops-cli/examples/aws-kubernetes
+cd ops-cli/modules/aws-kubernetes
 
 # For Mac/Linux
 ./update.sh

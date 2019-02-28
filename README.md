@@ -4,10 +4,10 @@
 
 **ops-cli** is a python wrapper for [Terraform](https://www.terraform.io/), [Ansible](https://www.ansible.com/) and SSH for cloud automation. 
 
-We use multiple tools to manage our infrastructure at Adobe. The purpose of `ops-cli` is to gather the common cluster configurations in a single place and, based on these, interact with the above mentioned tools. In this way, we can avoid duplication and can quickly spin up new clusters (either production or development ones). All we need to do is customize the cluster configuration file ([example here](https://github.com/adobe/ops-cli/blob/master/examples/aws-kubernetes/clusters/my-kubernetes-cluster.yaml)).
+We use multiple tools to manage our infrastructure at Adobe. The purpose of `ops-cli` is to gather the common cluster configurations in a single place and, based on these, interact with the above mentioned tools. In this way, we can avoid duplication and can quickly spin up new clusters (either production or development ones). All we need to do is customize the cluster configuration file ([example here](https://github.com/adobe/ops-cli/blob/master/modules/aws-kubernetes/clusters/my-kubernetes-cluster.yaml)).
 
 `ops-cli` integrates with the Azure and AWS cli, in order to provide inventory, ssh, sync, tunnel and the possibility to run ansible playbooks on a fleet of EC2 instances.
-It can be used to add a layer of templating (using jinja2) on top of Terraform files. This is useful for removing duplicated code when it comes to spinning up infrastructure across multiple environments (stage/sandbox/prod) and across teams. Useful for both AWS and [Kubernetes deployments](https://github.com/adobe/ops-cli/tree/master/examples/aws-kubernetes).
+It can be used to add a layer of templating (using jinja2) on top of Terraform files. This is useful for removing duplicated code when it comes to spinning up infrastructure across multiple environments (stage/sandbox/prod) and across teams. Useful for both AWS and [Kubernetes deployments](https://github.com/adobe/ops-cli/tree/master/modules/aws-kubernetes).
 
 # How it works?
 
@@ -45,7 +45,7 @@ ops clusters/mycluster.yaml sync /tmp/myfile webapp: -l ec2-user
 ops clusters/stage.yaml ssh --tunnel --local 8080 --remote 8080 stage-thanos-1 -l ec2-user
 ```
 
-See [examples/features/inventory](https://github.com/adobe/ops-cli/tree/master/examples/features/inventory)
+See [modules/features/inventory](https://github.com/adobe/ops-cli/tree/master/modules/features/inventory)
 
 ## Terraform
 
@@ -61,7 +61,7 @@ ops clusters/mycluster.yaml terraform --path-name aws-eks apply
 
 ## Create Kubernetes cluster (using AWS EKS)
 
-See [examples/aws-kubernetes](https://github.com/adobe/ops-cli/tree/master/examples/aws-kubernetes)
+See [modules/aws-kubernetes](https://github.com/adobe/ops-cli/tree/master/modules/aws-kubernetes)
 
 # Installing
 
@@ -111,14 +111,14 @@ ops help
 
 git clone https://github.com/adobe/ops-cli.git
 cd ops-cli
-ls examples
+ls modules
 # aws-kubernetes
 # cassandra-stress
 # features
 
-cd examples/aws-kubernetes
+cd modules/aws-kubernetes
 ops clusters/my-kubernetes-cluster.yaml terraform --path-name aws-eks plan
-# in order to setup aws-kubernetes follow the steps from https://github.com/adobe/ops-cli/blob/master/examples/aws-kubernetes/README.md
+# in order to setup aws-kubernetes follow the steps from https://github.com/adobe/ops-cli/blob/master/modules/aws-kubernetes/README.md
 ```
 
 #### Optional: install `ops` in development mode
@@ -170,7 +170,7 @@ TBD
 
 ## Examples
 
-See [examples/](https://github.com/adobe/ops-cli/tree/master/examples) folder:
+See [modules/](https://github.com/adobe/ops-cli/tree/master/modules) folder:
 - cassandra-stress - n-node cassandra cluster used for stress-testing; a basic stress profile is included
 - spin up a Kubernetes clsuter
 - distinct `ops` features
@@ -210,7 +210,7 @@ optional arguments:
 ## More help
 
 Each sub-command includes additional help information that you can get by running:
-`ops examples/inventory/aam.yaml sync --help`
+`ops modules/inventory/aam.yaml sync --help`
 
 ## Tool configuration: .opsconfig.yaml
 
@@ -227,7 +227,7 @@ You can always filter which nodes you want to display or use to run an ansible p
 
 The way `inventory` works is by doing a describe command in AWS/Azure. The describe command matches all the nodes that have the tag "cluster" equal to the cluster name you have defined.
 
-In order to configure it, you need to add the `inventory` section in your cluster configuration file ([example here](https://github.com/adobe/ops-cli/blob/master/examples/features/inventory/my-aws-cluster.yaml)).
+In order to configure it, you need to add the `inventory` section in your cluster configuration file ([example here](https://github.com/adobe/ops-cli/blob/master/modules/features/inventory/my-aws-cluster.yaml)).
 
 #### AWS example
 ```
