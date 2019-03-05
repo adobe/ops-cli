@@ -20,4 +20,4 @@ RUN helm init --client-only
 RUN pip2 install -U virtualenv
 RUN virtualenv ops
 RUN source ops/bin/activate
-RUN pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/0.27/ops-0.27.tar.gz
+RUN pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/0.28/ops-0.28.tar.gz
