@@ -214,7 +214,10 @@ class Ec2Inventory(object):
                     group_names.append(group.name)
                 instance_vars["ec2_security_group_ids"] = ','.join(group_ids)
                 instance_vars["ec2_security_group_names"] = ','.join(group_names)
-
+        # add non ec2 prefix private ip address that are being used in cross provider command
+        # e.g ssh, sync
+        instance_vars['private_ip'] = instance_vars.get('ec2_private_ip_address', '')
+        instance_vars['private_ip_address'] = instance_vars.get('ec2_private_ip_address', '')
         return instance_vars
 
     def get_host_info(self):

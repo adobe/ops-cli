@@ -13,6 +13,7 @@ from subprocess import call
 from ops.cli import display
 from ops.cli.parser import SubParserConfig
 from parser import configure_common_arguments
+from ansible.inventory.host import Host
 
 from . import err
 import sys
@@ -132,18 +133,28 @@ class SshRunner(object):
         if len(hosts) <= args.index:
             group = args.role
             hosts = self.ansible_inventory.get_hosts(group)
-            if len(hosts) <= args.index:
-                return
+            if not hosts:
+                display("No host found in inventory, using provided name %s" % (args.role), color="purple", stderr=True)
 
         display("Expression %s matched hosts (max 10): " % group, stderr=True)
         host_names = [host.name for host in hosts]
         for name in host_names[:10]:
             display(name, color='blue')
 
-        host = self.ansible_inventory.get_host(host_names[args.index])
-
-        ssh_host = host.vars.get('ansible_ssh_host') or host.name
-
+        host = None
+        if host_names:
+            if args.index < len(host_names):
+                host = self.ansible_inventory.get_host(host_names[args.index])
+            else:
+                display("Index out of bounds for %s" % (group), color="red", stderr=True)
+                return
+        if host:
+            ssh_host = host.vars.get('ansible_ssh_host') or host.name
+        else:
+            # no host found in inventory, use the role provided
+            bastion = self.ansible_inventory.get_hosts('bastion')[0].vars.get('ansible_ssh_host')
+            host = Host(name=args.role)
+            ssh_host = '{}--{}'.format(bastion, host.name)
         ssh_user = self.cluster_config.get('ssh_user') or self.ops_config.get('ssh.user') or getpass.getuser()
         if args.user:
             ssh_user = args.user
@@ -153,7 +164,7 @@ class SshRunner(object):
         if args.nossh:
             args.tunnel = True
             args.ipaddress = True
-            ssh_host = self.ansible_inventory.get_hosts('bastion')[0].vars.get('ec2_ip_address')
+            ssh_host = self.ansible_inventory.get_hosts('bastion')[0].vars.get('ansible_ssh_host')
 
         # if args.tunnel or args.proxy:
         #     ssh_config = args.ssh_config or 'ssh.tunnel.config'
@@ -163,7 +174,7 @@ class SshRunner(object):
 
         if args.tunnel:
             if args.ipaddress:
-                host_ip = host.vars.get('ec2_private_ip_address')
+                host_ip = host.vars.get('private_ip_address')
             else:
                 host_ip = 'localhost'
             command = "ssh -F %s %s -4 -N -L %s:%s:%d" % (ssh_config, ssh_host, args.local, host_ip, args.remote)
