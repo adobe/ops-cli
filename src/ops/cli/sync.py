@@ -69,11 +69,20 @@ class SyncRunner(object):
             remote = dest
 
         display("Looking for hosts for pattern '%s'" % remote.pattern, stderr=True)
-        for host in self.ansible_inventory.get_hosts(remote.pattern):
-            vars = self.ansible_inventory.get_vars(host)
-            ssh_host = vars.get('ansible_ssh_host') or host
 
-            ssh_user = self.ops_config['ssh.user']
+        remote_hosts = []
+        hosts = self.ansible_inventory.get_hosts(remote.pattern)
+        if not hosts:
+            bastion = self.ansible_inventory.get_hosts('bastion')[0].vars.get('ansible_ssh_host')
+            remote_hosts.append('{}--{}'.format(bastion, remote.pattern))
+        else:
+            for host in hosts:
+                vars = self.ansible_inventory.get_vars(host)
+                ssh_host = vars.get('ansible_ssh_host') or host
+                remote_hosts.append(ssh_host)
+
+        for ssh_host in remote_hosts:
+            ssh_user = self.cluster_config.get('ssh_user') or self.ops_config.get('ssh.user') or getpass.getuser()
             if remote.remote_user:
                 ssh_user = remote.remote_user
             elif args.user:
