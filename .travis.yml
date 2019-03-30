@@ -1,14 +1,27 @@
 language: python
+env:
+  - BOTO_CONFIG=/dev/null
 python:
 - '2.7'
 install:
-- pip install -r requirements.txt
+- pip install pipenv
 script:
+# freeze deps
+- |
+  rm -rf Pipfile* deps &&
+  pipenv lock --clear --two --requirements 1>deps &&
+  grep '==' deps | sed "s/;\\sextra.*//" > requirements.txt
 # test
-- export HOME=`pwd`/tmptests && rm -rf $HOME && export PATH=$HOME/.local/bin:$PATH && nosetests --with-xunit tests/unit
+- |
+  pip install --no-cache-dir -r requirements.txt &&
+  nosetests --with-xunit tests/unit
 # build artifact
-- export HOME=`pwd`/build && rm -rf $HOME && python setup.py sdist bdist_wheel
+- python setup.py sdist bdist_wheel
 - ls -l dist/
+# dry run
+- |
+  pip install --no-cache-dir dist/ops*.tar.gz &&
+  ops --verbose -h
 
 deploy:
   provider: releases
