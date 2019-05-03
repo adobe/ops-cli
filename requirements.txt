@@ -9,7 +9,7 @@ PyYAML==3.13
 azure-common==1.1.4
 azure==2.0.0rc5
 msrestazure==0.4.6
-jinja2<2.9
+Jinja2==2.10.1
 hashmerge
 python-consul
 hvac>=0.5.0
