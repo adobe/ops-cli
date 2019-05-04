@@ -1,4 +1,12 @@
 language: python
+
+services:
+  - docker
+
+branches:
+  only:
+  - master
+
 env:
   - BOTO_CONFIG=/dev/null
 python:
@@ -6,28 +14,24 @@ python:
 install:
 - pip install pipenv
 script:
-# freeze deps
-- |
-  rm -rf Pipfile* deps &&
-  pipenv lock --clear --two --requirements 1>deps &&
-  grep '==' deps | sed "s/;\\sextra.*//" > requirements.txt
-# test
-- |
-  pip install --no-cache-dir -r requirements.txt &&
-  nosetests --with-xunit tests/unit
-# build artifact
-- python setup.py sdist bdist_wheel
-- ls -l dist/
+# build
+- bash build_scripts/freeze_requirements.sh
+- bash build_scripts/run_tests.sh
+- bash build_scripts/build_package.sh
 # dry run
-- |
-  pip install --no-cache-dir dist/ops*.tar.gz &&
-  ops --verbose -h
+- pip install --no-cache-dir dist/ops*.tar.gz && ops --verbose -h
+# build docker image
+- travis_wait 30 docker build -f build_scripts/Dockerfile -t ops .
 
 deploy:
-  provider: releases
-  api_key: '$GITHUB_API_KEY'
-  skip_cleanup: true
-  file_glob: true
-  file: "dist/**/*"
-  on:
-    tags: true
+  - provider: releases
+    api_key: '$GITHUB_API_KEY'
+    skip_cleanup: true
+    file_glob: true
+    file: "dist/**/*"
+    on:
+      tags: true
+  - provider: script
+    script: bash build_scripts/docker_push.sh
+    on:
+      tags: true
