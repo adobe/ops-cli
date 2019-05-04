@@ -6,9 +6,9 @@ boto3==1.9.87
 boto==2.49.0
 botocore==1.12.87
 PyYAML==3.13
-azure-common==1.1.4
-azure==2.0.0rc5
-msrestazure==0.4.6
+azure-common==1.1.20
+azure==4.0.0
+msrestazure==0.6.0
 Jinja2==2.10.1
 hashmerge
 python-consul
