@@ -133,30 +133,13 @@ env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/
 
 ## Release (for maintainers)
 
-1. Update version number in `setup.py` to a final version
-2. Commit changes, with tag
-```sh
-git add .
-git commit -m "[RELEASE] - Release version 0.x"
-git tag -m "[RELEASE] - Release version 0.x" 0.x
-git push --follow-tags
-```
-4. Wait for Travis to build at https://www.travis-ci.com/adobe/ops-cli
-5. Update version number in `setup.py` to the next development version and commit in master branch and update [Installation](https://github.com/adobe/ops-cli#ops-tool-installation) section in this README.md with the actual version.
+1. Install: `pip install bump2version`
+2. Bump version: `bump2version minor`
+3. Push the release commit: `git push --follow-tags`
+4. Wait for Travis to build at https://www.travis-ci.com/adobe/ops-cli  
+  * This will publish a release to https://github.com/adobe/ops-cli/releases
+  * Publish a new docker image version to https://hub.docker.com/r/adobe/ops-cli
 
-## Create development build
-
-1. Update version number in `setup.py` to a development version (eg. `0.20.dev`)
-2. Commit dev changes, with tag
-```sh
-git add .
-git commit -m "[RELEASE] - Development version 0.x.dev"
-git tag -m "[RELEASE] - Development version 0.x.dev" 0.x.dev
-git push --follow-tags
-```
-4. Wait for Travis to build at https://www.travis-ci.com/adobe/ops-cli
-It will create a new release: https://github.com/adobe/ops-cli/releases
-You can use the zip file to install the development version locally.
 
 ## Configuring
 ### AWS
