@@ -76,7 +76,7 @@ class PlaybookRunner(object):
             args.ansible_args.extend(['-i', inventory_path])
 
         extra_vars = dict(cluster=self.cluster_config['cluster'])
-        if "environment" in self.cluster_config["terraform"]["vars"]:
+        if "environment" in self.cluster_config.get("terraform", {}).get("vars", {}):
             extra_vars["environment"] = self.cluster_config["terraform"]["vars"]["environment"]
         extra_vars_args = ' '.join([' -e %s=%s ' % (k, v) for k, v in extra_vars.items()])
 

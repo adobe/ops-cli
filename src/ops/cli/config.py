@@ -14,10 +14,10 @@ import os
 import yaml
 
 from ansible.parsing.dataloader import DataLoader
-from ansible.plugins import PluginLoader
+from ansible.plugins.loader import PluginLoader
 from ansible.template import Templar
 from ansible.utils.vars import load_extra_vars
-from ansible.vars import VariableManager
+from ansible.vars.manager import VariableManager
 from ops.cli import display
 from ansible import constants as C
 import logging
@@ -94,7 +94,7 @@ class JinjaConfigGenerator(object):
     def get(self):
         data_loader = DataLoader()
         # data_loader.set_vault_password()
-        variable_manager = VariableManager()
+        variable_manager = VariableManager(loader=data_loader)
 
         extra_vars = self.console_args.extra_vars[:]
 
@@ -103,7 +103,7 @@ class JinjaConfigGenerator(object):
         options = collections.namedtuple('options', 'extra_vars')
         variable_manager.extra_vars = load_extra_vars(loader=data_loader, options=options(extra_vars=extra_vars))
 
-        variables = variable_manager.get_vars(data_loader)
+        variables = variable_manager.get_vars()
 
         rendered = self.template.render(self.cluster_config_path, variables)
 
@@ -118,7 +118,7 @@ class ClusterConfigGenerator(object):
     def get(self):
         data_loader = DataLoader()
         # data_loader.set_vault_password('627VR8*;YU99B')
-        variable_manager = VariableManager()
+        variable_manager = VariableManager(loader=data_loader)
 
         extra_vars = self.console_args.extra_vars[:]
 
@@ -130,7 +130,7 @@ class ClusterConfigGenerator(object):
         options = collections.namedtuple('options', 'extra_vars')
         variable_manager.extra_vars = load_extra_vars(loader=data_loader, options=options(extra_vars=extra_vars))
 
-        read_variables = variable_manager.get_vars(data_loader)
+        read_variables = variable_manager.get_vars()
 
         templar = Templar(data_loader, variables=read_variables)
         templar._filter_loader = self.template.filter_plugin_loader

@@ -38,6 +38,7 @@ class Executor(object):
             else:
                 p = Popen(shell_command, shell=True, stdout=PIPE, stderr=PIPE)
                 output, errors = p.communicate()
+                display(output)
                 if errors:
                     display("%s" % self.shadow_credentials(errors), stderr=True, color='red')
                 exit_code = p.returncode

@@ -8,35 +8,30 @@
 #OF ANY KIND, either express or implied. See the License for the specific language
 #governing permissions and limitations under the License.
 
+from ansible.errors import AnsibleParserError
+from ansible.plugins.vars import BaseVarsPlugin
 import os
-
 from ops.main import AppContainer
 import logging
 
 logger = logging.getLogger(__name__)
 
-class VarsModule(object):
+class VarsModule(BaseVarsPlugin):
 
     """
     Loads variables for groups and/or hosts
     """
 
-    def __init__(self, inventory):
+    def __init__(self, *args):
         """ constructor """
+
+        super(VarsModule, self).__init__(*args)
 
         logger.debug("Running plugin: %s with cluster config %s" % (__file__, os.environ['OPS_CLUSTER_CONFIG']))
 
         app = AppContainer([os.environ['OPS_CLUSTER_CONFIG'], 'noop'])
         self.config = app.cluster_config.all()
 
-    def run(self, host, vault_password=None):
-        return self.config
-
-    def get_host_vars(self, host, vault_password=None):
-        """ Get host specific variables. """
-        return self.config
-
-
-    def get_group_vars(self, group, vault_password=None):
-        """ Get group specific variables. """
+    def get_vars(self, loader, path, entities, cache=True):
+        super(VarsModule, self).get_vars(loader, path, entities)
         return self.config

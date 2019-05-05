@@ -16,10 +16,10 @@ from distutils.dir_util import copy_tree
 import ansible.inventory as ansible_inventory
 import ansible.vars as ansible_vars
 import caching
-from ansible.inventory import Inventory
+from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 from ansible.playbook.play import display
-from ansible.vars import VariableManager
+from ansible.vars.manager import VariableManager
 from ops import OpsException
 import logging
 
@@ -275,11 +275,10 @@ class AnsibleInventory(object):
         ansible_vars.HOSTVARS_CACHE = dict()
         ansible_inventory.HOSTS_PATTERNS_CACHE = dict()
 
-        self.variable_manager = VariableManager()
         loader = DataLoader()
-        self.inventory = Inventory(loader=loader, variable_manager=self.variable_manager, host_list=self.generated_path)
-        self.variable_manager.set_inventory(self.inventory)
-        self.inventory.set_playbook_basedir(self.generated_path)
+        loader.set_basedir(self.generated_path)
+        self.inventory = InventoryManager(loader=loader, sources=[self.generated_path])
+        self.variable_manager = VariableManager(loader=loader, inventory=self.inventory)
 
     def get_hosts(self, limit):
         return self.inventory.get_hosts(limit)

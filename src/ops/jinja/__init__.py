@@ -11,7 +11,7 @@
 from jinja2 import FileSystemLoader, Environment, StrictUndefined, Undefined, DebugUndefined
 from jinja2.loaders import ChoiceLoader
 
-from ansible.plugins import PluginLoader
+from ansible.plugins.loader import PluginLoader
 
 
 class Template(object):
