@@ -160,10 +160,14 @@ class Ec2Inventory(object):
         for grouping in set(self.group_callbacks):
             given_groups = grouping(instance)
             for group in given_groups:
+                if not group:
+                    continue
                 self.push(self.inventory, group, dest)
 
         # Group by all tags
         for tag in instance.tags.values():
+            if not tag:
+                continue
             self.push(self.inventory, tag, dest)
 
         # Inventory: Group by region

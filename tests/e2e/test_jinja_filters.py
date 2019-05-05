@@ -11,21 +11,24 @@
 import os
 import pytest
 from ops.main import AppContainer
+from simpledi import *
 
-
-def app(args):
-    return AppContainer(args)
-
+@pytest.fixture
+def app():
+    def _app(args):
+        return AppContainer(args)
+    return _app
 
 current_dir = os.path.dirname(__file__)
 
-
-def test_loading_of_modules():
+def test_loading_of_modules(capsys, app):
     root_dir = current_dir + '/fixture/ansible'
     container = app(['-vv', '--root-dir', root_dir, 'clusters/test_filters.yaml', 'play',
                        'playbooks/play_module.yaml'])
 
-    out, err = container.execute(container.run(), pass_trough=False)
+    code = container.execute(container.run(), pass_trough=False)
+    out, err = capsys.readouterr()
+    assert code is 0
 
     container.cluster_config['test_standard_filters'] == '6'
     container.cluster_config['test_custom_filters'] == 'filtered: value'

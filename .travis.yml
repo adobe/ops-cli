@@ -11,12 +11,9 @@ env:
   - BOTO_CONFIG=/dev/null
 python:
 - '2.7'
-install:
-- pip install pipenv
 script:
 # build
 - bash build_scripts/freeze_requirements.sh
-- bash build_scripts/run_tests.sh
 - bash build_scripts/build_package.sh
 # dry run
 - pip install --no-cache-dir dist/ops*.tar.gz && ops --verbose -h

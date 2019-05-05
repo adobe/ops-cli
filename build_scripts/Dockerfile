@@ -1,11 +1,15 @@
 FROM python:2.7.16-alpine3.9 AS compile-image
+ARG TERRAFORM_VERSION="0.11.7"
 
 ENV BOTO_CONFIG=/dev/null
 COPY . /sources/
 WORKDIR /sources
 
+RUN wget -q -O terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip \
+    && unzip terraform.zip -d /usr/local/bin \
+    && rm -rf terraform.zip
 RUN apk add --virtual=build bash gcc libffi-dev musl-dev openssl-dev make
-RUN pip install pipenv nose
+RUN ln -s /usr/local/bin/python /usr/bin/python
 RUN bash build_scripts/freeze_requirements.sh
 RUN bash build_scripts/run_tests.sh
 RUN bash build_scripts/build_package.sh
@@ -15,13 +19,14 @@ RUN apk del --purge build
 FROM python:2.7.16-alpine3.9
 ARG HELM_VERSION="v2.13.1"
 ARG KUBECTL_VERSION="v1.13.4"
-ARG TERRAFORM_VERSION="0.11.13"
+ARG TERRAFORM_VERSION="0.11.7"
 ARG VAULT_VERSION="1.1.1"
 ARG AWS_IAM_AUTHENTICATOR_VERSION="1.12.7/2019-03-27"
 
 COPY --from=compile-image /sources/dist /dist
 
 RUN adduser ops -Du 2342 -h /home/ops \
+    && ln -s /usr/local/bin/python /usr/bin/python \
     && apk add --no-cache bash ca-certificates curl jq openssh-client git \
     && apk add --virtual=build gcc libffi-dev musl-dev openssl-dev make \
     # Install ops python package
