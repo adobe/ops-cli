@@ -1,5 +1,52 @@
 [![Build Status](https://www.travis-ci.com/adobe/ops-cli.svg?token=8uHqfhgsxdvJ93qWAxhn&branch=master)](https://www.travis-ci.com/adobe/ops-cli)
 
+<!--ts-->
+
+   * [Ops CLI](#ops-cli)
+   * [How it works?](#how-it-works)
+   * [Use cases](#use-cases)
+      * [Manage AWS EC2 instances](#manage-aws-ec2-instances)
+      * [Terraform](#terraform)
+      * [Create Kubernetes cluster (using AWS EKS)](#create-kubernetes-cluster-using-aws-eks)
+   * [Installing](#installing)
+      * [Local](#local)
+         * [Virtualenv](#virtualenv)
+         * [Ops tool installation](#ops-tool-installation)
+      * [Using docker image](#using-docker-image)
+      * [Development mode](#development-mode)
+      * [Configuring](#configuring)
+         * [AWS](#aws)
+         * [Azure](#azure)
+         * [Examples](#examples)
+      * [Usage help](#usage-help)
+      * [More help](#more-help)
+      * [Tool configuration: .opsconfig.yaml](#tool-configuration-opsconfigyaml)
+         * [Inventory](#inventory)
+            * [AWS example](#aws-example)
+            * [Azure example](#azure-example)
+            * [Inventory usage](#inventory-usage)
+         * [Terraform](#terraform-1)
+            * [Terraform landscape](#terraform-landscape)
+         * [SSH](#ssh)
+            * [SSHPass](#sshpass)
+         * [Play](#play)
+         * [Run command](#run-command)
+         * [Sync files](#sync-files)
+         * [Noop](#noop)
+         * [Packer](#packer)
+      * [Secrets Management](#secrets-management)
+         * [Vault](#vault)
+         * [Amazon Secrets Manager (SSM)](#amazon-secrets-manager-ssm)
+      * [Using jinja2 filters in playbooks and terraform templates](#using-jinja2-filters-in-playbooks-and-terraform-templates)
+      * [Development](#development)
+         * [Running tests](#running-tests)
+      * [Troubleshooting](#troubleshooting)
+
+<!-- Added by: amuraru, at: Sun May 19 14:13:27 EEST 2019 -->
+
+<!--te-->
+
+
 # Ops CLI
 
 **ops-cli** is a python wrapper for [Terraform](https://www.terraform.io/), [Ansible](https://www.ansible.com/) and SSH for cloud automation. 
@@ -121,7 +168,7 @@ ops clusters/my-kubernetes-cluster.yaml terraform --path-name aws-eks plan
 # in order to setup aws-kubernetes follow the steps from https://github.com/adobe/ops-cli/blob/master/examples/aws-kubernetes/README.md
 ```
 
-#### Optional: install `ops` in development mode
+## Development mode
 
 ```
 git clone https://github.com/adobe/ops-cli.git
@@ -131,27 +178,18 @@ brew install openssl libyaml
 env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" python setup.py develop
 ```
 
-## Release (for maintainers)
-
-1. Install: `pip install bump2version`
-2. Bump version: `bump2version minor`
-3. Push the release commit: `git push --follow-tags`
-4. Wait for Travis to build at https://www.travis-ci.com/adobe/ops-cli  
-  * This will publish a release to https://github.com/adobe/ops-cli/releases
-  * Publish a new docker image version to https://hub.docker.com/r/adobe/ops-cli
-
-
 ## Configuring
+
 ### AWS
 If you plan to use ops with AWS, you must configure credentials for each account
 ```shell
 $ aws configure --profile aws_account_name
 ```
 
-## Azure
+### Azure
 TBD
 
-## Examples
+### Examples
 
 See [examples/](https://github.com/adobe/ops-cli/tree/master/examples) folder:
 - cassandra-stress - n-node cassandra cluster used for stress-testing; a basic stress profile is included
@@ -622,14 +660,6 @@ class FilterModule(object):
 
 # usage in playbook, templates, cluster config
 # test_custom_filters: "{{ 'value' | my_filter }}"
-```
-
-## SKMS
-Create a file in `~/.skms/credentials.yaml` which looks like the following:
-```yaml
-endpoint: "api.skms.mycompany.com"
-username: <username>
-password: <password>
 ```
 
 ## Development
