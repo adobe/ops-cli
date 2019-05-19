@@ -3,10 +3,6 @@ language: python
 services:
   - docker
 
-branches:
-  only:
-  - master
-
 env:
   - BOTO_CONFIG=/dev/null
 python:
