@@ -6,6 +6,7 @@ services:
 branches:
   only:
   - master
+  - /\d+\.\d+/
 
 env:
   - BOTO_CONFIG=/dev/null
