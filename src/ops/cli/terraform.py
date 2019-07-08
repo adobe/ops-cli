@@ -219,7 +219,7 @@ class TerraformRunner(object):
                   "{terraform_init_command}" \
                   "{terraform_refresh_command}" \
                   "terraform plan " \
-                  "-out={plan_file} -refresh=false -module-depth=1 -input=false {vars} {state_argument}".format(
+                  "-out={plan_file} -refresh=false -input=false {vars} {state_argument}".format(
                     root_dir=self.root_dir,
                     terraform_path=terraform_path,
                     terraform_init_command=terraform_init_command,
@@ -269,7 +269,7 @@ class TerraformRunner(object):
                   "{remove_local_cache}" \
                   "{terraform_init_command}" \
                   "terraform plan -destroy " \
-                  "-refresh=true -module-depth=1 {vars} {state_argument} && " \
+                  "-refresh=true {vars} {state_argument} && " \
                   "terraform destroy {vars} {state_argument} -refresh=true".format(
                     root_dir=self.root_dir,
                     terraform_path=terraform_path,
@@ -315,7 +315,7 @@ class TerraformRunner(object):
                 state=state_file
 
             cmd = "cd {root_dir}/{terraform_path} && " \
-                  "terraform show -module-depth=-1 {state}".format(
+                  "terraform show {state}".format(
                     root_dir=self.root_dir,
                     terraform_path=terraform_path,
                     state=state
