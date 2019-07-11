@@ -17,11 +17,12 @@ RUN apk del --purge build
 
 
 FROM python:2.7.16-alpine3.9
-ARG HELM_VERSION="v2.13.1"
-ARG KUBECTL_VERSION="v1.13.4"
 ARG TERRAFORM_VERSION="0.12.3"
-ARG VAULT_VERSION="1.1.1"
-ARG AWS_IAM_AUTHENTICATOR_VERSION="1.12.7/2019-03-27"
+ARG VAULT_VERSION="1.1.3"
+ARG KUBECTL_VERSION="v1.13.7"
+ARG AWS_IAM_AUTHENTICATOR_VERSION="1.13.7/2019-06-11"
+ARG HELM_VERSION="v2.14.1"
+ARG HELM_FILE_VERSION="v0.79.4"
 
 COPY --from=compile-image /sources/dist /dist
 
@@ -46,12 +47,20 @@ RUN adduser ops -Du 2342 -h /home/ops \
     && unzip vault.zip -d /usr/local/bin \
     && rm -rf vault.zip \
     && wget -q https://amazon-eks.s3-us-west-2.amazonaws.com/${AWS_IAM_AUTHENTICATOR_VERSION}/bin/linux/amd64/aws-iam-authenticator -O /usr/local/bin/aws-iam-authenticator \
-    && chmod +x /usr/local/bin/aws-iam-authenticator
+    && chmod +x /usr/local/bin/aws-iam-authenticator \
+    && wget -q https://github.com/roboll/helmfile/releases/download/${HELM_FILE_VERSION}/helmfile_linux_amd64 -O /usr/local/bin/helmfile \
+    && chmod +x /usr/local/bin/helmfile
 
 USER ops
 ENV HOME=/home/ops
 WORKDIR /home/ops
+
 RUN helm init --client-only
+RUN helm plugin install https://github.com/databus23/helm-diff
+RUN helm plugin install https://github.com/rimusz/helm-tiller
+USER root
+RUN HELM_HOME=/home/ops/.helm helm plugin install https://github.com/futuresimple/helm-secrets
+RUN chown -R ops:ops /home/ops/.helm/plugins
+
+USER ops
 CMD /bin/bash
-
-
