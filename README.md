@@ -131,16 +131,6 @@ brew install openssl libyaml
 env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" python setup.py develop
 ```
 
-## Release (for maintainers)
-
-1. Install: `pip install bump2version`
-2. Bump version: `bump2version minor`
-3. Push the release commit: `git push --follow-tags`
-4. Wait for Travis to build at https://www.travis-ci.com/adobe/ops-cli  
-  * This will publish a release to https://github.com/adobe/ops-cli/releases
-  * Publish a new docker image version to https://hub.docker.com/r/adobe/ops-cli
-
-
 ## Configuring
 ### AWS
 If you plan to use ops with AWS, you must configure credentials for each account
