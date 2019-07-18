@@ -65,9 +65,10 @@ USER ops
 ENV HOME=/home/ops
 WORKDIR /home/ops
 
-RUN helm init --client-only \
-    && helm plugin install https://github.com/databus23/helm-diff \
-    && helm plugin install https://github.com/rimusz/helm-tiller
+RUN helm init --client-only
+RUN helm plugin install https://github.com/databus23/helm-diff
+RUN helm plugin install https://github.com/rimusz/helm-tiller
+
 USER root
 RUN HELM_HOME=/home/ops/.helm helm plugin install https://github.com/futuresimple/helm-secrets
 RUN chown -R ops:ops /home/ops/.helm/plugins
