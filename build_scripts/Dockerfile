@@ -29,6 +29,7 @@ ARG KUBECTL_VERSION="v1.13.7"
 ARG AWS_IAM_AUTHENTICATOR_VERSION="1.13.7/2019-06-11"
 ARG HELM_VERSION="v2.14.1"
 ARG HELM_FILE_VERSION="v0.79.4"
+ARG HELM_DIFF_VERSION="2.11.0%2B5"
 
 
 COPY --from=compile-image /sources/dist /dist
@@ -66,8 +67,9 @@ ENV HOME=/home/ops
 WORKDIR /home/ops
 
 RUN helm init --client-only
-RUN helm plugin install https://github.com/databus23/helm-diff
-RUN helm plugin install https://github.com/rimusz/helm-tiller
+
+RUN curl -sSL https://github.com/databus23/helm-diff/releases/download/v${HELM_DIFF_VERSION}/helm-diff-linux.tgz | tar xvz -C $(helm home)/plugins
+
 
 USER root
 RUN HELM_HOME=/home/ops/.helm helm plugin install https://github.com/futuresimple/helm-secrets
