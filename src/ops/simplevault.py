@@ -26,8 +26,10 @@ from ops.cli import display
 MAX_LDAP_ATTEMPTS = 3
 class SimpleVault(object):
     p_vault_conn = None
-        # persistent vault connection
-    def __init__(self, vault_user=None, vault_addr=None, vault_token=None, persistent_session=True, auto_prompt=True):
+    # persistent vault connection
+    def __init__(
+        self, vault_user=None, vault_addr=None, vault_token=None, namespace=None,
+        mount_point=None, persistent_session=True, auto_prompt=True):
         def try_reading_token_file():
             ret = None
             try:
@@ -49,13 +51,15 @@ class SimpleVault(object):
         #with vault running on the provisioner's machine ?
         self.vault_token = vault_token or os.getenv('VAULT_TOKEN',None) or try_reading_token_file()
         self.vault_user = vault_user or os.getenv('VAULT_USER', None) or getpass.getuser()
+        self.mount_point = mount_point
+        self.namespace = namespace
         self.ldap_attempts = 0
 
         if persistent_session:
             if SimpleVault.p_vault_conn:
                 self.vault_conn = SimpleVault.p_vault_conn
             else:
-                self.vault_conn = hvac.Client(url=self.vault_addr, token=self.vault_token)
+                self.vault_conn = hvac.Client(url=self.vault_addr, namespace=self.namespace, token=self.vault_token)
 
         while not self.vault_conn.is_authenticated() and auto_prompt:
             display("VAULT-LIB: Not authenticated to vault '%s'" % self.vault_addr, stderr=True, color='red')
@@ -65,7 +69,7 @@ class SimpleVault(object):
             try:
                 self.ldap_attempts +=1
                 ldap_password = getpass.getpass(prompt='LDAP password for %s for server %s: ' % (self.vault_user, self.vault_addr))
-                auth_response = self.vault_conn.auth_ldap(self.vault_user, ldap_password)
+                auth_response = self.vault_conn.auth.ldap.login(username=self.vault_user, password=ldap_password)
                 self.vault_conn.is_authenticated()
                 self.vault_token = auth_response['auth']['client_token']
                 write_token(self.vault_token)
@@ -81,25 +85,27 @@ class SimpleVault(object):
         if fetch_all:
             key=None
         try:
-            raw_data = self.vault_conn.read(path, wrap_ttl=wrap_ttl) or {}
-            data = raw_data.get('data') or {}
+            raw_data = self.vault_conn.secrets.kv.v2.read_secret_version(
+                path=path, mount_point=self.mount_point)
+            # move this check earlier, and, if true, return immediately
+            if raw:
+                return raw_data
+            data = raw_data.get('data')
             if isinstance(data, dict):
                 if not fetch_all:
                     if key:
-                        return data.get(key, default)
+                        # the actual secret k v pairs are nested under another dictionary key "data"
+                        return data.get("data").get(key, default)
                     else:
                         raise('VAULT-LIB: either key or fetch_all should be set!')
-
         except Exception as e:
             if raise_exceptions:
                 raise e
             else:
                 data = default
-        if raw:
-            return raw_data
-        else:
-            return data
-    def put(self,path,value,lease=None,wrap_ttl=None):
+        return data
+
+    def put(self, path, value, lease=None, wrap_ttl=None):
         payload = {}
         if isinstance(value, (basestring, int, float, bool)):
             payload['value'] = str(value)
@@ -108,15 +114,20 @@ class SimpleVault(object):
                 payload[k] = str(v)
         else:
             raise Exception('Unsupported data type for secret payload')
-        self.vault_conn.write(path, wrap_ttl,**payload)
+        self.vault_conn.secrets.kv.v2.create_or_update_secret(
+            path=path, secret=payload, mount_point=self.mount_point)
+
     def is_authenticated(self):
         return self.vault_conn.is_authenticated()
 
 
 class ManagedVaultSecret(object):
     p_sv = None
-        # Persistent SimpleVault accessory object
-    def __init__(self, path, key='value', policy={}, vault_user=None, vault_addr=None, vault_token=None, auto_prompt=True):
+    # Persistent SimpleVault accessory object
+    def __init__(
+        self, path, key='value', policy={}, vault_user=None, vault_addr=None,
+        vault_token=None, namespace=None, mount_point=None, auto_prompt=True):
+
         self.__DEFAULT_POLICY__ = {
             'engine': 'passgen',
             'length': 24
@@ -125,6 +136,8 @@ class ManagedVaultSecret(object):
         self.already_initialized = False
         self.actual_policy = self.__DEFAULT_POLICY__.copy()
         self.key = key
+        self.mount_point = mount_point
+        self.namespace = namespace
         if isinstance(policy,int):
             self.actual_policy.update({'length': policy})
         elif isinstance(policy,dict):
@@ -140,7 +153,9 @@ class ManagedVaultSecret(object):
             self.sv = ManagedVaultSecret.p_sv
         else:
             try:
-                self.sv = SimpleVault(vault_user=None, vault_addr=None, vault_token=None, auto_prompt=True)
+                self.sv = SimpleVault(
+                    vault_user=None, vault_addr=None, vault_token=None, auto_prompt=True,
+                    namespace=self.namespace, mount_point=self.mount_point)
                 ManagedVaultSecret.p_sv = self.sv
             except Exception as e:
                 display('MANAGED-SECRET: could not obtain a proper Vault connection.\n{}'.format(e.message))
@@ -166,8 +181,6 @@ class ManagedVaultSecret(object):
                     raise e
                 try:
                     #generating and storing the new secret
-
-
                     self.new_data = self.current_data.copy()
                     self.new_data[key] = passgen.passgen(**generator_args)
                     self.sv.put(path, self.new_data)

@@ -64,17 +64,27 @@ def flatten_tree(d, parent_key='', sep='/'):
             items.append((new_key, v))
     return dict(items)
 
-def read_vault(secret_path, key='value', fetch_all=False, vault_user=None,vault_url=None, token=None, auto_prompt=True):
+def read_vault(
+        secret_path, key='value', fetch_all=False, vault_user=None, vault_url=None,
+        token=None, namespace=None, mount_point=None, auto_prompt=True):
+
     from ops.simplevault import SimpleVault
-    sv = SimpleVault(vault_user=vault_user, vault_addr=vault_url, vault_token=token,auto_prompt=auto_prompt)
+    sv = SimpleVault(
+        vault_user=vault_user, vault_addr=vault_url, vault_token=token, 
+        namespace=namespace, mount_point=mount_point, auto_prompt=auto_prompt)
     return sv.get(path=secret_path, key=key, fetch_all=fetch_all)
 
-def write_vault(secret_path, key='value', data="", vault_user=None, vault_url=None, token=None, auto_prompt=True):
+def write_vault(
+        secret_path, key='value', data="", vault_user=None, vault_url=None, 
+        namespace=None, mount_point=None, token=None, auto_prompt=True):
+
     from ops.simplevault import  SimpleVault
-    sv = SimpleVault(vault_user=vault_user, vault_addr=vault_url, vault_token=token, auto_prompt=auto_prompt)
+    sv = SimpleVault(
+        vault_user=vault_user, vault_addr=vault_url, vault_token=token, 
+        namespace=None, mount_point=None, auto_prompt=auto_prompt)
     new_data = {}
     if isinstance(data, dict):
-        for k,v in new_data.iteritems():
+        for k,v in data.iteritems():
             new_data[k] = str(v)
     elif key:
         new_data[key] = str(data)
@@ -92,6 +102,8 @@ def managed_vault_secret(secret_path,key='value',
                          vault_user=None,
                          vault_addr=None,
                          vault_token=None,
+                         namespace=None,
+                         mount_point=None,
                          auto_prompt=True):
     from ops.simplevault import ManagedVaultSecret
     ms = ManagedVaultSecret(path=secret_path,
@@ -100,6 +112,8 @@ def managed_vault_secret(secret_path,key='value',
                             vault_user=vault_user,
                             vault_addr=vault_addr,
                             vault_token=vault_token,
+                            namespace=namespace,
+                            mount_point=mount_point,
                             auto_prompt=auto_prompt)
     return ms.get()
 
@@ -112,6 +126,7 @@ def escape_json(input):
     return escaped
 
 class FilterModule(object):
+    
     def filters(self):
         return {
             'escape_new_lines': escape_new_lines,
