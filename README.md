@@ -85,8 +85,8 @@ pip2 install -U virtualenv
 virtualenv ops
 source ops/bin/activate
 
-# install opswrapper v0.33 stable release
-pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/0.33/ops-0.33.tar.gz
+# install opswrapper v0.34 stable release
+pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/0.34/ops-0.34.tar.gz
 
 # Optionally, install terraform to be able to access terraform plugin
 # See https://www.terraform.io/intro/getting-started/install.html
@@ -99,7 +99,7 @@ You can try out `ops-cli`, by using docker. The docker image has all required pr
 
 To start out a container, running the latest `ops-cli` docker image run:
 ```sh
-docker run -it adobe/ops-cli:0.33 bash
+docker run -it adobe/ops-cli:0.34 bash
 ```
 
 After the container has started, you can start using `ops-cli`:
