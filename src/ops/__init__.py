@@ -16,9 +16,9 @@ from ops.cli import display
 class Executor(object):
     """ All cli commands usually return a dict(command=...) that will be executed by this handler"""
 
-    def __call__(self, result, pass_trough=True):
+    def __call__(self, result, pass_trough=True, cwd=None):
         try:
-            return self._execute(result, pass_trough)
+            return self._execute(result, pass_trough, cwd)
         except Exception as ex:
             display(ex.message, stderr=True, color='red')
             display('------- TRACEBACK ----------', stderr=True, color='dark gray')
@@ -26,7 +26,7 @@ class Executor(object):
             traceback.print_exc()
             display('------ END TRACEBACK -------', stderr=True, color='dark gray')
 
-    def _execute(self, result, pass_trough=True):
+    def _execute(self, result, pass_trough=True, cwd=None):
         if not result or not isinstance(result, dict):
             return
 
@@ -34,9 +34,9 @@ class Executor(object):
             shell_command = result['command']
             display("%s" % self.shadow_credentials(shell_command), stderr=True, color='yellow')
             if pass_trough:
-                exit_code = call(shell_command, shell=True)
+                exit_code = call(shell_command, shell=True, cwd=cwd)
             else:
-                p = Popen(shell_command, shell=True, stdout=PIPE, stderr=PIPE)
+                p = Popen(shell_command, shell=True, stdout=PIPE, stderr=PIPE, cwd=cwd)
                 output, errors = p.communicate()
                 display(output)
                 if errors:
