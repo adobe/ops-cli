@@ -77,8 +77,7 @@ class SyncRunner(object):
             remote_hosts.append('{}--{}'.format(bastion, remote.pattern))
         else:
             for host in hosts:
-                vars = self.ansible_inventory.get_vars(host)
-                ssh_host = vars.get('ansible_ssh_host') or host
+                ssh_host = host.get_vars().get('ansible_ssh_host') or host
                 remote_hosts.append(ssh_host)
 
         for ssh_host in remote_hosts:
