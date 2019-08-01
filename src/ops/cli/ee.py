@@ -8,9 +8,9 @@
 #OF ANY KIND, either express or implied. See the License for the specific language
 #governing permissions and limitations under the License.
 
+import os
 from ops.cli.parser import SubParserConfig
 from ops.ee.run_compositions import AggregatedCompositionRunner
-
 
 class EEParserConfig(SubParserConfig):
     def get_name(self):
@@ -33,16 +33,18 @@ class EEParserConfig(SubParserConfig):
 
 
 class EERunner(object):
-    def __init__(self, root_dir, inventory_generator, ops_config, cluster_config_path):
+    def __init__(self, root_dir, inventory_generator, ops_config, cluster_config_path, cluster_config):
         self.root_dir = root_dir
         self.inventory_generator = inventory_generator
         self.ops_config = ops_config
         self.cluster_config_path = cluster_config_path
+        self.cluster_config = cluster_config
 
     def run(self, args):
         args.path = self.cluster_config_path
         reverse = args.subcommand == "destroy"
         args.composition_path = "" if args.composition_path is None else os.path.join(args.composition_path, '')
 
-        runner = AggregatedCompositionRunner(args)
+        compositions_order = self.cluster_config.ops_config.config["compositions_order"]
+        runner = AggregatedCompositionRunner(args, compositions_order)
         runner.run(args.path, reverse)

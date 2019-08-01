@@ -5,7 +5,8 @@ from common import test_path
 
 @pytest.fixture
 def terraform_runner():
-    return TerraformRunner("./", "apply", [])
+    composition_order = ["network", "cluster"]
+    return TerraformRunner("./", composition_order, "apply", [])
 
 
 def test_composition_discovery(terraform_runner, test_path):

@@ -18,29 +18,29 @@ logger = logging.getLogger(__name__)
 
 class AggregatedCompositionRunner(CompositionRunner):
 
-    def __init__(self, opts):
-        self.runners = self.generate_runners(opts)
+    def __init__(self, opts, composition_order):
+        self.runners = self.generate_runners(opts, composition_order)
 
-    def generate_runners(self, opts):
+    def generate_runners(self, opts, composition_order):
         if opts.runner == "terraform":
-            return [self.get_terraform_runner(opts)]
+            return [self.get_terraform_runner(opts, composition_order)]
         if opts.runner == "helmfile":
-            return [self.get_helmfile_runner(opts)]
+            return [self.get_helmfile_runner(opts, composition_order)]
         if opts.runner == "all":
-            return [self.get_terraform_runner(opts),
-                    self.get_helmfile_runner(opts)]
+            return [self.get_terraform_runner(opts, composition_order),
+                    self.get_helmfile_runner(opts, composition_order)]
         raise Exception("Unknown command '{}'. Supported values are: terraform | helmfile | all".format(opts.runner))
 
-    def get_terraform_runner(self, opts):
+    def get_terraform_runner(self, opts, composition_order):
         terraform_args = opts.extra_args[:]
         if opts.auto_approve:
             terraform_args.append("-auto-approve")
         subcommand = self.get_terraform_command(opts.subcommand)
-        return TerraformRunner(opts.composition_path, subcommand, terraform_args)
+        return TerraformRunner(opts.composition_path, composition_order["terraform"],subcommand, terraform_args)
 
-    def get_helmfile_runner(self, opts):
+    def get_helmfile_runner(self, opts, composition_order):
         subcommand = self.get_helmfile_command(opts.subcommand)
-        return HelmfileRunner(opts.composition_path, subcommand, opts.extra_args)
+        return HelmfileRunner(opts.composition_path, composition_order["helmfile"], subcommand, opts.extra_args)
 
     def get_terraform_command(self, subcommand):
         if subcommand in ("plan", "apply", "destroy", "template", "validate"):

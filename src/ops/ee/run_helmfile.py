@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 class HelmfileRunner(CompositionRunner, object):
 
-    def __init__(self, composition_path, helmfile_command, helmfile_args):
-        super(HelmfileRunner, self).__init__("helmfile")
+    def __init__(self, composition_path, composition_order, helmfile_command, helmfile_args):
+        super(HelmfileRunner, self).__init__(composition_order)
         self.composition_path = composition_path
         self.helmfile_command = helmfile_command
         self.helmfile_args = helmfile_args

@@ -20,16 +20,8 @@ logger = logging.getLogger(__name__)
 
 
 class CompositionSorter(object):
-    def __init__(self, name="terraform", composition_order=None):
-        if composition_order is None:
-            self.load_static_configs(name)
-        else:
-            self.composition_order = composition_order
-
-    def load_static_configs(self, name):
-        with open(".opsconfig.yaml", 'r') as f:
-            content = yaml.load(f)
-            self.composition_order = content["compositions_order"][name]
+    def __init__(self, composition_order):
+        self.composition_order = composition_order
 
     def get_sorted_compositions(self, compositions, reverse=False):
         result = filter(lambda x: x in compositions, self.composition_order)
@@ -38,8 +30,8 @@ class CompositionSorter(object):
 
 class CompositionRunner:
 
-    def __init__(self, runner_name="terraform"):
-        self.composition_sorter = CompositionSorter(runner_name)
+    def __init__(self, composition_order):
+        self.composition_sorter = CompositionSorter(composition_order)
         self.generator = ConfigProcessor()
 
     def run(self, path, reverse=False):
@@ -93,8 +85,8 @@ class CompositionRunner:
 
 class TerraformRunner(CompositionRunner, object):
 
-    def __init__(self, composition_path, terraform_command, terraform_args):
-        super(TerraformRunner, self).__init__("terraform")
+    def __init__(self, composition_path, composition_order, terraform_command, terraform_args):
+        super(TerraformRunner, self).__init__(composition_order)
         self.composition_path = composition_path
         self.terraform_command = terraform_command
         self.terraform_args = terraform_args
