@@ -52,6 +52,9 @@ class ClusterConfig(object):
     def __contains__(self, item):
         return item in self.conf or item in self.ops_config
 
+    def __setitem__(self, key, val):
+        self.conf[key] = val
+
     def __getitem__(self, item):
         if item not in self.conf and item not in self.ops_config:
             msg = "Configuration value %s not found; update your %s" % (item, self.cluster_config_path)
@@ -117,8 +120,8 @@ class ClusterConfigGenerator(object):
         self.command = command
 
     def get(self):
-        if self.command in ("ee", "config"):
-            return {"cluster": None, "inventory": None}
+        if os.path.isdir(self.cluster_config_path):
+            return {"cluster": None, "inventory": None, "runner_version": "v2"}
 
         data_loader = DataLoader()
         # data_loader.set_vault_password('627VR8*;YU99B')

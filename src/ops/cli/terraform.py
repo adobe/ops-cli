@@ -116,8 +116,18 @@ class TerraformRunner(object):
         self.ops_config = ops_config
         self.template = template
 
+    def setup(self):
+        if self.cluster_config["runner_version"] != "v2":
+            return
+
+        self.cluster_config['terraform'] = {}
+        self.cluster_config['terraform']["path"] = "compositions/terraform/network"
+        self.cluster_config['cluster'] = "test"
+        self.cluster_config['terraform']["variables_file"] = "variables.tfvars.json"
+
     def run(self, args):
 
+        self.setup()
         self.selected_terraform_path = args.path_name
         self.set_current_working_dir()
         current_terraform_version = self.check_terraform_version()
@@ -136,7 +146,7 @@ class TerraformRunner(object):
         generate_module_templates = False
 
         plan_variables = terraform_config.get('vars', {})
-        plan_variables['cluster'] = config['cluster']
+        #plan_variables['cluster'] = config['cluster']
         if self.cluster_config.has_ssh_keys:
             plan_variables['has_ssh_keys'] = True
             plan_variables['cluster_ssh_pubkey_file'] = self.cluster_config.cluster_ssh_pubkey_file
@@ -201,11 +211,20 @@ class TerraformRunner(object):
                     display(contents)
             return
 
+        if config['terraform']["variables_file"]:
+            variables_file = ' -var-file="{}" '.format(config['terraform']["variables_file"])
+        else:
+            variables_file = '  '
+
         if args.subcommand == 'plan':
             generate_module_templates = True
             terraform_refresh_command = remove_local_cache = ''
             if args.do_refresh:
-                terraform_refresh_command = "terraform refresh -input=false {vars} {state_argument} && ".format(vars=vars, state_argument=state_argument)
+                terraform_refresh_command = "terraform refresh" \
+                                            "{variables_file}" \
+                                            " -input=false {vars} {state_argument} && ".format(vars=vars,
+                                                                                               state_argument=state_argument,
+                                                                                               variables_file=variables_file)
 
             if self.ops_config['terraform.landscape'] and not args.raw_plan_output:
                 landscape = '| landscape'
@@ -219,6 +238,7 @@ class TerraformRunner(object):
                   "{terraform_init_command}" \
                   "{terraform_refresh_command}" \
                   "terraform plan " \
+                  "{variables_file}" \
                   "-out={plan_file} -refresh=false -input=false {vars} {state_argument}".format(
                     root_dir=self.root_dir,
                     terraform_path=terraform_path,
@@ -227,7 +247,8 @@ class TerraformRunner(object):
                     state_argument=state_argument,
                     plan_file=plan_file,
                     terraform_refresh_command=terraform_refresh_command,
-                    remove_local_cache=remove_local_cache
+                    remove_local_cache=remove_local_cache,
+                    variables_file=variables_file
             )
 
         elif args.subcommand == 'apply':
@@ -290,10 +311,11 @@ class TerraformRunner(object):
             generate_module_templates = True
             cmd = "cd {root_dir}/{terraform_path} && " \
                   "terraform get -update && " \
-                  "terraform refresh {state_argument} {vars}".format(
+                  "terraform refresh {variables_file} {state_argument} {vars}".format(
                     root_dir=self.root_dir,
                     terraform_path=terraform_path,
                     vars=vars,
+                    variables_file=variables_file,
                     state_argument=state_argument
             )
         elif args.subcommand == 'taint' or args.subcommand == 'untaint':
