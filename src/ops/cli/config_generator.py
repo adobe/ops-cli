@@ -9,7 +9,7 @@
 #governing permissions and limitations under the License.
 
 import os
-
+import logging
 from ops.ee.config_generator import ConfigProcessor
 from ops.cli.parser import SubParserConfig
 
@@ -56,6 +56,7 @@ class ConfigGeneratorRunner(object):
         self.cluster_config_path = cluster_config_path
 
     def run(self, args):
+        logging.basicConfig(level=logging.INFO)
         args.path = self.cluster_config_path
         if args.output_file is None:
             args.print_data = True

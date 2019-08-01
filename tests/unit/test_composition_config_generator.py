@@ -1,4 +1,4 @@
-from ops.ee.run_terraform import CompositionSorter
+from ops.ee.composition_config_generator import CompositionSorter
 
 
 def test_composition_discovery():

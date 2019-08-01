@@ -24,7 +24,7 @@ from cli.run import CommandRunner, CommandParserConfig
 from cli.ssh import SshParserConfig, SshRunner
 from cli.sync import SyncParserConfig, SyncRunner
 from cli.terraform import TerraformParserConfig, TerraformRunner
-from cli.ee import EEParserConfig, EERunner
+from cli.helmfile import HelmfileParserConfig, HelmfileRunner
 from cli.packer import PackerParserConfig, PackerRunner
 from inventory.generator import DirInventoryGenerator, ShellInventoryGenerator, AnsibleInventory, \
     PluginInventoryGenerator, InventoryGenerator, CachedInventoryGenerator
@@ -59,7 +59,7 @@ class AppContainer(Container):
         self.play_runner = auto(PlaybookRunner)
         self.run_runner = auto(CommandRunner)
         self.sync_runner = auto(SyncRunner)
-        self.ee_runner = auto(EERunner)
+        self.helmfile_runner = auto(HelmfileRunner)
         self.config_runner = auto(ConfigGeneratorRunner)
 
         self.cluster_config = cache(auto(ClusterConfig))
@@ -84,7 +84,7 @@ class AppContainer(Container):
         parsers.add(auto(PlaybookParserConfig))
         parsers.add(auto(CommandParserConfig))
         parsers.add(auto(SyncParserConfig))
-        parsers.add(auto(EEParserConfig))
+        parsers.add(auto(HelmfileParserConfig))
         parsers.add(auto(ConfigGeneratorParserConfig))
         self.sub_parsers = parsers
 
@@ -142,9 +142,14 @@ class AppContainer(Container):
 def run(args=None):
     """ App entry point """
     app_container = AppContainer(args)
-    ret = app_container.execute(app_container.run())
-    sys.exit(ret or None)
 
+    output = app_container.run()
+
+    if type(output) is int:
+        return output
+    else:
+        ret = app_container.execute(output)
+        sys.exit(ret)
 
 def get_cluster_config_path(root_dir, console_args):
     """ Return config path + root_dir if path is relative """
