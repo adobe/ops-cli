@@ -110,12 +110,16 @@ class JinjaConfigGenerator(object):
         return yaml.safe_load(rendered)
 
 class ClusterConfigGenerator(object):
-    def __init__(self, console_args, cluster_config_path, template):
+    def __init__(self, console_args, cluster_config_path, command, template):
         self.template = template
         self.cluster_config_path = cluster_config_path
         self.console_args = console_args
+        self.command = command
 
     def get(self):
+        if self.command in ("ee", "config"):
+            return {"cluster": None, "inventory": None}
+
         data_loader = DataLoader()
         # data_loader.set_vault_password('627VR8*;YU99B')
         variable_manager = VariableManager(loader=data_loader)

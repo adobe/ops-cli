@@ -12,6 +12,7 @@ import sys
 import logging
 import os
 
+from cli.config_generator import ConfigGeneratorParserConfig, ConfigGeneratorRunner
 from simpledi import Container, auto, cache, instance, ListInstanceProvider
 
 from cli.config import ClusterConfigGenerator, ClusterConfig
@@ -23,6 +24,7 @@ from cli.run import CommandRunner, CommandParserConfig
 from cli.ssh import SshParserConfig, SshRunner
 from cli.sync import SyncParserConfig, SyncRunner
 from cli.terraform import TerraformParserConfig, TerraformRunner
+from cli.ee import EEParserConfig, EERunner
 from cli.packer import PackerParserConfig, PackerRunner
 from inventory.generator import DirInventoryGenerator, ShellInventoryGenerator, AnsibleInventory, \
     PluginInventoryGenerator, InventoryGenerator, CachedInventoryGenerator
@@ -57,6 +59,8 @@ class AppContainer(Container):
         self.play_runner = auto(PlaybookRunner)
         self.run_runner = auto(CommandRunner)
         self.sync_runner = auto(SyncRunner)
+        self.ee_runner = auto(EERunner)
+        self.config_runner = auto(ConfigGeneratorRunner)
 
         self.cluster_config = cache(auto(ClusterConfig))
         self.ops_config = cache(auto(OpsConfig))
@@ -80,6 +84,8 @@ class AppContainer(Container):
         parsers.add(auto(PlaybookParserConfig))
         parsers.add(auto(CommandParserConfig))
         parsers.add(auto(SyncParserConfig))
+        parsers.add(auto(EEParserConfig))
+        parsers.add(auto(ConfigGeneratorParserConfig))
         self.sub_parsers = parsers
 
     def configure_inventory(self):
@@ -112,6 +118,7 @@ class AppContainer(Container):
 
         # Bind some very useful dependencies
         self.console_args = cache(instance(args))
+        self.command = lambda c: self.console_args.command
         self.cluster_config_path = cache(lambda c: get_cluster_config_path(c.root_dir, c.console_args))
         self.root_dir = cache(lambda c: get_root_dir(c.console_args))
         self.cluster_name = lambda c: c.cluster_config['cluster']
