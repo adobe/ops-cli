@@ -10,7 +10,7 @@
 
 import os
 import logging
-from ops.ee.config_generator import ConfigProcessor
+from ops.hierarchical.config_generator import ConfigProcessor
 from ops.cli.parser import SubParserConfig
 
 

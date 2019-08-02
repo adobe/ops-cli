@@ -12,7 +12,7 @@
 import os
 import logging
 from ops.cli.parser import SubParserConfig
-from ops.ee.composition_config_generator import CompositionConfigGenerator
+from ops.hierarchical.composition_config_generator import CompositionConfigGenerator
 
 logger = logging.getLogger(__name__)
 

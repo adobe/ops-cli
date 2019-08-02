@@ -13,7 +13,7 @@ import hashlib
 import logging
 from ops.cli.parser import SubParserConfig
 from ops.terraform.terraform_cmd_generator import TerraformCommandGenerator
-from ops.ee.composition_config_generator import TerraformConfigGenerator
+from ops.hierarchical.composition_config_generator import TerraformConfigGenerator
 
 logger = logging.getLogger(__name__)
 
