@@ -15,3 +15,6 @@ hvac==0.9.3
 passgen
 inflection==0.3.1
 kubernetes==9.0.0
+deepmerge==0.0.5
+lru_cache==0.2.3
+backports.functools_lru_cache==1.5
