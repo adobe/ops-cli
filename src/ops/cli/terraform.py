@@ -64,6 +64,8 @@ class TerraformParserConfig(SubParserConfig):
                             help='in case multiple terraform paths are defined, this allows to specify which one to use when running terraform',
                             type=str)
         parser.add_argument('--terraform-path', type=str, default=None, help='Path to terraform files')
+        parser.add_argument('--auto-approve', help='for use with "apply". Proceeds with the apply without waiting for user confirmation.',
+                            action='store_true')
         parser.add_argument('terraform_args', type=str, nargs='*', help='Extra terraform args')
 
         return parser
@@ -170,7 +172,7 @@ class TerraformRunner(object):
             tf_config_generator.generate_files(config_path, composition)
             ret = self.run_v2_composition(args, composition)
             if ret != 0:
-                logger.error("Command finished with nonzero exit code")
+                logger.error("Command finished with nonzero exit code. Will skip remaining compositions.")
                 return ret
         return 0
 

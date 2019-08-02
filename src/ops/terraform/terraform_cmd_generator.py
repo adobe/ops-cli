@@ -156,27 +156,34 @@ class TerraformCommandGenerator(object):
             # todo maybe this deserves a better implementation later
             generate_module_templates = True
 
+            auto_approve = ''
+            if args.auto_approve:
+                auto_approve = '-auto-approve'
+
             self.inventory_generator.clear_cache()
             if args.interactive:
                 cmd = "cd {root_dir}/{terraform_path} && {terraform_init_command}" \
                       "rm -f {plan_file} && terraform apply {vars}" \
-                      "-refresh=true {state_argument}".format(
+                      "-refresh=true {state_argument} {variables_file} {auto_approve}".format(
                     plan_file=plan_file,
                     root_dir=self.root_dir,
                     state_argument=state_argument,
                     terraform_init_command=terraform_init_command,
                     terraform_path=terraform_path,
                     vars=vars,
+                    variables_file=variables_file,
+                    auto_approve=auto_approve
                 )
             else:
                 cmd = "cd {root_dir}/{terraform_path} && " \
                       "terraform apply " \
-                      "-refresh=true {state_out_argument} {plan_file}; code=$?; rm {plan_file}; exit $code".format(
+                      "-refresh=true {state_out_argument} {plan_file} {variables_file}; code=$?; rm -f {plan_file}; exit $code".format(
                     plan_file=plan_file,
                     root_dir=self.root_dir,
                     state_out_argument=state_out_argument,
                     terraform_path=terraform_path,
                     vars=vars,
+                    variables_file=variables_file
                 )
 
         elif args.subcommand == 'destroy':
@@ -189,10 +196,11 @@ class TerraformCommandGenerator(object):
                   "{remove_local_cache}" \
                   "{terraform_init_command}" \
                   "terraform plan -destroy " \
-                  "-refresh=true {vars} {state_argument} && " \
+                  "-refresh=true {vars} {variables_file} {state_argument} {variables && " \
                   "terraform destroy {vars} {state_argument} -refresh=true".format(
                 root_dir=self.root_dir,
                 terraform_path=terraform_path,
+                variables_file=variables_file,
                 vars=vars,
                 state_argument=state_argument,
                 terraform_init_command=terraform_init_command,
@@ -267,12 +275,13 @@ class TerraformCommandGenerator(object):
         elif args.subcommand == 'validate':
             generate_module_templates = True
             cmd = "cd {root_dir}/{terraform_path} && {terraform_init_command} " \
-                  "terraform {command} {vars}".format(
+                  "terraform {command} {vars} {variables_file}".format(
                 command=args.subcommand,
                 root_dir=self.root_dir,
                 terraform_init_command=terraform_init_command,
                 terraform_path=terraform_path,
                 vars=vars,
+                variables_file=variables_file
             )
         elif args.subcommand is not None:
             # Examples: 
