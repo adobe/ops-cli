@@ -110,10 +110,10 @@ class TerraformCommandGenerator(object):
                     display(contents)
             return
 
-        if config['terraform']["variables_file"]:
+        if "variables_file" in config['terraform']:
             variables_file = ' -var-file="{}" '.format(config['terraform']["variables_file"])
         else:
-            variables_file = '  '
+            variables_file = ' '
 
         if args.subcommand == 'plan':
             generate_module_templates = True

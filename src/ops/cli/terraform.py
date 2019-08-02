@@ -156,7 +156,7 @@ class TerraformRunner(object):
                                               self.inventory_generator,
                                               self.ops_config,
                                               self.template)
-        return self.execute(generator.generate(args))
+        return generator.generate(args)
 
     def run_v2_integration(self, args):
         logging.basicConfig(level=logging.INFO)
