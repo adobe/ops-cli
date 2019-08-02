@@ -142,7 +142,8 @@ class ConfigGenerator(object):
 
     def exclude_keys(self, keys):
         for key in keys:
-            del self.generated_data[key]
+            if key in self.generated_data:
+                del self.generated_data[key]
 
     def add_dynamic_data(self):
         remote_state_retriever = S3TerraformRemoteStateRetriever()

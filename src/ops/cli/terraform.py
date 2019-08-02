@@ -161,6 +161,8 @@ class TerraformRunner(object):
     def run_v2_integration(self, args):
         logging.basicConfig(level=logging.INFO)
         config_path = os.path.join(self.cluster_config_path, '')
+        terraform_path = '' if args.terraform_path is None else os.path.join(args.terraform_path, '')
+        terraform_path = '{}compositions/terraform/'.format(terraform_path)
         composition_order = self.cluster_config.ops_config.config["compositions_order"]["terraform"]
 
         tf_config_generator = TerraformConfigGenerator(composition_order)
@@ -169,18 +171,17 @@ class TerraformRunner(object):
             raise Exception("No terraform compositions were detected for it in %s.", self, config_path)
 
         for composition in compositions:
-            tf_config_generator.generate_files(config_path, composition)
-            ret = self.run_v2_composition(args, composition)
+            tf_config_generator.generate_files(config_path, terraform_path, composition)
+            ret = self.run_v2_composition(args, terraform_path, composition)
             if ret != 0:
                 logger.error("Command finished with nonzero exit code. Will skip remaining compositions.")
                 return ret
         return 0
 
-    def run_v2_composition(self, args, composition):
+    def run_v2_composition(self, args, terraform_path, composition):
         config = self.cluster_config
         config['terraform'] = {}
-        path = '' if args.terraform_path is None else os.path.join(args.terraform_path, '')
-        config['terraform']["path"] = "{}compositions/terraform/{}".format(path, composition)
+        config['terraform']["path"] = "{}{}".format(terraform_path, composition)
         config['terraform']["variables_file"] = "variables.tfvars.json"
         config['cluster'] = hashlib.md5(self.cluster_config_path).hexdigest()[:6]
         return self.run_composition(args, config)

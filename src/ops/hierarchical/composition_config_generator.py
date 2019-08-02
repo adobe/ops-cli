@@ -67,30 +67,35 @@ class CompositionConfigGenerator:
         prefix = os.path.join(path_prefix, '')
         return path_prefix if "composition=" in path_prefix else "{}composition={}".format(prefix, composition)
 
+    def get_terraform_path_for_composition(self, path_prefix, composition):
+        prefix = os.path.join(path_prefix, '')
+        return path_prefix if composition in path_prefix else "{}{}/".format(prefix, composition)
+
 class TerraformConfigGenerator(CompositionConfigGenerator, object):
 
     def __init__(self, composition_order):
         super(TerraformConfigGenerator, self).__init__(composition_order)
 
-    def generate_files(self, path, composition):
-        path = self.get_config_path_for_composition(path, composition)
-        self.generate_provider_config(path)
-        self.generate_variables_config(path)
+    def generate_files(self, config_path, composition_path, composition):
+        config_path = self.get_config_path_for_composition(config_path, composition)
+        composition_path = self.get_terraform_path_for_composition(composition_path, composition)
+        self.generate_provider_config(config_path, composition_path)
+        self.generate_variables_config(config_path, composition_path)
 
-    def generate_provider_config(self, path):
-        output_file = "{}/provider.tf.json".format(path)
+    def generate_provider_config(self, config_path, composition_path):
+        output_file = "{}provider.tf.json".format(composition_path)
         logger.info('Generating terraform config %s', output_file)
-        self.generator.process(path=path,
+        self.generator.process(path=config_path,
                                filters=["provider", "terraform"],
                                output_format="json",
                                output_file=output_file,
                                skip_interpolation_validation=True,
                                print_data=True)
 
-    def generate_variables_config(self, path):
-        output_file = "{}/variables.tfvars.json".format(path)
+    def generate_variables_config(self, config_path, composition_path):
+        output_file = "{}variables.tfvars.json".format(composition_path)
         logger.info('Generating terraform config %s', output_file)
-        self.generator.process(path=path,
+        self.generator.process(path=config_path,
                                exclude_keys=["helm", "provider"],
                                enclosing_key="config",
                                output_format="json",
