@@ -156,7 +156,7 @@ class TerraformRunner(object):
     def run_v2_integration(self, args):
         logging.basicConfig(level=logging.INFO)
         config_path = os.path.join(self.cluster_config_path, '')
-        terraform_path = '' if args.terraform_path is None else os.path.join(args.terraform_path, '')
+        terraform_path = '../ee-k8s-infra/' if args.terraform_path is None else os.path.join(args.terraform_path, '')
         terraform_path = '{}compositions/terraform/'.format(terraform_path)
         composition_order = self.cluster_config.ops_config.config["compositions_order"]["terraform"]
 
