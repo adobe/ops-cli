@@ -161,7 +161,8 @@ class TerraformCommandGenerator(object):
                 auto_approve = '-auto-approve'
 
             self.inventory_generator.clear_cache()
-            if args.interactive:
+            if args.skip_plan:
+                # Run Terraform apply without running a plan first
                 cmd = "cd {root_dir}/{terraform_path} && {terraform_init_command}" \
                       "rm -f {plan_file} && terraform apply {vars}" \
                       "-refresh=true {state_argument} {variables_file} {auto_approve}".format(

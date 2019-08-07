@@ -40,9 +40,6 @@ class TerraformParserConfig(SubParserConfig):
                             type=str)
         parser.add_argument('--plan', help='for use with "show", show the plan instead of the statefile',
                             action='store_true')
-        parser.add_argument('-i', '--interactive',
-                            help='for use with "apply", use the new interactive apply workflow introduced in TF 0.11.0',
-                            action='store_true')
         parser.add_argument('--state-location', help='control how the remote states are used',
                             choices=['local', 'remote', 'any'], default='any', type=str)
         parser.add_argument('--force-copy',
@@ -64,7 +61,11 @@ class TerraformParserConfig(SubParserConfig):
                             help='in case multiple terraform paths are defined, this allows to specify which one to use when running terraform',
                             type=str)
         parser.add_argument('--terraform-path', type=str, default=None, help='Path to terraform files')
-        parser.add_argument('--auto-approve', help='for use with "apply". Proceeds with the apply without waiting for user confirmation.',
+        parser.add_argument('--skip-plan',
+                            help='for use with "apply"; runs terraform apply without running a plan first',
+                            action='store_true')
+        parser.add_argument('--auto-approve',
+                            help='for use with "apply". Proceeds with the apply without waiting for user confirmation.',
                             action='store_true')
         parser.add_argument('terraform_args', type=str, nargs='*', help='Extra terraform args')
 
@@ -73,18 +74,12 @@ class TerraformParserConfig(SubParserConfig):
     def get_epilog(self):
         return '''
     Examples:
-        # Create a new cluster with Terraform
+        # Create/update a new cluster with Terraform
         ops clusters/qe1.yaml terraform plan
         ops clusters/qe1.yaml terraform apply
 
-        # Update an existing cluster
-        ops clusters/qe1.yaml terraform plan
-        ops clusters/qe1.yaml terraform apply
-
-        # Run Terraform apply without running a plan first, runs in an interactive mode
-        ops clusters/qe1.yaml terraform apply --interactive
-        # or
-        ops clusters/qe1.yaml terraform apply -i
+        # Run Terraform apply without running a plan first
+        ops clusters/qe1.yaml terraform apply --skip-plan
 
         # Get rid of a cluster and all of its components
         ops clusters/qe1.yaml terraform destroy
