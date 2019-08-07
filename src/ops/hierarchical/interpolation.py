@@ -80,11 +80,17 @@ class FromDictInjector():
 
         self.parse_leaves(data, "")
         for key, value in self.results.iteritems():
-            line = line.replace("{{" + key + "}}", value)
+            placeholder = "{{" + key + "}}"
+            if placeholder not in line:
+                continue
+            elif isinstance(value, (int, bool)):
+                return value
+            else:
+                line = line.replace(placeholder, value)
         return line
 
     def parse_leaves(self, data, partial_key):
-        if isinstance(data, basestring):
+        if isinstance(data, (basestring, int, bool)):
             self.results[partial_key] = data
             return
         if isinstance(data, dict):

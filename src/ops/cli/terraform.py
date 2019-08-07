@@ -166,8 +166,10 @@ class TerraformRunner(object):
             raise Exception("No terraform compositions were detected for it in %s.", self, config_path)
 
         for composition in compositions:
+            logger.info("Running composition: %s", composition)
             tf_config_generator.generate_files(config_path, terraform_path, composition)
-            ret = self.run_v2_composition(args, terraform_path, composition)
+            command = self.run_v2_composition(args, terraform_path, composition)
+            ret = self.execute(command)
             if ret != 0:
                 logger.error("Command finished with nonzero exit code. Will skip remaining compositions.")
                 return ret
