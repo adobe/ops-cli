@@ -1,8 +1,4 @@
 ops.egg-info/
-*.plan
-*.tf.json
-*.tfvars.json
-*.tfstate
 .cache/
 *.pyc
 .terraform

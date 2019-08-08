@@ -12,7 +12,6 @@ import sys
 import logging
 import os
 
-from cli.config_generator import ConfigGeneratorParserConfig, ConfigGeneratorRunner
 from simpledi import Container, auto, cache, instance, ListInstanceProvider
 
 from cli.config import ClusterConfigGenerator, ClusterConfig
@@ -24,7 +23,6 @@ from cli.run import CommandRunner, CommandParserConfig
 from cli.ssh import SshParserConfig, SshRunner
 from cli.sync import SyncParserConfig, SyncRunner
 from cli.terraform import TerraformParserConfig, TerraformRunner
-from cli.helmfile import HelmfileParserConfig, HelmfileRunner
 from cli.packer import PackerParserConfig, PackerRunner
 from inventory.generator import DirInventoryGenerator, ShellInventoryGenerator, AnsibleInventory, \
     PluginInventoryGenerator, InventoryGenerator, CachedInventoryGenerator
@@ -59,8 +57,6 @@ class AppContainer(Container):
         self.play_runner = auto(PlaybookRunner)
         self.run_runner = auto(CommandRunner)
         self.sync_runner = auto(SyncRunner)
-        self.helmfile_runner = auto(HelmfileRunner)
-        self.config_runner = auto(ConfigGeneratorRunner)
 
         self.cluster_config = cache(auto(ClusterConfig))
         self.ops_config = cache(auto(OpsConfig))
@@ -84,8 +80,6 @@ class AppContainer(Container):
         parsers.add(auto(PlaybookParserConfig))
         parsers.add(auto(CommandParserConfig))
         parsers.add(auto(SyncParserConfig))
-        parsers.add(auto(HelmfileParserConfig))
-        parsers.add(auto(ConfigGeneratorParserConfig))
         self.sub_parsers = parsers
 
     def configure_inventory(self):
@@ -118,7 +112,6 @@ class AppContainer(Container):
 
         # Bind some very useful dependencies
         self.console_args = cache(instance(args))
-        self.command = lambda c: self.console_args.command
         self.cluster_config_path = cache(lambda c: get_cluster_config_path(c.root_dir, c.console_args))
         self.root_dir = cache(lambda c: get_root_dir(c.console_args))
         self.cluster_name = lambda c: c.cluster_config['cluster']
@@ -142,14 +135,9 @@ class AppContainer(Container):
 def run(args=None):
     """ App entry point """
     app_container = AppContainer(args)
+    ret = app_container.execute(app_container.run())
+    sys.exit(ret or None)
 
-    output = app_container.run()
-
-    if type(output) is int:
-        return output
-    else:
-        ret = app_container.execute(output)
-        sys.exit(ret)
 
 def get_cluster_config_path(root_dir, console_args):
     """ Return config path + root_dir if path is relative """

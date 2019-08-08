@@ -10,6 +10,7 @@
 
 #!/usr/bin/env python
 
+from ops.cli import display
 from botocore.exceptions import ClientError
 import boto3
 import os
