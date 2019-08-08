@@ -161,7 +161,8 @@ class TerraformRunner(object):
         composition_order = self.cluster_config.ops_config.config["compositions_order"]["terraform"]
 
         tf_config_generator = TerraformConfigGenerator(composition_order)
-        compositions = tf_config_generator.get_sorted_compositions(config_path)
+        reverse_order = "destroy" == args.subcommand
+        compositions = tf_config_generator.get_sorted_compositions(config_path, reverse=reverse_order)
         if len(compositions) == 0:
             raise Exception("No terraform compositions were detected for it in %s.", self, config_path)
 

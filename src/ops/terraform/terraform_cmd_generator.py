@@ -197,8 +197,8 @@ class TerraformCommandGenerator(object):
                   "{remove_local_cache}" \
                   "{terraform_init_command}" \
                   "terraform plan -destroy " \
-                  "-refresh=true {vars} {variables_file} {state_argument} {variables && " \
-                  "terraform destroy {vars} {state_argument} -refresh=true".format(
+                  "-refresh=true {vars} {variables_file} {state_argument} && " \
+                  "terraform destroy {vars} {variables_file} {state_argument} -refresh=true".format(
                 root_dir=self.root_dir,
                 terraform_path=terraform_path,
                 variables_file=variables_file,
