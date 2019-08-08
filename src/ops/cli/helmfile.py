@@ -22,7 +22,7 @@ class HelmfileParserConfig(SubParserConfig):
         return 'helmfile'
 
     def get_help(self):
-        return 'Wrap common helmfile tasks using hiera-like configuration support'
+        return 'Wrap common helmfile tasks using hierarchical configuration support'
 
     def configure(self, parser):
         parser.add_argument('subcommand', help='plan | sync | apply | template', type=str)
@@ -32,6 +32,11 @@ class HelmfileParserConfig(SubParserConfig):
 
     def get_epilog(self):
         return '''
+        Examples:
+            # Run helmfile sync
+            ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile sync
+            # Run helmfile sync for a single chart
+            ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile sync -- --selector chart=nginx-controller
         '''
 
 
