@@ -62,7 +62,7 @@ class InventoryRunner(object):
         return self.ansible_inventory.get_hosts(limit)
 
     def get_host_facts(self, host, indent="\t"):
-        vars = self.ansible_inventory.get_vars(host)
+        vars = host.get_vars()
         vars = {unicode(key): var for key, var in vars.items()} # the yaml dumper doesn't handle mixed keys encoding
         ret = yaml.dump(vars, indent=4, allow_unicode=True, default_flow_style=False, Dumper=AnsibleDumper)
         ret = "\n".join([indent + line for line in ret.split("\n")])
