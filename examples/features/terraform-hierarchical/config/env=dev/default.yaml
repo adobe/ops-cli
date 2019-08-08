@@ -1,0 +1,18 @@
+account:
+  cloud_provider:
+    aws:
+      profile: test_profile
+
+env:
+  name: dev
+
+region:
+  location: us-east-1
+  name: va6
+
+project:
+  prefix: ee
+
+# This value will be overridden
+cluster:
+  name: default

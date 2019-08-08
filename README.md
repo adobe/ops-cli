@@ -59,6 +59,10 @@ ops clusters/mycluster.yaml terraform --path-name aws-eks apply
 
 ![ops-terraform](https://user-images.githubusercontent.com/952836/52021396-9bc1b580-24fd-11e9-9da8-00fb68bd5c72.png)
 
+## Run terraform by using hierarchical configs
+
+See [examples/features/terraform-hierarchical](https://github.com/adobe/ops-cli/tree/master/examples/features/terraform-hierarchical)
+
 ## Create Kubernetes cluster (using AWS EKS)
 
 See [examples/aws-kubernetes](https://github.com/adobe/ops-cli/tree/master/examples/aws-kubernetes)
@@ -85,8 +89,8 @@ pip2 install -U virtualenv
 virtualenv ops
 source ops/bin/activate
 
-# install opswrapper v0.36 stable release
-pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/0.36/ops-0.36.tar.gz
+# install opswrapper v1.0 stable release
+pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/1.0/ops-1.0.tar.gz
 
 # Optionally, install terraform to be able to access terraform plugin
 # See https://www.terraform.io/intro/getting-started/install.html
@@ -99,7 +103,7 @@ You can try out `ops-cli`, by using docker. The docker image has all required pr
 
 To start out a container, running the latest `ops-cli` docker image run:
 ```sh
-docker run -it adobe/ops-cli:0.36 bash
+docker run -it adobe/ops-cli:1.0 bash
 ```
 
 After the container has started, you can start using `ops-cli`:
