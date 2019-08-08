@@ -1,0 +1,9 @@
+---
+compositions_order:
+  terraform:
+    - account
+    - network
+    - cluster
+    - spinnaker
+  helmfile:
+    - helmfiles

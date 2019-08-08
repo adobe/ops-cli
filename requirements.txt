@@ -1,9 +1,9 @@
 simpledi>=0.2
-awscli==1.16.206
-ansible==2.7.10
-boto3==1.9.196
+awscli==1.16.97
+boto3==1.9.87
 boto==2.49.0
-botocore==1.12.196
+urllib3==1.24
+ansible==2.7.12
 PyYAML==3.13
 azure-common==1.1.20
 azure==4.0.0
@@ -15,3 +15,6 @@ hvac==0.9.3
 passgen
 inflection==0.3.1
 kubernetes==9.0.0
+deepmerge==0.0.5
+lru_cache==0.2.3
+backports.functools_lru_cache==1.5
