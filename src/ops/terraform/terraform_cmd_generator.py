@@ -45,7 +45,8 @@ class TerraformCommandGenerator(object):
         generate_module_templates = False
 
         plan_variables = terraform_config.get('vars', {})
-        # plan_variables['cluster'] = config['cluster']
+        if not config['cluster'].startswith("auto_generated"):
+            plan_variables['cluster'] = config['cluster']
         if self.cluster_config.has_ssh_keys:
             plan_variables['has_ssh_keys'] = True
             plan_variables['cluster_ssh_pubkey_file'] = self.cluster_config.cluster_ssh_pubkey_file
