@@ -19,12 +19,18 @@ class SecretResolver:
 
 
 class SSMSecretResolver(SecretResolver):
+    def __init__(self, default_aws_profile=None):
+        self.default_aws_profile = default_aws_profile
+
     def supports(self, secret_type):
         return secret_type == "ssm"
 
     def resolve(self, secret_type, secret_params):
+        aws_profile = secret_params.get("aws_profile", self.default_aws_profile)
+        if not aws_profile:
+            raise Exception("Could not find the aws_profile in the secret params: {}".format(secret_params))
+
         path = self.get_param_or_exception("path", secret_params)
-        aws_profile = self.get_param_or_exception("aws_profile", secret_params)
         region_name = secret_params.get("region_name", "us-east-1")
         ssm = SimpleSSM(aws_profile, region_name)
         return ssm.get(path)
@@ -46,13 +52,14 @@ class VaultSecretResolver(SecretResolver):
 
 class AggregatedSecretResolver(SecretResolver):
 
-    SECRET_RESOLVERS = (SSMSecretResolver(), VaultSecretResolver())
+    def __init__(self, default_aws_profile=None):
+        self.secret_resolvers = (SSMSecretResolver(default_aws_profile), VaultSecretResolver())
 
     def supports(self, secret_type):
-        return any([resolver.supports(secret_type) for resolver in self.SECRET_RESOLVERS])
+        return any([resolver.supports(secret_type) for resolver in self.secret_resolvers])
     
     def resolve(self, secret_type, secret_params):
-        for resolver in self.SECRET_RESOLVERS:
+        for resolver in self.secret_resolvers:
             if resolver.supports(secret_type):
                 return resolver.resolve(secret_type, secret_params)
 

@@ -156,7 +156,7 @@ class ConfigGenerator(object):
             self.merge_value(self.generated_data, remote_states)
 
     def resolve_interpolations(self):
-        resolver = InterpolationResolver(self.generated_data)
+        resolver = InterpolationResolver()
         self.generated_data = resolver.resolve_interpolations(self.generated_data)
 
     def validate_interpolations(self):
