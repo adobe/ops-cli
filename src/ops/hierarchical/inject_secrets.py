@@ -22,8 +22,8 @@ class SecretInjector(object):
     {{vault.kv2.path(ethos/k8s-ethos-config/thrash/aws/ClusterIngressTLS).field(Key)}}
     """
 
-    def __init__(self):
-        self.resolver = AggregatedSecretResolver()
+    def __init__(self, default_aws_profile=None):
+        self.resolver = AggregatedSecretResolver(default_aws_profile)
 
     def is_interpolation(self, value):
         return value.startswith('{{') and value.endswith('}}')

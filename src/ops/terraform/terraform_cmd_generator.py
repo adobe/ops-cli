@@ -179,7 +179,7 @@ class TerraformCommandGenerator(object):
             else:
                 cmd = "cd {root_dir}/{terraform_path} && " \
                       "terraform apply " \
-                      "-refresh=true {state_out_argument} {plan_file} {variables_file}; code=$?; rm -f {plan_file}; exit $code".format(
+                      "-refresh=true {state_out_argument} {plan_file}; code=$?; rm -f {plan_file}; exit $code".format(
                     plan_file=plan_file,
                     root_dir=self.root_dir,
                     state_out_argument=state_out_argument,

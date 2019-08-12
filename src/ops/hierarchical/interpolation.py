@@ -15,6 +15,38 @@ def is_interpolation(input):
     return '{{' in input and '}}' in input
 
 
+class InterpolationResolver(object):
+
+    def resolve_interpolations(self, data):
+        # Resolve from dictionary. Do one iteration before secret resolving, in order to resolve interpolations such as
+        # the aws.profile
+        # Example:
+        # my_profile: test
+        # aws:
+        #   profile: "{{my_profile}}"
+        from_dict_injector = DictInterpolationResolver(data, FromDictInjector())
+        from_dict_injector.resolve_interpolations(data)
+
+        # Resolve interpolations representing secrets
+        # Example:
+        # value1: "{{ssm.path(mysecret)}}"
+        secrets_injector = SecretsInterpolationResolver(self.get_secret_injector(data))
+        secrets_injector.resolve_interpolations(data)
+
+        # Perform another resolving, in case some secrets are used as interpolations.
+        # Example:
+        # value1: "{{ssm.mysecret}}"
+        # value2: "something-{{value1}} <--- this will be resolved at this step
+        from_dict_injector = DictInterpolationResolver(data, FromDictInjector())
+        from_dict_injector.resolve_interpolations(data)
+
+        return data
+
+    def get_secret_injector(self, data):
+        default_aws_profile = data['aws']['profile'] if 'aws' in data and 'profile' in data['aws'] else None
+        return SecretInjector(default_aws_profile)
+
+
 class DictIterator():
 
     def loop_all_items(self, data, process_func):
@@ -33,12 +65,9 @@ class DictIterator():
         return data
 
 
-class InterpolationResolver(DictIterator):
-
-    def __init__(self, data, secrets_injector=SecretInjector()):
-        self.generated_data = data
-        self.secrets_injector = secrets_injector
-        self.from_dict_injector = FromDictInjector()
+class AbstractInterpolationResolver(DictIterator):
+    def __init__(self):
+        pass
 
     def resolve_interpolations(self, data):
         return self.loop_all_items(data, self.resolve_interpolation)
@@ -46,10 +75,29 @@ class InterpolationResolver(DictIterator):
     def resolve_interpolation(self, line):
         if not is_interpolation(line):
             return line
+        return self.do_resolve_interpolation(line)
 
-        updated_line = self.secrets_injector.inject_secret(line)
-        updated_line = self.from_dict_injector.resolve(updated_line, self.generated_data)
-        return updated_line
+    def do_resolve_interpolation(self, line):
+        pass
+
+
+class DictInterpolationResolver(AbstractInterpolationResolver):
+    def __init__(self, data, from_dict_injector):
+        AbstractInterpolationResolver.__init__(self)
+        self.data = data
+        self.from_dict_injector = from_dict_injector
+
+    def do_resolve_interpolation(self, line):
+        return self.from_dict_injector.resolve(line, self.data)
+
+
+class SecretsInterpolationResolver(AbstractInterpolationResolver):
+    def __init__(self, secrets_injector):
+        AbstractInterpolationResolver.__init__(self)
+        self.secrets_injector = secrets_injector
+
+    def do_resolve_interpolation(self, line):
+        return self.secrets_injector.inject_secret(line)
 
 
 class InterpolationValidator(DictIterator):
@@ -85,7 +133,7 @@ class FromDictInjector():
                 continue
             elif isinstance(value, (int, bool)):
                 return value
-            else:
+            elif not is_interpolation(value):
                 line = line.replace(placeholder, value)
         return line
 
