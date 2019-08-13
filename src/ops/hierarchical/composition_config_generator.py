@@ -71,6 +71,7 @@ class CompositionConfigGenerator:
         prefix = os.path.join(path_prefix, '')
         return path_prefix if composition in path_prefix else "{}{}/".format(prefix, composition)
 
+
 class TerraformConfigGenerator(CompositionConfigGenerator, object):
 
     def __init__(self, composition_order):
@@ -89,7 +90,6 @@ class TerraformConfigGenerator(CompositionConfigGenerator, object):
                                filters=["provider", "terraform"],
                                output_format="json",
                                output_file=output_file,
-                               skip_interpolation_validation=True,
                                print_data=True)
 
     def generate_variables_config(self, config_path, composition_path):
@@ -100,11 +100,6 @@ class TerraformConfigGenerator(CompositionConfigGenerator, object):
                                enclosing_key="config",
                                output_format="json",
                                output_file=output_file,
-
-                               # skip validation, since some interpolations might not be able to be resolved
-                               # at this point (eg. {{outputs.*}}, which reads from a terraform state file
-                               # that might not yet be created)
-                               skip_interpolation_validation=True,
                                print_data=True)
 
 

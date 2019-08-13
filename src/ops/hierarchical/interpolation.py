@@ -8,15 +8,15 @@
 # OF ANY KIND, either express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
 
+import re
 from inject_secrets import SecretInjector
 
 
 def is_interpolation(value):
     return isinstance(value, (basestring)) and '{{' in value and '}}' in value
 
-def is_full_interpolation(value):
-    return is_interpolation(value) and value.startswith('{{') and value.endswith('}}')
-
+def remove_white_spaces(value):
+    return re.sub(r"\s+", "", value)
 
 class InterpolationResolver(object):
 
@@ -29,7 +29,6 @@ class InterpolationResolver(object):
         #   profile: "{{my_profile}}"
         from_dict_injector = DictInterpolationResolver(data, FromDictInjector())
         from_dict_injector.resolve_interpolations(data)
-
 
         # Resolve interpolations representing secrets
         # Example:
@@ -51,7 +50,10 @@ class InterpolationResolver(object):
         return SecretInjector(default_aws_profile)
 
 
-class DictIterator():
+class DictIterator:
+
+    def __init__(self):
+        pass
 
     def loop_all_items(self, data, process_func):
         if isinstance(data, basestring):
@@ -79,7 +81,8 @@ class AbstractInterpolationResolver(DictIterator):
     def resolve_interpolation(self, line):
         if not is_interpolation(line):
             return line
-        return self.do_resolve_interpolation(line)
+        interpolation = remove_white_spaces(line)
+        return self.do_resolve_interpolation(interpolation)
 
     def do_resolve_interpolation(self, line):
         pass
@@ -119,7 +122,8 @@ class InterpolationValidator(DictIterator):
             raise Exception("Interpolation could not be resolved {} and strict validation was enabled.".format(value))
         return value
 
-class FromDictInjector():
+
+class FromDictInjector:
 
     def __init__(self):
         self.results = {}
@@ -156,12 +160,15 @@ class FromDictInjector():
                 self.parse_leaves(value, new_key)
 
 
-class FullBlobInjector():
+class FullBlobInjector:
+
+    def __init__(self):
+        pass
 
     def resolve(self, line, data):
-        if not is_full_interpolation(line):
+        if not self.is_full_interpolation(line):
             return line
-            
+
         keys = self.get_keys_from_interpolation(line)
         for key in keys:
             if key in data:
@@ -171,8 +178,13 @@ class FullBlobInjector():
 
         return data if data and not is_interpolation(data) else line
 
-    def get_keys_from_interpolation(self, line):
+    @staticmethod
+    def is_full_interpolation(value):
+        return is_interpolation(value) and value.startswith('{{') and value.endswith('}}')
+
+    @staticmethod
+    def get_keys_from_interpolation(line):
         # remove {{ and }}
         line = line[2:-2]
-        
+
         return line.split('.')

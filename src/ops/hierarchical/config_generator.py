@@ -170,7 +170,7 @@ class ConfigProcessor(object):
 
         path = self.get_relative_path(path)
         if display_command:
-            command = self.get_sh_command(path, filters, enclosing_key, output_format, print_data, output_file,
+            command = self.get_sh_command(path, filters, exclude_keys, enclosing_key, output_format, print_data, output_file,
                                           skip_interpolations, skip_interpolation_validation)
             display(command, color='yellow')
 
@@ -211,19 +211,21 @@ class ConfigProcessor(object):
 
         return data
 
+    @staticmethod
     def get_relative_path(self, path):
         cwd = os.path.join(os.getcwd(), '')
         if path.startswith(cwd):
             return path[len(cwd):]
         return path
 
-
     @staticmethod
-    def get_sh_command(path, filters, enclosing_key, output_format, print_data,
+    def get_sh_command(path, filters, exclude_keys, enclosing_key, output_format, print_data,
                        output_file, skip_interpolations, skip_interpolation_validation):
         command = "ops {} config --format {}".format(path, output_format)
         for filter in filters:
             command += " --filter {}".format(filter)
+        for exclude in exclude_keys:
+            command += " --exclude {}".format(exclude)
         if enclosing_key:
             command += " --enclosing-key {}".format(enclosing_key)
         if output_file:
