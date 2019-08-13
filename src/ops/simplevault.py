@@ -79,31 +79,39 @@ class SimpleVault(object):
                     raise e
                 else:
                     pass
-    def get(self, path, key='value', wrap_ttl=None, default=None, fetch_all=False, raise_exceptions=False, raw=False):
+    def get(self, path, key='value', wrap_ttl=None, default=None, fetch_all=False, raw=False):
         if raw:
             fetch_all = True
         if fetch_all:
             key=None
+        raw_data = self.vault_conn.secrets.kv.v2.read_secret_version(
+            path=path, mount_point=self.mount_point)
+        # move this check earlier, and, if true, return immediately
+        if raw:
+            return raw_data
+        data = raw_data.get('data')
+        if isinstance(data, dict):
+            if not fetch_all:
+                if key:
+                    # the actual secret k v pairs are nested under another dictionary key "data"
+                    return data.get("data").get(key, default)
+                else:
+                    raise('VAULT-LIB: either key or fetch_all should be set!')
+
+    def check(self, path, key):
+        # somewhat boilerplate method that returns a boolean whether the provided secret exists
+        # and if it has the desired key, with a non-empty value
         try:
             raw_data = self.vault_conn.secrets.kv.v2.read_secret_version(
                 path=path, mount_point=self.mount_point)
-            # move this check earlier, and, if true, return immediately
-            if raw:
-                return raw_data
-            data = raw_data.get('data')
-            if isinstance(data, dict):
-                if not fetch_all:
-                    if key:
-                        # the actual secret k v pairs are nested under another dictionary key "data"
-                        return data.get("data").get(key, default)
-                    else:
-                        raise('VAULT-LIB: either key or fetch_all should be set!')
+            if key not in raw_data["data"]["data"]:
+                return False
+            if raw_data["data"]["data"][key] is None:
+                return False
         except Exception as e:
-            if raise_exceptions:
-                raise e
-            else:
-                data = default
-        return data
+            # if the provided secret path doesn't exist, return false
+            return False
+        return True
 
     def put(self, path, value, lease=None, wrap_ttl=None):
         payload = {}
@@ -161,7 +169,7 @@ class ManagedVaultSecret(object):
                 display('MANAGED-SECRET: could not obtain a proper Vault connection.\n{}'.format(e.message))
                 raise e
         try:
-            self.current_data = self.sv.get(path=path, fetch_all=True, raise_exceptions=True)
+            self.current_data = self.sv.get(path=path, fetch_all=True)
         except Exception as e:
             display('MANAGED-SECRET: could not confirm if secret at path {} does or not already exist. '
                     'Exception was:\n{}'.format(path,e.message))
