@@ -11,8 +11,11 @@
 from inject_secrets import SecretInjector
 
 
-def is_interpolation(input):
-    return '{{' in input and '}}' in input
+def is_interpolation(value):
+    return isinstance(value, (basestring)) and '{{' in value and '}}' in value
+
+def is_full_interpolation(value):
+    return is_interpolation(value) and value.startswith('{{') and value.endswith('}}')
 
 
 class InterpolationResolver(object):
@@ -26,6 +29,7 @@ class InterpolationResolver(object):
         #   profile: "{{my_profile}}"
         from_dict_injector = DictInterpolationResolver(data, FromDictInjector())
         from_dict_injector.resolve_interpolations(data)
+
 
         # Resolve interpolations representing secrets
         # Example:
@@ -86,9 +90,11 @@ class DictInterpolationResolver(AbstractInterpolationResolver):
         AbstractInterpolationResolver.__init__(self)
         self.data = data
         self.from_dict_injector = from_dict_injector
+        self.full_blob_injector = FullBlobInjector()
 
     def do_resolve_interpolation(self, line):
-        return self.from_dict_injector.resolve(line, self.data)
+        updated_line = self.from_dict_injector.resolve(line, self.data)
+        return self.full_blob_injector.resolve(updated_line, self.data)
 
 
 class SecretsInterpolationResolver(AbstractInterpolationResolver):
@@ -112,7 +118,6 @@ class InterpolationValidator(DictIterator):
         if is_interpolation(value):
             raise Exception("Interpolation could not be resolved {} and strict validation was enabled.".format(value))
         return value
-
 
 class FromDictInjector():
 
@@ -149,3 +154,25 @@ class FromDictInjector():
                     new_key += "."
                 new_key += key
                 self.parse_leaves(value, new_key)
+
+
+class FullBlobInjector():
+
+    def resolve(self, line, data):
+        if not is_full_interpolation(line):
+            return line
+            
+        keys = self.get_keys_from_interpolation(line)
+        for key in keys:
+            if key in data:
+                data = data[key]
+            else:
+                return line
+
+        return data if data and not is_interpolation(data) else line
+
+    def get_keys_from_interpolation(self, line):
+        # remove {{ and }}
+        line = line[2:-2]
+        
+        return line.split('.')
