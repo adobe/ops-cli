@@ -8,7 +8,7 @@
 # OF ANY KIND, either express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
 
-from config_generator import ConfigProcessor
+from hierarchical_yaml.config_generator import ConfigProcessor
 
 from ops import Executor
 import logging
@@ -102,6 +102,33 @@ class TerraformConfigGenerator(CompositionConfigGenerator, object):
                                output_file=output_file,
                                print_data=True)
 
+    def generate_config(self, config_path, filters=(), exclude_keys=(), enclosing_key=None, output_format="yaml",
+                        print_data=False, output_file=None):
+        print self.get_sh_command(config_path, filters, exclude_keys, enclosing_key, output_format, print_data, output_file)
+        self.generator.process(path=config_path,
+                               exclude_keys=["helm", "provider"],
+                               enclosing_key="config",
+                               output_format="json",
+                               output_file=output_file,
+                               print_data=True)
+
+    @staticmethod
+    def get_sh_command(config_path, filters=(), exclude_keys=(), enclosing_key=None, output_format="yaml",
+                       print_data=False, output_file=None):
+        command = "ops {} config --format {}".format(config_path, output_format)
+        for filter in filters:
+            command += " --filter {}".format(filter)
+        for exclude in exclude_keys:
+            command += " --exclude {}".format(exclude)
+        if enclosing_key:
+            command += " --enclosing-key {}".format(enclosing_key)
+        if output_file:
+            command += " --output-file {}".format(output_file)
+        if print_data:
+            command += " --print-data"
+
+        return command
+
 
 class CompositionSorter(object):
     def __init__(self, composition_order):
@@ -110,4 +137,3 @@ class CompositionSorter(object):
     def get_sorted_compositions(self, compositions, reverse=False):
         result = filter(lambda x: x in compositions, self.composition_order)
         return tuple(reversed(result)) if reverse else result
-
