@@ -64,6 +64,20 @@ def flatten_tree(d, parent_key='', sep='/'):
             items.append((new_key, v))
     return dict(items)
 
+def check_vault(
+        secret_path, key='value', vault_user=None, vault_url=None,
+        token=None, namespace=None, mount_point=None, auto_prompt=True):
+
+    from ops.simplevault import SimpleVault
+    sv = SimpleVault(
+        vault_user=vault_user, vault_addr=vault_url, vault_token=token, 
+        namespace=namespace, mount_point=mount_point, auto_prompt=auto_prompt)
+    check_status = sv.check(secret_path, key)
+    # we want to return these string values because this is what Jinja2 understands
+    if check_status:
+        return "true"
+    return "false"
+
 def read_vault(
         secret_path, key='value', fetch_all=False, vault_user=None, vault_url=None,
         token=None, namespace=None, mount_point=None, auto_prompt=True):
@@ -136,9 +150,9 @@ class FilterModule(object):
             'read_file': read_file,
             'read_vault': read_vault,
             'read_yaml': read_yaml,
-            'read_vault': read_vault,
             'write_vault': write_vault,
             'managed_vault_secret': managed_vault_secret,
             'read_ssm': read_ssm,
-            'escape_json': escape_json
+            'escape_json': escape_json,
+            'check_vault': check_vault
         }

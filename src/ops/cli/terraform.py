@@ -14,6 +14,8 @@ import logging
 from ops.cli.parser import SubParserConfig
 from ops.terraform.terraform_cmd_generator import TerraformCommandGenerator
 from ops.hierarchical.composition_config_generator import TerraformConfigGenerator
+from distutils.version import StrictVersion
+import pkg_resources
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +138,19 @@ class TerraformRunner(object):
         self.template = template
         self.execute = execute
 
+    def check_ops_version(self):
+        # Check if the cluster_config has a strict requirement of OPS version
+        # But only if 'ops_min_version' is specified. Not all clusters configs enforce this
+        if "terraform" in self.cluster_config.conf:
+            if "ops_min_version" in self.cluster_config.conf["terraform"]:
+                ops_min_version = str(self.cluster_config.conf["terraform"]["ops_min_version"])
+                current_ops_version = [x.version for x in pkg_resources.working_set if  x.project_name == "ops"][0]
+                if StrictVersion(current_ops_version) < StrictVersion(ops_min_version):
+                    raise Exception("The current ops version {0} is lower than the minimum required version {1} for cluster {2}".format(
+                current_ops_version, ops_min_version, self.cluster_config_path))
+
     def run(self, args):
+        self.check_ops_version()
         if os.path.isdir(self.cluster_config_path):
             return self.run_v2_integration(args)
         else:
