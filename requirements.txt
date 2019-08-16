@@ -1,9 +1,9 @@
 simpledi>=0.2
-awscli==1.16.170
-boto3==1.9.110
+awscli==1.16.206
+boto3==1.9.196
 boto==2.49.0
 ansible==2.7.12
-PyYAML==3.13
+PyYAML==5.1
 azure-common==1.1.20
 azure==4.0.0
 msrestazure==0.6.0
@@ -14,4 +14,4 @@ hvac==0.9.3
 passgen
 inflection==0.3.1
 kubernetes==9.0.0
-hierarchical_yaml
+himl==0.1.15

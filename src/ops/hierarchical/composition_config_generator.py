@@ -8,7 +8,7 @@
 # OF ANY KIND, either express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
 
-from hierarchical_yaml.config_generator import ConfigProcessor
+from himl.config_generator import ConfigProcessor
 
 from ops import Executor
 import logging

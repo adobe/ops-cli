@@ -9,7 +9,7 @@
 # governing permissions and limitations under the License.
 
 import logging
-from hierarchical_yaml.main import ConfigRunner
+from himl.main import ConfigRunner
 from ops.cli.parser import SubParserConfig
 
 
@@ -21,7 +21,7 @@ class ConfigGeneratorParserConfig(SubParserConfig):
         return 'Generate configurations based on a hierarchical structure, with templating support'
 
     def configure(self, parser):
-        return ConfigRunner().get_parser()
+        return ConfigRunner().get_parser(parser)
 
     def get_epilog(self):
         return '''
@@ -41,4 +41,4 @@ class ConfigGeneratorRunner(object):
         if args.output_file is None:
             args.print_data = True
 
-        ConfigRunner().run(args)
+        ConfigRunner().do_run(args)
