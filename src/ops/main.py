@@ -30,7 +30,7 @@ from inventory.generator import DirInventoryGenerator, ShellInventoryGenerator, 
     PluginInventoryGenerator, InventoryGenerator, CachedInventoryGenerator
 from inventory.plugin import ec2, legacy_pcs, cns, azr, skms
 from inventory.sshconfig import SshConfigGenerator
-from ops import OpsException, Executor
+from ops import OpsException, Executor, validate_ops_version
 from ops.jinja import Template
 from opsconfig import OpsConfig
 
@@ -72,6 +72,7 @@ class AppContainer(Container):
         self.execute = auto(Executor)
 
         self.configure()
+        self.validate_ops_version()
 
     def configure_parsers(self):
         self.root_parser = auto(RootParser)
@@ -129,6 +130,10 @@ class AppContainer(Container):
         os.chdir(self.root_dir)
 
         return args
+
+    def validate_ops_version(self):
+        if 'ops.min_version' in self.ops_config:
+            validate_ops_version(self.ops_config['ops.min_version'])
 
     def run(self):
         if 'refresh_cache' in vars(self.console_args):

@@ -8,9 +8,19 @@
 #OF ANY KIND, either express or implied. See the License for the specific language
 #governing permissions and limitations under the License.
 
+import pkg_resources
 import re
+from distutils.version import StrictVersion
 from subprocess import call, Popen, PIPE
 from ops.cli import display
+
+
+def validate_ops_version(min_ops_version):
+    current_ops_version = [x.version for x in pkg_resources.working_set if x.project_name == "ops"][0]
+    if StrictVersion(current_ops_version) < StrictVersion(min_ops_version):
+        raise Exception("The current ops version {0} is lower than the minimum required version {1}. "
+                        "Please upgrade by following the instructions seen here: "
+                        "https://github.com/adobe/ops-cli#installing".format(current_ops_version, min_ops_version))
 
 
 class Executor(object):
