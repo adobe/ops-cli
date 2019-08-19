@@ -27,7 +27,7 @@ class ConfigGeneratorParserConfig(SubParserConfig):
         return '''
         Examples:
         # Generate config
-        ops data/env=dev/region=va6/project=ee/cluster=experiments config --format json --print-data
+        ops data/account=ee-dev/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles config --format json --print-data
         '''
 
 
