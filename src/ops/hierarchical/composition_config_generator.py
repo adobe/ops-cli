@@ -21,7 +21,7 @@ class CompositionConfigGenerator:
 
     def __init__(self, composition_order):
         self.composition_sorter = CompositionSorter(composition_order)
-        self.generator = ConfigProcessor()
+        self.config_generator = HierarchicalConfigGenerator()
 
     def get_sorted_compositions(self, path, reverse=False):
         all_compositions = self.discover_all_compositions(path)
@@ -86,11 +86,11 @@ class TerraformConfigGenerator(CompositionConfigGenerator, object):
     def generate_provider_config(self, config_path, composition_path):
         output_file = "{}provider.tf.json".format(composition_path)
         logger.info('Generating terraform config %s', output_file)
-        self.generate_config(config_path=config_path,
-                               filters=["provider", "terraform"],
-                               output_format="json",
-                               output_file=output_file,
-                               print_data=True)
+        self.config_generator.generate_config(config_path=config_path,
+                                              filters=["provider", "terraform"],
+                                              output_format="json",
+                                              output_file=output_file,
+                                              print_data=True)
 
     def generate_variables_config(self, config_path, composition_path):
         output_file = "{}variables.tfvars.json".format(composition_path)
@@ -100,25 +100,39 @@ class TerraformConfigGenerator(CompositionConfigGenerator, object):
         if "composition=account" in config_path:
             excluded_keys.append("remote_states")
 
-        self.generate_config(config_path=config_path,
-                             exclude_keys=excluded_keys,
-                             enclosing_key="config",
-                             output_format="json",
-                             output_file=output_file,
-                             print_data=True)
+        self.config_generator.generate_config(config_path=config_path,
+                                              exclude_keys=excluded_keys,
+                                              enclosing_key="config",
+                                              output_format="json",
+                                              output_file=output_file,
+                                              print_data=True)
+
+
+class CompositionSorter(object):
+    def __init__(self, composition_order):
+        self.composition_order = composition_order
+
+    def get_sorted_compositions(self, compositions, reverse=False):
+        result = filter(lambda x: x in compositions, self.composition_order)
+        return tuple(reversed(result)) if reverse else result
+
+
+class HierarchicalConfigGenerator(object):
+    def __init__(self):
+        self.config_processor = ConfigProcessor()
 
     def generate_config(self, config_path, filters=(), exclude_keys=(), enclosing_key=None, output_format="yaml",
                         print_data=False, output_file=None):
         cmd = self.get_sh_command(config_path, filters, exclude_keys, enclosing_key, output_format, print_data,
                                   output_file)
         display(cmd, color="yellow")
-        self.generator.process(path=config_path,
-                               filters=filters,
-                               exclude_keys=exclude_keys,
-                               enclosing_key=enclosing_key,
-                               output_format=output_format,
-                               output_file=output_file,
-                               print_data=print_data)
+        return self.config_processor.process(path=config_path,
+                                             filters=filters,
+                                             exclude_keys=exclude_keys,
+                                             enclosing_key=enclosing_key,
+                                             output_format=output_format,
+                                             output_file=output_file,
+                                             print_data=print_data)
 
     @staticmethod
     def get_sh_command(config_path, filters=(), exclude_keys=(), enclosing_key=None, output_format="yaml",
@@ -136,12 +150,3 @@ class TerraformConfigGenerator(CompositionConfigGenerator, object):
             command += " --print-data"
 
         return command
-
-
-class CompositionSorter(object):
-    def __init__(self, composition_order):
-        self.composition_order = composition_order
-
-    def get_sorted_compositions(self, compositions, reverse=False):
-        result = filter(lambda x: x in compositions, self.composition_order)
-        return tuple(reversed(result)) if reverse else result

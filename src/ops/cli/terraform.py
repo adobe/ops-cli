@@ -176,7 +176,7 @@ class TerraformRunner(object):
         reverse_order = "destroy" == args.subcommand
         compositions = tf_config_generator.get_sorted_compositions(config_path, reverse=reverse_order)
         if len(compositions) == 0:
-            raise Exception("No terraform compositions were detected for it in %s.", self, config_path)
+            raise Exception("No terraform compositions were detected in {}.".format(config_path))
 
         return self.run_v2_compositions(args, config_path, tf_config_generator, terraform_path, compositions)
 

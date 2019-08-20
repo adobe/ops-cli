@@ -9,8 +9,9 @@
 # governing permissions and limitations under the License.
 
 
-import os
 import logging
+import os
+
 from ops.cli.parser import SubParserConfig
 from ops.hierarchical.composition_config_generator import CompositionConfigGenerator
 
@@ -92,11 +93,11 @@ class HelmfileRunner(CompositionConfigGenerator, object):
     def generate_helmfile_config(self, path, args):
         output_file = args.helmfile_path + "/hiera-generated.yaml"
         logger.info('Generating helmfiles config %s', output_file)
-        return self.generator.process(path=path,
-                                      filters=["helm", "account", "region", "cluster"],
-                                      output_format="yaml",
-                                      output_file=output_file,
-                                      print_data=True)
+        return self.config_generator.generate_config(config_path=path,
+                                                     filters=["helm", "account", "region", "cluster"],
+                                                     output_format="yaml",
+                                                     output_file=output_file,
+                                                     print_data=True)
 
     def get_helmfile_command(self, args):
         cmd = ' '.join(args.extra_args + [args.subcommand])
