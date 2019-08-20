@@ -10,7 +10,7 @@
 
 from himl.config_generator import ConfigProcessor
 
-from ops import Executor
+from ops import Executor, display
 import logging
 import os
 
@@ -86,7 +86,7 @@ class TerraformConfigGenerator(CompositionConfigGenerator, object):
     def generate_provider_config(self, config_path, composition_path):
         output_file = "{}provider.tf.json".format(composition_path)
         logger.info('Generating terraform config %s', output_file)
-        self.generator.process(path=config_path,
+        self.generate_config(config_path=config_path,
                                filters=["provider", "terraform"],
                                output_format="json",
                                output_file=output_file,
@@ -95,22 +95,30 @@ class TerraformConfigGenerator(CompositionConfigGenerator, object):
     def generate_variables_config(self, config_path, composition_path):
         output_file = "{}variables.tfvars.json".format(composition_path)
         logger.info('Generating terraform config %s', output_file)
-        self.generator.process(path=config_path,
-                               exclude_keys=["helm", "provider"],
-                               enclosing_key="config",
-                               output_format="json",
-                               output_file=output_file,
-                               print_data=True)
+
+        excluded_keys = ["helm", "provider"]
+        if "composition=account" in config_path:
+            excluded_keys.append("remote_states")
+
+        self.generate_config(config_path=config_path,
+                             exclude_keys=excluded_keys,
+                             enclosing_key="config",
+                             output_format="json",
+                             output_file=output_file,
+                             print_data=True)
 
     def generate_config(self, config_path, filters=(), exclude_keys=(), enclosing_key=None, output_format="yaml",
                         print_data=False, output_file=None):
-        print self.get_sh_command(config_path, filters, exclude_keys, enclosing_key, output_format, print_data, output_file)
+        cmd = self.get_sh_command(config_path, filters, exclude_keys, enclosing_key, output_format, print_data,
+                                  output_file)
+        display(cmd, color="yellow")
         self.generator.process(path=config_path,
-                               exclude_keys=["helm", "provider"],
-                               enclosing_key="config",
-                               output_format="json",
+                               filters=filters,
+                               exclude_keys=exclude_keys,
+                               enclosing_key=enclosing_key,
+                               output_format=output_format,
                                output_file=output_file,
-                               print_data=True)
+                               print_data=print_data)
 
     @staticmethod
     def get_sh_command(config_path, filters=(), exclude_keys=(), enclosing_key=None, output_format="yaml",
