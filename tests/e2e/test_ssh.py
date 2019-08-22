@@ -11,6 +11,9 @@
 
 import os
 import re
+
+from six import PY3
+
 import test_inventory
 import pytest
 
@@ -35,9 +38,10 @@ def test_ssh_user():
     assert re.match('ssh -F .+/ssh.config bastion.host -l remote_user', command['command'])
 
 
-def test_ssh_user_unicode_dash():
-    with pytest.raises(UnicodeDecodeError):
-        run(current_dir + '/fixture/inventory/clusters/plugin_generator.yaml', 'ssh', 'bastion', '–l', 'remote_user')
+if not PY3:
+    def test_ssh_user_unicode_dash():
+        with pytest.raises(UnicodeDecodeError):
+            run(current_dir + '/fixture/inventory/clusters/plugin_generator.yaml', 'ssh', 'bastion', '–l', 'remote_user')
 
 
 def test_ssh_user_default():

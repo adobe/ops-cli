@@ -11,6 +11,7 @@
 import os
 import re
 import shutil
+import logging
 
 from jinja2 import FileSystemLoader
 from subprocess import Popen, PIPE
@@ -289,7 +290,7 @@ class TerraformCommandGenerator(object):
                 variables_file=variables_file
             )
         elif args.subcommand is not None:
-            # Examples: 
+            # Examples:
             #  - command = "state push errored.tfstate"
             #  - command = "force-unlock <LOCK_ID>"
             generate_module_templates = True
@@ -356,10 +357,10 @@ class TerraformCommandGenerator(object):
         try:
             execution = Popen(['terraform', '--version'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         except Exception as e:
-            err('Terraform does not appear to be installed, please ensure terraform is in your PATH')
-            raise e
+            logging.exception("Terraform does not appear to be installed, please ensure terraform is in your PATH")
+            exit(1)
         current_version, execution_error = execution.communicate()
-        current_version = current_version.replace('Terraform ', '').split('\n', 1)[0]
+        current_version = current_version.decode('utf-8').replace('Terraform ', '').split('\n', 1)[0]
         if expected_version == 'latest':
             return current_version
 
@@ -380,7 +381,7 @@ class TerraformCommandGenerator(object):
 
     def write_var_file(self, path, variables):
         fname = os.path.join(path, 'ops.auto.tfvars')
-        with open(fname, 'w') as f:
+        with open(fname, 'wb') as f:
             for key, val in variables.items():
                 if val[0] != '"':
                     val = '"{}"'.format(val)
@@ -393,7 +394,7 @@ class TerraformCommandGenerator(object):
                 folder = os.path.dirname(fname)
                 if not os.path.exists(folder):
                     os.makedirs(folder)
-            with open(fname, 'w') as f:
+            with open(fname, 'wb') as f:
                 f.write(result.encode('utf8'))
 
     def remove_module_template(self):

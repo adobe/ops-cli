@@ -76,10 +76,34 @@ Here is a link about how to install and use virtualenv:
 https://virtualenv.pypa.io/en/stable/
 
 ### Ops tool installation
-```sh
-# Ops tool works on python2 only at the moment.
 
-# Make sure pip is up to date (min version: 9.0.3)
+#### Python 3
+```sh
+# Make sure pip is up to date
+curl https://bootstrap.pypa.io/get-pip.py | python3
+
+# Install virtualenv
+pip install --upgrade virtualenv
+pip install --upgrade virtualenvwrapper
+
+echo 'export WORKON_HOME=$HOME/.virtualenvs' >> ~/.bash_profile
+echo 'source /usr/local/bin/virtualenvwrapper.sh' >> ~/.bash_profile
+source ~/.bash_profile
+
+# create virtualenv
+mkvirtualenv ops
+workon ops
+
+# uninstall previous `ops` version (if you have it)
+pip uninstall ops --yes
+
+# install ops-cli v1.9.4 stable release
+pip install --upgrade ops-cli
+```
+
+#### Python 2
+```sh
+# Make sure pip is up to date
 curl https://bootstrap.pypa.io/2.6/get-pip.py | python2
 
 # Install virtualenv
@@ -89,13 +113,18 @@ pip2 install -U virtualenv
 virtualenv ops
 source ops/bin/activate
 
-# install opswrapper v1.9 stable release
-pip2 install --upgrade https://github.com/adobe/ops-cli/releases/download/1.9/ops-1.9.tar.gz
+# uninstall previous `ops` version (if you have it)
+pip uninstall ops --yes
 
-# Optionally, install terraform to be able to access terraform plugin
-# See https://www.terraform.io/intro/getting-started/install.html
-# Also for pretty formatting of terraform plan output you can install https://github.com/coinbase/terraform-landscape (use gem install for MacOS)
+# install ops-cli v1.9.4 stable release
+pip2 install --upgrade ops-cli
 ```
+
+
+### Terraform
+Optionally, install terraform to be able to access terraform plugin. See https://www.terraform.io/intro/getting-started/install.html
+Also for pretty formatting of terraform plan output you can install https://github.com/coinbase/terraform-landscape (use gem install for MacOS)
+
 
 ## Using docker image
 
@@ -103,7 +132,7 @@ You can try out `ops-cli`, by using docker. The docker image has all required pr
 
 To start out a container, running the latest `ops-cli` docker image run:
 ```sh
-docker run -it adobe/ops-cli:1.9 bash
+docker run -it adobe/ops-cli:1.9.4 bash
 ```
 
 After the container has started, you can start using `ops-cli`:

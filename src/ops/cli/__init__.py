@@ -25,7 +25,7 @@ def display(msg, **kwargs):
         from ansible.playbook.play import display
         display.display(msg, **kwargs)
     except ImportError:
-        print msg
+        print(msg)
 
 def err(msg):
     display(str(msg), stderr=True, color='red')

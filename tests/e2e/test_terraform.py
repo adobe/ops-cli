@@ -28,7 +28,8 @@ def test_terraform_templating_for_file_plugin(capsys, app):
     app(['--root-dir', current_dir + '/fixture/terraform', 'clusters/prod/test.yaml', 'terraform', 'template']).run()
 
     out, err = capsys.readouterr()
-    print out, err
+    print(out)
+    print(err)
     assert 'my_user_data' in out
 
 

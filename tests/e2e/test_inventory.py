@@ -12,6 +12,8 @@
 # coding=utf-8
 import os
 import pytest
+from six import PY3
+
 from ops.main import AppContainer
 from simpledi import *
 
@@ -51,7 +53,8 @@ def test_plugin_generator(capsys):
 
     # we should have the 3 hosts in the inventory output
     out, err = capsys.readouterr()
-    print out, err
+    print(out)
+    print(err)
     assert 'bastion.host' in out
     assert 'web1.host' in out
     assert 'web2.host' in out
@@ -61,11 +64,13 @@ def test_inventory_limit(capsys):
     # when we run with limit, then we should have only one host
     run(current_dir + '/fixture/inventory/clusters/plugin_generator.yaml', 'inventory', '--limit', 'bastion')
     out, err = capsys.readouterr()
-    print out, err
+    print(out)
+    print(err)
     assert 'bastion.host' in out
     assert 'web1.host' not in out
 
 
-def test_inventory_limit_unicode_dash():
-    with pytest.raises(UnicodeDecodeError):
-        run(current_dir + '/fixture/inventory/clusters/plugin_generator.yaml', 'inventory', '––limit', 'bastion')
+if not PY3:
+    def test_inventory_limit_unicode_dash():
+        with pytest.raises(UnicodeDecodeError):
+            run(current_dir + '/fixture/inventory/clusters/plugin_generator.yaml', 'inventory', '––limit', 'bastion')

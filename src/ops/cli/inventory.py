@@ -12,8 +12,8 @@ import yaml
 
 from ansible.parsing.yaml.dumper import AnsibleDumper
 from ansible.utils.color import stringc
-from ops.cli import display
-from parser import configure_common_arguments, SubParserConfig
+from . import display
+from .parser import configure_common_arguments, SubParserConfig
 
 
 class InventoryParserConfig(SubParserConfig):
@@ -63,7 +63,6 @@ class InventoryRunner(object):
 
     def get_host_facts(self, host, indent="\t"):
         vars = host.get_vars()
-        vars = {unicode(key): var for key, var in vars.items()} # the yaml dumper doesn't handle mixed keys encoding
         ret = yaml.dump(vars, indent=4, allow_unicode=True, default_flow_style=False, Dumper=AnsibleDumper)
         ret = "\n".join([indent + line for line in ret.split("\n")])
 

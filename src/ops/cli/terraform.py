@@ -203,5 +203,6 @@ class TerraformRunner(object):
         config['terraform'] = {}
         config['terraform']["path"] = "{}{}".format(terraform_path, composition)
         config['terraform']["variables_file"] = "variables.tfvars.json"
-        config['cluster'] = "auto_generated_" + hashlib.md5(self.cluster_config_path).hexdigest()[:6]
+        cluster_id = hashlib.md5(self.cluster_config_path.encode('utf-8')).hexdigest()[:6]
+        config['cluster'] = "auto_generated_" + cluster_id
         return self.run_composition(args, config)

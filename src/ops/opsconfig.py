@@ -120,7 +120,7 @@ class OpsConfig(object):
         # the default filters are in this package
         filters = [self.package_dir + '/ansible/filter_plugins']
 
-        if self.config.has_key('ansible.filter_plugins'):
+        if 'ansible.filter_plugins' in self.config:
             filters.append(self.config['ansible.filter_plugins'])
 
         return os.path.pathsep.join(filters)
@@ -138,7 +138,7 @@ class OpsConfig(object):
     def ansible_vars_plugins(self):
         vars = [self.package_dir + '/ansible/vars_plugins']
 
-        if self.config.has_key('ansible.vars_plugins'):
+        if 'ansible.vars_plugins' in self.config:
             vars.append(self.config['ansible.vars_plugins'])
 
         return os.path.pathsep.join(vars)
@@ -147,7 +147,7 @@ class OpsConfig(object):
     def ansible_callback_plugins(self):
         vars = [self.package_dir + '/ansible/callback_plugins']
 
-        if self.config.has_key('ansible.callback_plugins'):
+        if 'ansible.callback_plugins' in self.config:
             vars.append(self.config['ansible.callback_plugins'])
 
         return os.path.pathsep.join(vars)

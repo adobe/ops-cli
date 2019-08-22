@@ -10,9 +10,9 @@
 
 from subprocess import call
 
-from ops.cli import display
-from ops.cli.parser import SubParserConfig
-from parser import configure_common_arguments
+from . import display
+from .parser import SubParserConfig
+from .parser import configure_common_arguments
 from ansible.inventory.host import Host
 
 from . import err
@@ -105,7 +105,7 @@ class SshRunner(object):
                 else:
                     #generate ssh keypair. The passphrase will be the name of the cluster
                     cmd = "ssh-keygen -t rsa -b 4096 -N {} -f {}".format(self.cluster_name,prv_key_file).split(' ')
-                    print cmd
+                    print(cmd)
                     call(cmd)
             return
 

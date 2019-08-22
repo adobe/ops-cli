@@ -23,7 +23,7 @@ _mydir = os.path.abspath(os.path.dirname(sys.argv[0]))
 _requires = [ r for r in open(os.path.sep.join((_mydir,'requirements.txt')), "r").read().split('\n') if len(r)>1 ]
 setup(
     name='ops-cli',
-    version='1.9',
+    version='1.9.4',
     description='Ops - wrapper for Terraform, Ansible, and SSH for cloud automation',
     long_description=_readme + '\n\n',
     long_description_content_type='text/markdown',
@@ -38,9 +38,13 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',

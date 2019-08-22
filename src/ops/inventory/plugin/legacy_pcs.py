@@ -9,8 +9,8 @@
 #governing permissions and limitations under the License.
 
 import json
-from ec2 import ec2
-from cns import merge_inventories
+from .ec2 import ec2
+from .cns import merge_inventories
 
 
 def legacy_pcs(args):

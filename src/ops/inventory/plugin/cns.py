@@ -10,7 +10,7 @@
 
 import json
 
-from ec2 import ec2
+from .ec2 import ec2
 
 
 def cns(args):

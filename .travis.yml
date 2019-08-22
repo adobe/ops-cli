@@ -5,20 +5,26 @@ services:
 branches:
   only:
   - master
-  - python3
   - /\d+\.\d+/
+  - /\d+\.\d+\.\d+/
+
 env:
   - BOTO_CONFIG=/dev/null
-python:
-- '2.7'
+
 script:
 # build
 - bash build_scripts/freeze_requirements.sh
 - bash build_scripts/build_package.sh
 # dry run
 - pip install --no-cache-dir dist/ops*.tar.gz && ops --verbose -h
+
+# Output something every 5 minutes or Travis kills the job
+- while sleep 5m; do echo "=====[ $SECONDS seconds still running ]====="; done &
 # build docker image
-- travis_wait 30 docker build -f build_scripts/Dockerfile -t ops .
+- docker build -f build_scripts/Dockerfile -t ops .
+# Killing background sleep loop
+- kill %1
+
 deploy:
   matrix:
   - provider: releases
