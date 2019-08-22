@@ -6,6 +6,7 @@ services:
 branches:
   only:
   - master
+  - python3
   - /\d+\.\d+/
 
 env:
@@ -31,5 +32,11 @@ deploy:
       tags: true
   - provider: script
     script: bash build_scripts/docker_push.sh
+    on:
+      tags: true
+  - provider: pypi
+    user: "adobe"
+    password:
+      secure: xkoqvuybm61RqodCBUkTUaR98mGVRVLG/wX/wC9LMJNSgUjbE7H99lPruzoO9aCQ19E6OA1i6xIk0PVpTrJzzL9OXcXD+jLO4KDO8BBW7DaylXS4bpILBGQCK1xb44VJZRXaA1cxHdIjpyCI0PVPcjDnt+XmcDsmuwmWCItywXe5W+KJuTTyI8ULM9b2dbQHjYliJUqe17QvFDic7nwo6P6ZWrd2oWICbMq+D1izJIlRBBybIt5l2qXYRzewcssHkXskUxwFQ1RA305DvQE6ce6C8J9NlwCuM3z9EwNAeLj6WUmwE6lAqRQkpAyV8OghwMHAo2UVHXsiOahpPB5fFLLeupJmNg7d7+eDi7Z96vt7ejluNb+XeUiDh3GJfWy2/+2suQ59/FIyEgfacSEv0n39in/vw7y6hXvvxxQSxrVeRtuaQ44lhadD9ROI0Bylr3BdWw/vtDamjkm7Jcae883H8YiHS1eHYaiACaQ3t+iwhYIsbmQpyaz1AdiH+DdDrH/SHKJGY5nXxXBCTd+DWtn1Z/rxBVKd6mDeHoXT0HzO0zvh4Klx4IcK54GDG3q589zdoQdozn6ccCASN5+w+k4pnfTPSdHtekfM0QGRCH84c/+Ux5o5y78JFdtZs9RMErxn2uJEJSQCZ4IdNEvhTrNnqc2LKb/3Wfh6ImeB8do=
     on:
       tags: true
