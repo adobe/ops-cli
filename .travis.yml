@@ -1,5 +1,4 @@
 language: python
-
 services:
   - docker
 
@@ -8,7 +7,6 @@ branches:
   - master
   - python3
   - /\d+\.\d+/
-
 env:
   - BOTO_CONFIG=/dev/null
 python:
@@ -21,10 +19,10 @@ script:
 - pip install --no-cache-dir dist/ops*.tar.gz && ops --verbose -h
 # build docker image
 - travis_wait 30 docker build -f build_scripts/Dockerfile -t ops .
-
 deploy:
+  matrix:
   - provider: releases
-    api_key: '$GITHUB_API_KEY'
+    api_key: "$GITHUB_API_KEY"
     skip_cleanup: true
     file_glob: true
     file: "dist/**/*"
@@ -35,8 +33,8 @@ deploy:
     on:
       tags: true
   - provider: pypi
-    user: "adobe"
+    user: adobe
     password:
-      secure: xkoqvuybm61RqodCBUkTUaR98mGVRVLG/wX/wC9LMJNSgUjbE7H99lPruzoO9aCQ19E6OA1i6xIk0PVpTrJzzL9OXcXD+jLO4KDO8BBW7DaylXS4bpILBGQCK1xb44VJZRXaA1cxHdIjpyCI0PVPcjDnt+XmcDsmuwmWCItywXe5W+KJuTTyI8ULM9b2dbQHjYliJUqe17QvFDic7nwo6P6ZWrd2oWICbMq+D1izJIlRBBybIt5l2qXYRzewcssHkXskUxwFQ1RA305DvQE6ce6C8J9NlwCuM3z9EwNAeLj6WUmwE6lAqRQkpAyV8OghwMHAo2UVHXsiOahpPB5fFLLeupJmNg7d7+eDi7Z96vt7ejluNb+XeUiDh3GJfWy2/+2suQ59/FIyEgfacSEv0n39in/vw7y6hXvvxxQSxrVeRtuaQ44lhadD9ROI0Bylr3BdWw/vtDamjkm7Jcae883H8YiHS1eHYaiACaQ3t+iwhYIsbmQpyaz1AdiH+DdDrH/SHKJGY5nXxXBCTd+DWtn1Z/rxBVKd6mDeHoXT0HzO0zvh4Klx4IcK54GDG3q589zdoQdozn6ccCASN5+w+k4pnfTPSdHtekfM0QGRCH84c/+Ux5o5y78JFdtZs9RMErxn2uJEJSQCZ4IdNEvhTrNnqc2LKb/3Wfh6ImeB8do=
+      secure: lRjP7ej0IeJilu8JedGfKS9an9JZNGLYG6ODdMbfJODblvEWzImjBkHXUeVAJ7YVmppT2kv5f2zGfrO2JiFUVevnlvlbRU0owQf2kCRIeDmafqqHk9WwdsWuOHDbRZ5zE+hkP7dQh3XG4OM3f9//9CI0gk19AkZs5d76aFrDgjkIAMMV7aMw2gz7blkHU/n7ZKRdcLzsdFOFrSS507kiI1x3NTGgzCU+1jYqds6JLLVJMXCVlSlxQV9SkP3HcvE+JIVQ9UfsuwwoFFFAOm/tEYmJAMIeOhIbCNcXYRdwRHByoEuG3OHIChLKfPpf+c47G1oReFPtSmZVbYHdkr3gPoKU05X0zbNY8lN/biuYq6ykp0nB6+swst3kG/l4HRx5WaCtPDB6TefTzFtIvwETuAKdFq6UoB1sSgu3GAK2hucFPsKYLEXPct2i8O3GAtgUrT5VSPgx9oEk9fNqhonP2kC95yEiBeRdZ7ZdqWdFKApQccBmrncp/vRVPDKAlGWiVg22yPYbbxgW/f7qX2vvCqc9BUJFsgv4FfInHWhfWA6pX6slNIEj/92g8ecBGBDPGTojIAZ2GpU6DFzlGMhNQWQm7XJaq/s/E6ZaUfi9JkT3MmEX5YZ+01yh2ovQR1wq/ZyxdUkQS1DBvrk8sIV8ZUFurpNV8uILUtLr8eJUyUs=
     on:
       tags: true
