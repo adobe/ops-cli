@@ -88,7 +88,7 @@ class Ec2Inventory(object):
 
             # connect_to_region will fail "silently" by returning None if the region name is wrong or not supported
             if conn is None:
-                print("region name: %s likely not supported, or AWS is down.  connection to region failed." % region)
+                print("region name: {} likely not supported, or AWS is down. connection to region failed.".format(region))
                 sys.exit(1)
 
             reservations = conn.get_all_instances(filters=self.filters)
@@ -102,7 +102,7 @@ class Ec2Inventory(object):
             # sort the instance based on name and index, in this order
             def sort_key(instance):
                 name = instance.tags.get('Name', '')
-                return name + "-" + str(instance.id)
+                return "{}-{}".format(name, instance.id)
 
             for instance in sorted(instances, key=sort_key):
                 self.add_instance(bastion_ip, instance, region)
