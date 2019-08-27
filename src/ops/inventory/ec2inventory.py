@@ -16,6 +16,8 @@ import os
 from boto import ec2
 from boto.pyami.config import Config
 
+from six import iteritems, string_types, integer_types
+
 
 class Ec2Inventory(object):
     def _empty_inventory(self):
@@ -86,7 +88,7 @@ class Ec2Inventory(object):
 
             # connect_to_region will fail "silently" by returning None if the region name is wrong or not supported
             if conn is None:
-                print("region name: %s likely not supported, or AWS is down.  connection to region failed." % region)
+                print("region name: {} likely not supported, or AWS is down. connection to region failed.".format(region))
                 sys.exit(1)
 
             reservations = conn.get_all_instances(filters=self.filters)
@@ -99,20 +101,17 @@ class Ec2Inventory(object):
 
             # sort the instance based on name and index, in this order
             def sort_key(instance):
-                components = instance.tags.get('Name', '').rsplit('-', 1)
-                if len(components) == 2:
-                    return (components[0], int(components[1]) if components[1].isdigit() else 0)
-                else:
-                    return components[0]
+                name = instance.tags.get('Name', '')
+                return "{}-{}".format(name, instance.id)
 
             for instance in sorted(instances, key=sort_key):
                 self.add_instance(bastion_ip, instance, region)
 
-        except boto.provider.ProfileNotFoundError, e:
+        except boto.provider.ProfileNotFoundError as e:
             raise Exception("{}, configure it with 'aws configure --profile {}'".format(e.message, self.boto_profile))
 
-        except boto.exception.BotoServerError, e:
-            print e
+        except boto.exception.BotoServerError as e:
+            print(e)
             sys.exit(1)
 
     def get_instance(self, region, instance_id):
@@ -196,9 +195,9 @@ class Ec2Inventory(object):
             elif key == 'ec2__previous_state':
                 instance_vars['ec2_previous_state'] = instance.previous_state or ''
                 instance_vars['ec2_previous_state_code'] = instance.previous_state_code
-            elif type(value) in [int, bool]:
+            elif type(value) in integer_types or type(value) == bool:
                 instance_vars[key] = value
-            elif type(value) in [str, unicode]:
+            elif type(value) in string_types:
                 instance_vars[key] = value.strip()
             elif type(value) == type(None):
                 instance_vars[key] = ''
@@ -207,7 +206,7 @@ class Ec2Inventory(object):
             elif key == 'ec2__placement':
                 instance_vars['ec2_placement'] = value.zone
             elif key == 'ec2_tags':
-                for k, v in value.iteritems():
+                for k, v in iteritems(value):
                     key = self.to_safe('ec2_tag_' + k)
                     instance_vars[key] = v
             elif key == 'ec2_groups':

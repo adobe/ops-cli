@@ -13,6 +13,9 @@ import json
 import os
 import time
 
+from six import PY3
+
+
 def cache_callback_result(directory, func, max_age, cache_key_args):
     directory = os.path.expanduser(directory)
     path = get_cache_path(directory, cache_key_args)
@@ -24,7 +27,10 @@ def cache_callback_result(directory, func, max_age, cache_key_args):
 
 def get_cache_path(dir, args):
     m = hashlib.md5()
-    m.update(json.dumps(args))
+    json_dump = json.dumps(args)
+    if PY3:
+        json_dump = json_dump.encode('utf-8')
+    m.update(json_dump)
 
     return os.path.join(dir, m.hexdigest())
 

@@ -11,6 +11,8 @@
 from __future__ import absolute_import
 import os
 from ops.cli import display
+from six import iteritems
+
 
 def read_file(fname):
     if os.path.exists(fname):
@@ -98,7 +100,7 @@ def write_vault(
         namespace=None, mount_point=None, auto_prompt=auto_prompt)
     new_data = {}
     if isinstance(data, dict):
-        for k,v in data.iteritems():
+        for k,v in iteritems(data):
             new_data[k] = str(v)
     elif key:
         new_data[key] = str(data)

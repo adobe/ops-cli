@@ -1,4 +1,4 @@
-FROM python:2.7.16-alpine3.9 AS compile-image
+FROM python:3.7-alpine3.10 AS compile-image
 ARG TERRAFORM_VERSION="0.12.6"
 ARG AZURE_CLI_VERSION="2.0.67"
 
@@ -22,7 +22,7 @@ RUN bash build_scripts/build_package.sh
 RUN apk del --purge build
 
 
-FROM python:2.7.16-alpine3.9
+FROM python:3.7-alpine3.10
 ARG TERRAFORM_VERSION="0.12.6"
 ARG VAULT_VERSION="1.1.3"
 ARG KUBECTL_VERSION="v1.13.7"
@@ -59,7 +59,7 @@ RUN adduser ops -Du 2342 -h /home/ops \
     && wget -q https://github.com/roboll/helmfile/releases/download/${HELM_FILE_VERSION}/helmfile_linux_amd64 -O /usr/local/bin/helmfile \
     && chmod +x /usr/local/bin/helmfile
 # Fix https://github.com/kubernetes-client/python-base/pull/126/files
-COPY build_scripts/patches/kube_config.py /usr/local/lib/python2.7/site-packages/kubernetes/config/kube_config.py
+COPY build_scripts/patches/kube_config.py /usr/local/lib/python3.7/site-packages/kubernetes/config/kube_config.py
 
 # install utils under `ops` user
 USER ops

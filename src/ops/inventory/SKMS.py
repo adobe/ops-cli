@@ -34,7 +34,7 @@ from os.path import expanduser
 class WebApiClient(object):
     """Class to allow easy access to the SKMS Web API"""
     # Version Constants
-    CLIENT_TYPE = "python2.6.requests"
+    CLIENT_TYPE = "python3.7.requests"
     CLIENT_VERSION = "1.10"
 
     # Properties
@@ -102,7 +102,7 @@ class WebApiClient(object):
                         if not os.path.exists(skms_dir):
                             return
                         try:
-                            os.chmod(skms_dir, 0700)
+                            os.chmod(skms_dir, 0o700)
                         except OSError:
                             return
                     except OSError:
@@ -310,7 +310,7 @@ class WebApiClient(object):
                             self.skms_session_storage_file, "w"
                         ) as skms_session_storage_file_ptr:
                             skms_session_storage_file_ptr.write('')
-                        os.chmod(self.skms_session_storage_file, 0600)
+                        os.chmod(self.skms_session_storage_file, 0o600)
                     except OSError:
                         populate_session_file = False
                 if populate_session_file is True:
@@ -362,7 +362,7 @@ class WebApiClient(object):
                     )
                 return False
 
-        except requests.RequestException, exc:
+        except requests.RequestException as exc:
             self.error_message = type(exc).__name__
             self.status = False
             return self.status

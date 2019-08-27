@@ -8,8 +8,8 @@
 #OF ANY KIND, either express or implied. See the License for the specific language
 #governing permissions and limitations under the License.
 
-from ec2 import ec2
-from cns import cns
-from legacy_pcs import legacy_pcs
-from azr import azr
-from skms import skms
+from .ec2 import ec2
+from .cns import cns
+from .legacy_pcs import legacy_pcs
+from .azr import azr
+from .skms import skms

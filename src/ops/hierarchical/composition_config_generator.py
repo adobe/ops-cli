@@ -113,7 +113,7 @@ class CompositionSorter(object):
         self.composition_order = composition_order
 
     def get_sorted_compositions(self, compositions, reverse=False):
-        result = filter(lambda x: x in compositions, self.composition_order)
+        result = list(filter(lambda x: x in compositions, self.composition_order))
         return tuple(reversed(result)) if reverse else result
 
 

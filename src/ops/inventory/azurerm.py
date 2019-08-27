@@ -195,7 +195,7 @@ Version: 1.0.0
 '''
 
 import argparse
-import ConfigParser
+from six.moves import configparser
 import json
 import os
 import re
@@ -204,6 +204,8 @@ import sys
 from distutils.version import LooseVersion
 
 from os.path import expanduser
+
+from six import iteritems
 
 HAS_AZURE = True
 HAS_AZURE_EXC = None
@@ -291,7 +293,7 @@ class AzureRM(object):
 
     def log(self, msg):
         if self.debug:
-            print (msg + u'\n')
+            print(msg + u'\n')
 
     def fail(self, msg):
         raise Exception(msg)
@@ -300,7 +302,7 @@ class AzureRM(object):
         path = expanduser("~")
         path += "/.azure/credentials"
         try:
-            config = ConfigParser.ConfigParser()
+            config = configparser.ConfigParser()
             config.read(path)
         except Exception as exc:
             self.fail("Failed to access {0}. Check that the file exists and you have read "
@@ -319,7 +321,7 @@ class AzureRM(object):
 
     def _get_env_credentials(self):
         env_credentials = dict()
-        for attribute, env_variable in AZURE_CREDENTIAL_ENV_MAPPING.iteritems():
+        for attribute, env_variable in iteritems(AZURE_CREDENTIAL_ENV_MAPPING):
             env_credentials[attribute] = os.environ.get(env_variable, None)
 
         if env_credentials['profile'] is not None:
@@ -338,7 +340,7 @@ class AzureRM(object):
         self.log('Getting credentials')
 
         arg_credentials = dict()
-        for attribute, env_variable in AZURE_CREDENTIAL_ENV_MAPPING.iteritems():
+        for attribute, env_variable in iteritems(AZURE_CREDENTIAL_ENV_MAPPING):
             arg_credentials[attribute] = getattr(params, attribute)
 
         # try module params
@@ -446,7 +448,7 @@ class AzureInventory(object):
             self.include_powerstate = False
 
         self.get_inventory()
-        print (self._json_format_dict(pretty=self._args.pretty))
+        print(self._json_format_dict(pretty=self._args.pretty))
         sys.exit(0)
 
     def _parse_cli_args(self):
@@ -677,7 +679,7 @@ class AzureInventory(object):
         self._inventory['azure'].append(host_name)
 
         if self.group_by_tag and vars.get('tags'):
-            for key, value in vars['tags'].iteritems():
+            for key, value in iteritems(vars['tags']):
                 safe_key = self._to_safe(key)
                 safe_value = self._to_safe(value)
                 if not self._inventory.get(safe_key):
@@ -737,7 +739,7 @@ class AzureInventory(object):
 
     def _get_env_settings(self):
         env_settings = dict()
-        for attribute, env_variable in AZURE_CONFIG_SETTINGS.iteritems():
+        for attribute, env_variable in iteritems(AZURE_CONFIG_SETTINGS):
             env_settings[attribute] = os.environ.get(env_variable, None)
         return env_settings
 

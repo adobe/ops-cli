@@ -8,8 +8,8 @@
 #OF ANY KIND, either express or implied. See the License for the specific language
 #governing permissions and limitations under the License.
 
-from ops.cli.parser import SubParserConfig
-from parser import configure_common_ansible_args, configure_common_arguments
+from .parser import SubParserConfig
+from .parser import configure_common_ansible_args, configure_common_arguments
 import getpass
 
 

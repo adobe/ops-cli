@@ -12,11 +12,14 @@ import pkg_resources
 import re
 from distutils.version import StrictVersion
 from subprocess import call, Popen, PIPE
-from ops.cli import display
+
+from six import PY3
+
+from .cli import display
 
 
 def validate_ops_version(min_ops_version):
-    current_ops_version = [x.version for x in pkg_resources.working_set if x.project_name == "ops"][0]
+    current_ops_version = [x.version for x in pkg_resources.working_set if x.project_name == "ops-cli"][0]
     if StrictVersion(current_ops_version) < StrictVersion(min_ops_version):
         raise Exception("The current ops version {0} is lower than the minimum required version {1}. "
                         "Please upgrade by following the instructions seen here: "
@@ -30,7 +33,7 @@ class Executor(object):
         try:
             return self._execute(result, pass_trough, cwd)
         except Exception as ex:
-            display(ex.message, stderr=True, color='red')
+            display(str(ex) if PY3 else ex.message, stderr=True, color='red')
             display('------- TRACEBACK ----------', stderr=True, color='dark gray')
             import traceback
             traceback.print_exc()
@@ -48,7 +51,7 @@ class Executor(object):
             else:
                 p = Popen(shell_command, shell=True, stdout=PIPE, stderr=PIPE, cwd=cwd)
                 output, errors = p.communicate()
-                display(output)
+                display(str(output))
                 if errors:
                     display("%s" % self.shadow_credentials(errors), stderr=True, color='red')
                 exit_code = p.returncode

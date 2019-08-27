@@ -15,7 +15,7 @@ from distutils.dir_util import copy_tree
 
 import ansible.inventory as ansible_inventory
 import ansible.vars as ansible_vars
-import caching
+from . import caching
 from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 from ansible.playbook.play import display
@@ -139,8 +139,6 @@ class InventoryGenerator(object):
                     except KeyError as e:
                         error = 'Required key %s not found' % e
                         errors.append(dict(entry=entry, error=error))
-                    except Exception as e:
-                        errors.append(dict(entry=entry, error=e))
                     found_generator = True
                     break
 
@@ -178,9 +176,9 @@ class PluginInventoryGenerator(object):
     template = """#!/usr/bin/env python
 # CONFIG: {config}
 # PLUGIN PATH: {plugin_path}
-print \"\"\"
+print(\"\"\"
 {json_content}
-\"\"\"
+\"\"\")
 """
 
     def __init__(self, cluster_name, inventory_plugins):
@@ -205,7 +203,7 @@ print \"\"\"
 
         with open(script_dest, 'w+') as f:
             f.write(script_content)
-            os.fchmod(f.fileno(), 0500)
+            os.fchmod(f.fileno(), 0o500)
 
 
 class ShellInventoryGenerator(object):
@@ -257,7 +255,7 @@ fi
 
         with open(script_dest, 'w+') as f:
             f.write(script_content)
-            os.fchmod(f.fileno(), 0500)
+            os.fchmod(f.fileno(), 0o500)
 
 
 class AnsibleInventory(object):
@@ -284,10 +282,10 @@ class AnsibleInventory(object):
         return self.inventory.get_hosts(limit)
 
     def get_host(self, host):
-        return self.inventory.get_host(unicode(host))
+        return self.inventory.get_host(str(host))
 
     def get_vars(self, host):
-        return self.inventory.get_vars(unicode(host))
+        return self.inventory.get_vars(str(host))
 
     def get_ssh_config(self):
         return self.ssh_config_path

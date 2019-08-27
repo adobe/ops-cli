@@ -11,7 +11,7 @@
 import getpass
 import subprocess
 
-from parser import SubParserConfig
+from .parser import SubParserConfig
 from . import *
 
 

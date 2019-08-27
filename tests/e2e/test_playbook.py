@@ -11,6 +11,10 @@
 
 import os
 import pytest
+from ops import display
+
+from six import PY3
+
 from ops.main import AppContainer
 from simpledi import *
 
@@ -31,6 +35,8 @@ def test_loading_of_modules_and_extensions(capsys, app):
     command = container.run()
     code = container.execute(command, pass_trough=False)
     out, err = capsys.readouterr()
+    display(out, color='gray')
+    display(err, color='red')
     assert code is 0
 
     # the filter plugins work
@@ -42,10 +48,9 @@ def test_loading_of_modules_and_extensions(capsys, app):
     # cluster is present as a variable in the command line
     assert '-e cluster=test' in command['command']
 
-
-def test_ssh_user_unicode_dash(capsys, app):
-    with pytest.raises(UnicodeDecodeError):
-        root_dir = current_dir + '/fixture/ansible'
-        app([u'–vv', '--root-dir', root_dir, 'clusters/test.yaml', 'play',
-                           'playbooks/play_module.yaml']).run()
-
+if not PY3:
+    def test_ssh_user_unicode_dash(capsys, app):
+        with pytest.raises(UnicodeDecodeError):
+            root_dir = current_dir + '/fixture/ansible'
+            app([u'–vv', '--root-dir', root_dir, 'clusters/test.yaml', 'play',
+                               'playbooks/play_module.yaml']).run()

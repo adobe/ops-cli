@@ -8,9 +8,7 @@
 #OF ANY KIND, either express or implied. See the License for the specific language
 #governing permissions and limitations under the License.
 
-import subprocess
-from . import *
-from parser import configure_common_ansible_args, configure_common_arguments, SubParserConfig
+from .parser import configure_common_ansible_args, SubParserConfig
 
 
 class CommandParserConfig(SubParserConfig):

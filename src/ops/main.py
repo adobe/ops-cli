@@ -12,27 +12,27 @@ import sys
 import logging
 import os
 
-from cli.config_generator import ConfigGeneratorParserConfig, ConfigGeneratorRunner
+from .cli.config_generator import ConfigGeneratorParserConfig, ConfigGeneratorRunner
 from simpledi import Container, auto, cache, instance, ListInstanceProvider
 
-from cli.config import ClusterConfigGenerator, ClusterConfig
-from cli.inventory import InventoryParserConfig
-from cli.inventory import InventoryRunner
-from cli.parser import RootParser
-from cli.playbook import PlaybookRunner, PlaybookParserConfig
-from cli.run import CommandRunner, CommandParserConfig
-from cli.ssh import SshParserConfig, SshRunner
-from cli.sync import SyncParserConfig, SyncRunner
-from cli.terraform import TerraformParserConfig, TerraformRunner
-from cli.helmfile import HelmfileParserConfig, HelmfileRunner
-from cli.packer import PackerParserConfig, PackerRunner
-from inventory.generator import DirInventoryGenerator, ShellInventoryGenerator, AnsibleInventory, \
+from .cli.config import ClusterConfigGenerator, ClusterConfig
+from .cli.inventory import InventoryParserConfig
+from .cli.inventory import InventoryRunner
+from .cli.parser import RootParser
+from .cli.playbook import PlaybookRunner, PlaybookParserConfig
+from .cli.run import CommandRunner, CommandParserConfig
+from .cli.ssh import SshParserConfig, SshRunner
+from .cli.sync import SyncParserConfig, SyncRunner
+from .cli.terraform import TerraformParserConfig, TerraformRunner
+from .cli.helmfile import HelmfileParserConfig, HelmfileRunner
+from .cli.packer import PackerParserConfig, PackerRunner
+from .inventory.generator import DirInventoryGenerator, ShellInventoryGenerator, AnsibleInventory, \
     PluginInventoryGenerator, InventoryGenerator, CachedInventoryGenerator
-from inventory.plugin import ec2, legacy_pcs, cns, azr, skms
-from inventory.sshconfig import SshConfigGenerator
-from ops import OpsException, Executor, validate_ops_version
-from ops.jinja import Template
-from opsconfig import OpsConfig
+from .inventory.plugin import ec2, legacy_pcs, cns, azr, skms
+from .inventory.sshconfig import SshConfigGenerator
+from . import OpsException, Executor, validate_ops_version
+from .jinja import Template
+from .opsconfig import OpsConfig
 
 logger = logging.getLogger(__name__)
 
