@@ -74,14 +74,15 @@ class CompositionConfigGenerator:
 
 class TerraformConfigGenerator(CompositionConfigGenerator, object):
 
-    def __init__(self, composition_order):
+    def __init__(self, composition_order, excluded_config_keys):
         super(TerraformConfigGenerator, self).__init__(composition_order)
+        self.excluded_config_keys = excluded_config_keys
 
     def generate_files(self, config_path, composition_path, composition):
         config_path = self.get_config_path_for_composition(config_path, composition)
         composition_path = self.get_terraform_path_for_composition(composition_path, composition)
         self.generate_provider_config(config_path, composition_path)
-        self.generate_variables_config(config_path, composition_path)
+        self.generate_variables_config(composition, config_path, composition_path)
 
     def generate_provider_config(self, config_path, composition_path):
         output_file = "{}provider.tf.json".format(composition_path)
@@ -92,13 +93,13 @@ class TerraformConfigGenerator(CompositionConfigGenerator, object):
                                               output_file=output_file,
                                               print_data=True)
 
-    def generate_variables_config(self, config_path, composition_path):
+    def generate_variables_config(self, composition, config_path, composition_path):
         output_file = "{}variables.tfvars.json".format(composition_path)
         logger.info('Generating terraform config %s', output_file)
 
         excluded_keys = ["helm", "provider"]
-        if "composition=account" in config_path:
-            excluded_keys.append("remote_states")
+        if composition in self.excluded_config_keys:
+            excluded_keys += self.excluded_config_keys[composition]
 
         self.config_generator.generate_config(config_path=config_path,
                                               exclude_keys=excluded_keys,
