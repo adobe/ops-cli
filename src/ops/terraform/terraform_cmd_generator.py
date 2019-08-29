@@ -119,6 +119,8 @@ class TerraformCommandGenerator(object):
         else:
             variables_file = ' '
 
+        auto_approve = '-auto-approve' if args.auto_approve else ''
+
         if args.subcommand == 'plan':
             generate_module_templates = True
             terraform_refresh_command = ''
@@ -157,10 +159,6 @@ class TerraformCommandGenerator(object):
             # todo maybe this deserves a better implementation later
             generate_module_templates = True
 
-            auto_approve = ''
-            if args.auto_approve:
-                auto_approve = '-auto-approve'
-
             self.inventory_generator.clear_cache()
             if args.skip_plan:
                 # Run Terraform apply without running a plan first
@@ -198,14 +196,15 @@ class TerraformCommandGenerator(object):
                   "{terraform_init_command}" \
                   "terraform plan -destroy " \
                   "-refresh=true {vars} {variables_file} {state_argument} && " \
-                  "terraform destroy {vars} {variables_file} {state_argument} -refresh=true".format(
+                  "terraform destroy {vars} {variables_file} {state_argument} -refresh=true {auto_approve}".format(
                 root_dir=self.root_dir,
                 terraform_path=terraform_path,
                 variables_file=variables_file,
                 vars=vars,
                 state_argument=state_argument,
                 terraform_init_command=terraform_init_command,
-                remove_local_cache=remove_local_cache
+                remove_local_cache=remove_local_cache,
+                auto_approve=auto_approve
             )
         elif args.subcommand == 'output':
             cmd = "cd {root_dir}/{terraform_path} && " \
