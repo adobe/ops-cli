@@ -170,9 +170,12 @@ class TerraformRunner(object):
         config_path = os.path.join(self.cluster_config_path, '')
         terraform_path = '../ee-k8s-infra/' if args.terraform_path is None else os.path.join(args.terraform_path, '')
         terraform_path = '{}compositions/terraform/'.format(terraform_path)
-        composition_order = self.cluster_config.ops_config.config["compositions_order"]["terraform"]
 
-        tf_config_generator = TerraformConfigGenerator(composition_order)
+        ops_config = self.cluster_config.ops_config.config
+        composition_order = ops_config["compositions"]["order"]["terraform"]
+        excluded_config_keys = ops_config["compositions"]["excluded_config_keys"]
+
+        tf_config_generator = TerraformConfigGenerator(composition_order, excluded_config_keys)
         reverse_order = "destroy" == args.subcommand
         compositions = tf_config_generator.get_sorted_compositions(config_path, reverse=reverse_order)
         if len(compositions) == 0:
