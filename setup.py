@@ -23,7 +23,7 @@ _mydir = os.path.abspath(os.path.dirname(sys.argv[0]))
 _requires = [ r for r in open(os.path.sep.join((_mydir,'requirements.txt')), "r").read().split('\n') if len(r)>1 ]
 setup(
     name='ops-cli',
-    version='1.11.2',
+    version='1.11.3',
     description='Ops - wrapper for Terraform, Ansible, and SSH for cloud automation',
     long_description=_readme + '\n\n',
     long_description_content_type='text/markdown',
