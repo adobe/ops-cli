@@ -54,7 +54,7 @@ setup(
     package_dir={'': 'src'},
     packages=find_packages('src'),
     package_data={
-        '': ['data/ansible/*','data/ansible/tasks/*', 'data/ssh/*']
+        '': ['data/ansible/*','data/ansible/tasks/*', 'data/ssh/*', 'data/terraform/*']
     },
     install_requires=_requires,
     entry_points={

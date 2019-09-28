@@ -149,6 +149,9 @@ class TerraformRunner(object):
 
     def run(self, args):
         self.check_ops_version()
+        terraform_config_path = os.environ.get("TF_CLI_CONFIG_FILE", self.ops_config.terraform_config_path)
+        os.environ["TF_CLI_CONFIG_FILE"] = terraform_config_path
+        logger.info("Set TF_CLI_CONFIG_FILE=%s", terraform_config_path)
         if os.path.isdir(self.cluster_config_path):
             return self.run_v2_integration(args)
         else:
