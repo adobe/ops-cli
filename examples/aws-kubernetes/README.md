@@ -93,7 +93,7 @@ kubectl get pods --all-namespaces
 # kube-system   coredns-7bcbfc4774-4md27   0/1       Pending   0          9m
 # kube-system   coredns-7bcbfc4774-nrd7p   0/1       Pending   0          9m
 ```
-You shoud see a list of pods. If not, check the [FAQ](#faq) below.
+You should see a list of pods. If not, check the [FAQ](#faq) below.
 
 Check that the worker nodes have joined the cluster: 
 ```sh
@@ -163,7 +163,7 @@ export KUBECONFIG=`pwd`/clusters/kubeconfigs/stage-mykubernetescluster.config
 # check if the kube config works
 kubectl get pods --all-namespaces
 ```
-You shoud see a list of pods. If not, check the [FAQ](#faq) below.
+You should see a list of pods. If not, check the [FAQ](#faq) below.
 
 <a name="faq"/>
 
