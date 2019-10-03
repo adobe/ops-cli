@@ -36,7 +36,7 @@ COPY --from=compile-image /sources/dist /dist
 
 RUN adduser ops -Du 2342 -h /home/ops \
     && ln -s /usr/local/bin/python /usr/bin/python \
-    && apk add --no-cache bash ca-certificates curl jq openssh-client git \
+    && apk add --no-cache bash zsh ca-certificates curl jq openssh-client git \
     && apk add --virtual=build gcc libffi-dev musl-dev openssl-dev make \
     # Install ops python package
     && pip --no-cache-dir install --upgrade /dist/ops-*.tar.gz \
@@ -80,4 +80,5 @@ COPY --from=compile-image /azure-cli /home/ops/.local/azure-cli
 
 USER ops
 ENV PATH="/home/ops/.local/azure-cli/bin:${PATH}"
-CMD /bin/bash
+ENV PS1="%d $ "
+CMD /bin/zsh
