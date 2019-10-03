@@ -60,7 +60,7 @@ stdev gc time(ms)         : 0
 
 # Testing cassandra 1.2
 
-Because it doesnt support cql V2, we have to use the legacy mode for cassandra test
+Because it doesn't support cql V2, we have to use the legacy mode for cassandra test
 
 ```
 cassandra-stress write n=1000000 -col n=fixed\(3\) \

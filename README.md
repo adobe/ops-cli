@@ -178,7 +178,7 @@ TBD
 
 See [examples/](https://github.com/adobe/ops-cli/tree/master/examples) folder:
 - cassandra-stress - n-node cassandra cluster used for stress-testing; a basic stress profile is included
-- spin up a Kubernetes clsuter
+- spin up a Kubernetes cluster
 - distinct `ops` features
 
 ## Usage help
