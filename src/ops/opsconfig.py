@@ -152,6 +152,11 @@ class OpsConfig(object):
 
         return os.path.pathsep.join(vars)
 
+    @property
+    def terraform_config_path(self):
+        default_path = self.package_dir + '/data/terraform/terraformrc'
+        return self.config.get('terraform.config_path', default_path)
+
     def __contains__(self, item):
         return item in self.config
 
