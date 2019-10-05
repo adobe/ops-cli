@@ -45,7 +45,8 @@ class OpsAzureInventory(AzureInventory):
                 'resource_groups': None,
                 'tags': None,
                 'locations': None,
-                'no_powerstate': False
+                'no_powerstate': False,
+                'bastion_tag': 'Adobe:Class'
                 }
         if not HAS_AZURE:
             raise HAS_AZURE_EXC
@@ -95,7 +96,7 @@ class OpsAzureInventory(AzureInventory):
         bastions = {}
         for host, hostvars in iteritems(self._inventory['_meta']['hostvars']):
             if ('role' in hostvars['tags'] and hostvars['tags']['role'] == 'bastion') or \
-              ('Adobe:Class' in hostvars['tags'] and hostvars['tags']['Adobe:Class'] == 'bastion'):
+              (self._args.bastion_tag in hostvars['tags'] and hostvars['tags'][self._args.bastion_tag] == 'bastion'):
                 if hostvars['public_ip'] is not None:
                     bastion_ip = hostvars['public_ip']
                     location = hostvars['location']
@@ -107,7 +108,7 @@ class OpsAzureInventory(AzureInventory):
         if bastions:
             for host, hostvars in iteritems(self._inventory['_meta']['hostvars']):
                 if ('role' in hostvars['tags'] and hostvars['tags']['role'] == 'bastion') or \
-                  ('Adobe:Class' in hostvars['tags'] and hostvars['tags']['Adobe:Class'] == 'bastion'):
+                  (self._args.bastion_tag in hostvars['tags'] and hostvars['tags'][self._args.bastion_tag] == 'bastion'):
                     pass
                 else:
                     private_ip = hostvars['private_ip']
