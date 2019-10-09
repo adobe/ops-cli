@@ -1,12 +1,12 @@
-#Copyright 2019 Adobe. All rights reserved.
-#This file is licensed to you under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License. You may obtain a copy
-#of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Copyright 2019 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-#Unless required by applicable law or agreed to in writing, software distributed under
-#the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-#OF ANY KIND, either express or implied. See the License for the specific language
-#governing permissions and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
 
 #! /usr/bin/env python
 """
@@ -66,7 +66,8 @@ class WebApiClient(object):
     # @param string username The username to use to login to the SKMS Web API
     # @param string passkey The passkey to use to login to the SKMS Web API
     # @param string skms_domain The hostname of the SKMS that will be accessed
-    def __init__(self, username, passkey, skms_domain=None, enable_session_optimization=False):
+    def __init__(self, username, passkey, skms_domain=None,
+                 enable_session_optimization=False):
         self.username = username
         self.passkey = passkey
         if skms_domain is not None:
@@ -107,7 +108,8 @@ class WebApiClient(object):
                             return
                     except OSError:
                         return
-                self.enable_skms_session_optimization(skms_dir + 'sess_' + username.strip() + '.json')
+                self.enable_skms_session_optimization(
+                    skms_dir + 'sess_' + username.strip() + '.json')
 
     # ---------------------------#
     #    CONFIGURATION METHODS   #
@@ -323,7 +325,8 @@ class WebApiClient(object):
                         with open(
                             self.skms_session_storage_file, "w"
                         ) as skms_session_storage_file_ptr:
-                            skms_session_storage_file_ptr.write(session_info_str)
+                            skms_session_storage_file_ptr.write(
+                                session_info_str)
 
             # Determine Status
             if (
@@ -432,7 +435,8 @@ class WebApiClient(object):
             for message in response_dict['messages']:
                 if (
                     isinstance(message_type, basestring) and
-                    (message_type.strip() == "" or message['type'].lower() == message_type.lower())
+                    (message_type.strip() ==
+                     "" or message['type'].lower() == message_type.lower())
                 ):
                     ret_list.append(message)
         return ret_list

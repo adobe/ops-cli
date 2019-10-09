@@ -1,12 +1,12 @@
-#Copyright 2019 Adobe. All rights reserved.
-#This file is licensed to you under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License. You may obtain a copy
-#of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Copyright 2019 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-#Unless required by applicable law or agreed to in writing, software distributed under
-#the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-#OF ANY KIND, either express or implied. See the License for the specific language
-#governing permissions and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
 
 import argparse
 
@@ -26,8 +26,12 @@ class RootParser(object):
         self.sub_parsers = sub_parsers
 
     def _get_parser(self):
-        parser = argparse.ArgumentParser(description='Run commands against a cluster definition', prog='ops')
-        parser.add_argument('cluster_config_path', type=str, help='The cluster config path cluster.yaml')
+        parser = argparse.ArgumentParser(
+            description='Run commands against a cluster definition', prog='ops')
+        parser.add_argument(
+            'cluster_config_path',
+            type=str,
+            help='The cluster config path cluster.yaml')
         parser.add_argument('--root-dir', type=str, help='The root of the resource tree - '
                                                          'it can be an absolute path or relative to the current dir')
         parser.add_argument('--verbose', '-v', action='count',
@@ -43,7 +47,8 @@ class RootParser(object):
                                                        formatter_class=subparser_conf.get_formatter())
             subparser_conf.configure(subparser_instance)
 
-        subparsers.add_parser('noop', help='used to initialize the full container for api usage')
+        subparsers.add_parser(
+            'noop', help='used to initialize the full container for api usage')
 
         return parser
 
@@ -55,9 +60,11 @@ class RootParser(object):
         try:
             for value in args:
                 if not PY3 and isinstance(value, unicode):
-                    # Python3 or some Python3 compatibility mode can make arguments to be unicode, not str
+                    # Python3 or some Python3 compatibility mode can make
+                    # arguments to be unicode, not str
                     value.encode('utf-8').encode('utf-8')
-                elif isinstance(value, str):  # Python 2 str, check if it can be represented in utf8
+                # Python 2 str, check if it can be represented in utf8
+                elif isinstance(value, str):
                     value.encode('utf-8')
         except UnicodeDecodeError as e:
             print('Invalid character in argument "{0}", most likely an "en dash", replace it with normal dash -'.format(

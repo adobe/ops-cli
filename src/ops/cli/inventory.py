@@ -1,12 +1,12 @@
-#Copyright 2019 Adobe. All rights reserved.
-#This file is licensed to you under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License. You may obtain a copy
-#of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Copyright 2019 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-#Unless required by applicable law or agreed to in writing, software distributed under
-#the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-#OF ANY KIND, either express or implied. See the License for the specific language
-#governing permissions and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
 
 import yaml
 
@@ -25,7 +25,10 @@ class InventoryParserConfig(SubParserConfig):
 
     def configure(self, parser):
         configure_common_arguments(parser)
-        parser.add_argument('--refresh-cache', action='store_true', help="Refresh the cache for the inventory")
+        parser.add_argument(
+            '--refresh-cache',
+            action='store_true',
+            help="Refresh the cache for the inventory")
         parser.add_argument('--limit', type=str,
                             help='Limit run to a specific server subgroup. Eg: --limit newton-dcs')
         parser.add_argument('--facts', default=False, action='store_true',
@@ -49,7 +52,8 @@ class InventoryRunner(object):
             group_string = ", ".join(group_names)
             host_id = host.vars.get('ec2_id', '')
             if host_id != '':
-                name_and_id = "%s -- %s" % (stringc(host.name, 'blue'), stringc(host_id, 'blue'))
+                name_and_id = "%s -- %s" % (stringc(host.name,
+                                                    'blue'), stringc(host_id, 'blue'))
             else:
                 name_and_id = "%s" % stringc(host.name, 'blue')
             display("%s (%s)" % (name_and_id, stringc(group_string, 'green')))
@@ -63,7 +67,12 @@ class InventoryRunner(object):
 
     def get_host_facts(self, host, indent="\t"):
         vars = host.get_vars()
-        ret = yaml.dump(vars, indent=4, allow_unicode=True, default_flow_style=False, Dumper=AnsibleDumper)
+        ret = yaml.dump(
+            vars,
+            indent=4,
+            allow_unicode=True,
+            default_flow_style=False,
+            Dumper=AnsibleDumper)
         ret = "\n".join([indent + line for line in ret.split("\n")])
 
         return ret

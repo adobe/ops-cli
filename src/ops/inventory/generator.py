@@ -1,12 +1,12 @@
-#Copyright 2019 Adobe. All rights reserved.
-#This file is licensed to you under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License. You may obtain a copy
-#of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Copyright 2019 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-#Unless required by applicable law or agreed to in writing, software distributed under
-#the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-#OF ANY KIND, either express or implied. See the License for the specific language
-#governing permissions and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
 
 import os
 import tempfile
@@ -26,6 +26,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class CachedInventoryGenerator(object):
     def __init__(self, base_inventory_generator, cluster_config, ops_config):
         self.inventory_generator = base_inventory_generator
@@ -43,10 +44,14 @@ class CachedInventoryGenerator(object):
             return False
 
         max_age = self.ops_config.get('inventory.max_age')
-        logger.info("Checking cache from max_age=%s, location=%s" % (max_age, self.cache_location))
+        logger.info(
+            "Checking cache from max_age=%s, location=%s" %
+            (max_age, self.cache_location))
         if caching.is_valid(self.cache_location, int(max_age)):
             res = caching.read(self.cache_location)
-            display.display("Loading cached inventory info from: %s" % (self.cache_location), color='blue', stderr=True)
+            display.display(
+                "Loading cached inventory info from: %s" %
+                (self.cache_location), color='blue', stderr=True)
             return res
 
         return False
@@ -59,9 +64,9 @@ class CachedInventoryGenerator(object):
         display.display("Caching inventory location to %s for %d seconds" % (self.cache_location, max_age),
                         color='blue', stderr=True)
         caching.write(self.cache_location, dict(
-                inventory_path=inventory_path,
-                ssh_config_path=ssh_config_path,
-                errors=errors
+            inventory_path=inventory_path,
+            ssh_config_path=ssh_config_path,
+            errors=errors
         ))
 
         return inventory_path, ssh_config_path
@@ -69,34 +74,44 @@ class CachedInventoryGenerator(object):
     def location(self):
         settings = self.cluster_config.get('inventory_settings', {})
         default_cache_dir = self.ops_config.get('cache.dir')
-        return settings.get('location', caching.get_cache_path(default_cache_dir, self.cluster_config['inventory']))
+        return settings.get('location', caching.get_cache_path(
+            default_cache_dir, self.cluster_config['inventory']))
 
     def clear_cache(self):
         # Note: This function is not used when --refesh-cache is passed
         cache = self._get_cache()
         if cache:
-            display.display("Removing inventory cache %s" % self.cache_location, stderr=True, color='green')
+            display.display(
+                "Removing inventory cache %s" %
+                self.cache_location,
+                stderr=True,
+                color='green')
             try:
                 os.remove(os.path.expanduser(self.cache_location))
                 display.display("Success", color='blue')
             except OSError:
-                display.display("Warning, could not delete cache as it is not there.", color='yellow')
+                display.display(
+                    "Warning, could not delete cache as it is not there.",
+                    color='yellow')
 
     def generate(self):
         cache = self._get_cache()
         if cache:
-            inventory_path, ssh_config_path, errors = cache['inventory_path'], cache['ssh_config_path'], cache['errors']
+            inventory_path, ssh_config_path, errors = cache[
+                'inventory_path'], cache['ssh_config_path'], cache['errors']
             self.inventory_generator.display_errors(errors)
 
             return inventory_path, ssh_config_path
 
         inventory_path, ssh_config_path = self.inventory_generator.generate()
 
-        return self._save_cache(inventory_path, ssh_config_path, self.inventory_generator.errors)
+        return self._save_cache(
+            inventory_path, ssh_config_path, self.inventory_generator.errors)
 
 
 class InventoryGenerator(object):
-    def __init__(self, cluster_config, ssh_config_generator, ops_config, inventory_generators=[]):
+    def __init__(self, cluster_config, ssh_config_generator,
+                 ops_config, inventory_generators=[]):
         self.ssh_config_generator = ssh_config_generator
         self.cluster_config = cluster_config
         self.generators = inventory_generators
@@ -118,16 +133,23 @@ class InventoryGenerator(object):
         inventory_path = base_path + '/inventory'
         os.mkdir(inventory_path)
 
-        display.display("Generating inventory to %s" % inventory_path, color='yellow', stderr=True)
+        display.display(
+            "Generating inventory to %s" %
+            inventory_path,
+            color='yellow',
+            stderr=True)
 
         if 'inventory' not in self.cluster_config:
-            raise Exception("No inventory entry found in configuration for " + self.cluster_config['cluster'])
+            raise Exception(
+                "No inventory entry found in configuration for " +
+                self.cluster_config['cluster'])
 
         errors = []
         inventory_settings = self.cluster_config.get('inventory', {})
 
         if not isinstance(inventory_settings, list):
-            raise OpsException("Inventory settings must be a list of dict entries")
+            raise OpsException(
+                "Inventory settings must be a list of dict entries")
 
         for entry in inventory_settings:
             found_generator = False
@@ -143,7 +165,9 @@ class InventoryGenerator(object):
                     break
 
             if not found_generator:
-                raise Exception("Cannot find generator for inventory entry %s" % entry)
+                raise Exception(
+                    "Cannot find generator for inventory entry %s" %
+                    entry)
 
         self.ssh_config_path = self.ssh_config_generator.generate(base_path)
         self.generated_path = inventory_path
@@ -156,7 +180,12 @@ class InventoryGenerator(object):
     @staticmethod
     def display_errors(errors):
         for error in errors:
-            display.display("%s for entry %s" % (error['error'], error['entry']), stderr=True, color='yellow')
+            display.display(
+                "%s for entry %s" %
+                (error['error'],
+                 error['entry']),
+                stderr=True,
+                color='yellow')
 
 
 class DirInventoryGenerator(object):
@@ -186,18 +215,19 @@ print(\"\"\"
         self.inventory_plugins = inventory_plugins
 
     def supports(self, config):
-        return config.get('plugin') != None
+        return config.get('plugin') is not None
 
     def generate(self, dest, config):
-        plugins = {plugin.__name__: plugin for plugin in self.inventory_plugins}
+        plugins = {
+            plugin.__name__: plugin for plugin in self.inventory_plugins}
         plugin = plugins[config.get('plugin')]
 
         inventory_json = plugin(config.get('args', {}))
 
         script_content = self.template.format(
-                config=repr(config),
-                plugin_path=plugin.__module__,
-                json_content=inventory_json
+            config=repr(config),
+            plugin_path=plugin.__module__,
+            json_content=inventory_json
         )
         script_dest = "%s/%s-%s.sh" % (dest, self.cluster_name, uuid.uuid4())
 
@@ -233,7 +263,8 @@ fi
         self.cluster_name = cluster_name
 
         clusters_dirname = os.path.dirname(cluster_config_path)
-        self.legacy_root_dir = os.path.realpath(os.path.join(clusters_dirname, ".."))
+        self.legacy_root_dir = os.path.realpath(
+            os.path.join(clusters_dirname, ".."))
 
     def supports(self, config):
         return config.get('script') is not None
@@ -247,8 +278,8 @@ fi
 
     def generate(self, dest, config):
         script_content = self.template.format(
-                root_dir=self.legacy_root_dir,
-                script=self.get_script(config)
+            root_dir=self.legacy_root_dir,
+            script=self.get_script(config)
         )
 
         script_dest = "%s/%s.sh" % (dest, self.cluster_name)
@@ -275,8 +306,11 @@ class AnsibleInventory(object):
 
         loader = DataLoader()
         loader.set_basedir(self.generated_path)
-        self.inventory = InventoryManager(loader=loader, sources=[self.generated_path])
-        self.variable_manager = VariableManager(loader=loader, inventory=self.inventory)
+        self.inventory = InventoryManager(
+            loader=loader, sources=[
+                self.generated_path])
+        self.variable_manager = VariableManager(
+            loader=loader, inventory=self.inventory)
 
     def get_hosts(self, limit):
         return self.inventory.get_hosts(limit)

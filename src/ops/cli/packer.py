@@ -1,15 +1,16 @@
-#Copyright 2019 Adobe. All rights reserved.
-#This file is licensed to you under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License. You may obtain a copy
-#of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Copyright 2019 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-#Unless required by applicable law or agreed to in writing, software distributed under
-#the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-#OF ANY KIND, either express or implied. See the License for the specific language
-#governing permissions and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
 
 from ops.cli.parser import SubParserConfig
 from . import aws
+
 
 class PackerParserConfig(SubParserConfig):
     def get_name(self):
@@ -32,6 +33,7 @@ class PackerParserConfig(SubParserConfig):
         ops clusters/centos7.yaml packer build
         '''
 
+
 class PackerRunner(object):
     def __init__(self, root_dir, cluster_config):
         self.cluster_config = cluster_config
@@ -42,11 +44,13 @@ class PackerRunner(object):
 
         packer_variables = config_all['packer']['variables']
 
-        if config_all['packer']['clouds'] != None:
+        if config_all['packer']['clouds'] is not None:
             if 'aws' in config_all['packer']['clouds']:
                 profile_name = config_all['packer']['clouds']['aws']['boto_profile']
-                packer_variables['aws_access_key'] = aws.acess_key(profile_name)
-                packer_variables['aws_secret_key'] = aws.secret_key(profile_name)
+                packer_variables['aws_access_key'] = aws.acess_key(
+                    profile_name)
+                packer_variables['aws_secret_key'] = aws.secret_key(
+                    profile_name)
             else:
                 # add other cloud logic here
                 pass
@@ -56,10 +60,12 @@ class PackerRunner(object):
             variables += " -var '%s=%s' " % (key, value)
 
         if args.subcommand == 'build':
-            command='packer build %s %s' % (variables, config_all['packer']['template'])
+            command = 'packer build %s %s' % (
+                variables, config_all['packer']['template'])
 
         if args.subcommand == 'validate':
-            command='packer validate %s %s' % (variables, config_all['packer']['template'])
+            command = 'packer validate %s %s' % (
+                variables, config_all['packer']['template'])
 
         return dict(
             command=command
