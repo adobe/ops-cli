@@ -18,7 +18,7 @@ def get_output(command, trim=True):
     if trim:
         out = out.strip()
 
-    return out
+    return out.decode("utf-8")
 
 
 def display(msg, **kwargs):

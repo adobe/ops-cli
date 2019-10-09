@@ -9,6 +9,7 @@
 # governing permissions and limitations under the License.
 
 from . import get_output
+from datetime import datetime, timezone
 
 
 def acess_key(profile):
@@ -19,3 +20,13 @@ def acess_key(profile):
 def secret_key(profile):
     return get_output(
         'aws configure get aws_secret_access_key --profile %s' % profile)
+
+
+def expiry_dttm(profile):
+    return get_output('aws configure get expiry_dttm --profile %s' % profile)
+
+
+def expiry_dttm_in_minutes(profile):
+    diff = (datetime.strptime(expiry_dttm(profile), "%Y-%m-%dT%H:%M:%S%z") - datetime.now(timezone.utc)).total_seconds()
+
+    return int(diff / 60)

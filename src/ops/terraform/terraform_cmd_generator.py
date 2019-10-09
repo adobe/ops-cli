@@ -16,6 +16,10 @@ import logging
 from jinja2 import FileSystemLoader
 from subprocess import Popen, PIPE
 from ops.cli import err, display
+from ops.cli.aws import expiry_dttm_in_minutes
+
+# The minimum time (in minutes) allowed for the credentials to be valid for terraform to run.
+MINIMUM_CREDENTIALS_EXPIRE_TIME = 5
 
 
 class TerraformCommandGenerator(object):
@@ -28,6 +32,11 @@ class TerraformCommandGenerator(object):
         self.template = template
 
     def generate(self, args):
+        if 'AWS_PROFILE' in os.environ:
+            if expiry_dttm_in_minutes(os.environ['AWS_PROFILE']) < MINIMUM_CREDENTIALS_EXPIRE_TIME:
+                raise Exception("The AWS credentials are about to expire (< %s mins). "
+                                "To avoid potential errors in case the credentials expire during a "
+                                "terrafrom operation, you should renew them before continuing." % MINIMUM_CREDENTIALS_EXPIRE_TIME)
 
         self.selected_terraform_path = args.path_name
         self.set_current_working_dir()
