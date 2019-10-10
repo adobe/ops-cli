@@ -26,7 +26,7 @@ def expiry_dttm(profile):
     return get_output('aws configure get expiry_dttm --profile %s' % profile)
 
 
-def expiry_dttm_in_minutes(profile):
+def minutes_until_expire(profile):
     diff = (datetime.strptime(expiry_dttm(profile), "%Y-%m-%dT%H:%M:%S%z") - datetime.now(timezone.utc)).total_seconds()
 
     return int(diff / 60)
