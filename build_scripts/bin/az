@@ -1,0 +1,3 @@
+#!/bin/sh
+
+env PATH=/home/ops/.local/azure-cli/bin:$PATH  python -m azure.cli "$@"

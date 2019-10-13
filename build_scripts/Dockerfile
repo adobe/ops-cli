@@ -77,8 +77,11 @@ RUN HELM_HOME=/home/ops/.helm helm plugin install https://github.com/rimusz/helm
 RUN chown -R ops:ops /home/ops/.helm
 
 COPY --from=compile-image /azure-cli /home/ops/.local/azure-cli
+COPY build_scripts/bin/az /home/ops/bin/
+
+RUN touch /home/ops/.zshrc
 
 USER ops
-ENV PATH="/home/ops/.local/azure-cli/bin:${PATH}"
+ENV PATH="/home/ops/bin:${PATH}"
 ENV PS1="%d $ "
 CMD /bin/zsh
