@@ -52,6 +52,8 @@ class HelmfileParserConfig(SubParserConfig):
             ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile sync
             # Run helmfile sync for a single chart
             ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile sync -- --selector chart=nginx-controller
+            # Run helmfile sync with concurrency flag
+            ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile --concurrency=1 sync -- --selector chart=nginx-controller
         '''
 
 
@@ -151,5 +153,10 @@ class HelmfileRunner(CompositionConfigGenerator, object):
                                                      print_data=True)
 
     def get_helmfile_command(self, args):
-        cmd = ' '.join(args.extra_args + [args.subcommand])
-        return "cd {} && helmfile {}".format(args.helmfile_path, cmd)
+        extra_args = ' '.join(args.extra_args)
+        helm_concurent_proc = '--concurrency={}'.format(args.concurrency) if args.concurrency else ''
+        return "cd {helmfile_path} && helmfile {extra_args} {subcommand} {concurrency}".format(
+            helmfile_path=args.helmfile_path,
+            extra_args=extra_args,
+            subcommand=args.subcommand,
+            concurrency=helm_concurent_proc)
