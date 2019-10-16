@@ -109,9 +109,19 @@ class HelmfileRunner(CompositionConfigGenerator, object):
     def generate_helmfile_config(self, path, args):
         output_file = args.helmfile_path + "/hiera-generated.yaml"
         logger.info('Generating helmfiles config %s', output_file)
+
+        excluded_keys = []
+        filtered_keys = []
+
+        if "helmfile" in self.ops_config["compositions"]["excluded_config_keys"]:
+            excluded_keys += self.ops_config["compositions"]["excluded_config_keys"]["helmfile"]
+
+        if "helmfile" in self.ops_config["compositions"]["filtered_output_keys"]:
+            filtered_keys += self.ops_config["compositions"]["filtered_output_keys"]["helmfile"]
+
         return self.config_generator.generate_config(config_path=path,
-                                                     filters=[
-                                                         "helm", "account", "region", "cluster"],
+                                                     filters=filtered_keys,
+                                                     exclude_keys=excluded_keys,
                                                      output_format="yaml",
                                                      output_file=output_file,
                                                      print_data=True)
