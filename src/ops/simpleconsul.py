@@ -1,12 +1,12 @@
-#Copyright 2019 Adobe. All rights reserved.
-#This file is licensed to you under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License. You may obtain a copy
-#of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Copyright 2019 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-#Unless required by applicable law or agreed to in writing, software distributed under
-#the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-#OF ANY KIND, either express or implied. See the License for the specific language
-#governing permissions and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
 
 #!/usr/bin/env python
 
@@ -24,14 +24,14 @@ DEFAULT_CONNECT = {
     'host': '127.0.0.1',
     'port': 8500,
     'scheme': 'http'
-    }
+}
 
 DEFAULT_PARAMS = {
     'token': None,
     'consistency': 'default',
     'dc': None,
     'verify': True
-    }
+}
 
 
 class SimpleConsul(object):
@@ -70,7 +70,14 @@ class SimpleConsul(object):
         s_res = re.match(r'(http|https)://([\w\-\.]+)+(:(\d+)){0,1}', str(url))
         if s_res:
             keys = 'scheme', 'host', 'skip', 'port'
-            ret = {keys[i]:s_res.group(i+1) for i in range(0, 4) if s_res.group(i+1)}
+            ret = {
+                keys[i]: s_res.group(
+                    i +
+                    1) for i in range(
+                    0,
+                    4) if s_res.group(
+                    i +
+                    1)}
             ret.pop('skip', True)
         return ret
 
@@ -86,9 +93,9 @@ class SimpleConsul(object):
             return single_value
         aggregated = {}
         keys_dict = {}
-        index, keys_list = self.conn.kv.get(key+'/', recurse=recurse)
+        index, keys_list = self.conn.kv.get(key + '/', recurse=recurse)
         if keys_list:
-            keys_dict = {i['Key'] : i['Value'] for i in keys_list}
+            keys_dict = {i['Key']: i['Value'] for i in keys_list}
         for k, v in iteritems(keys_dict):
             tmp = {}
             path_atoms = k.split('/')
@@ -101,6 +108,7 @@ class SimpleConsul(object):
                 tmp = {atom: tmp}
             aggregated = merger.merge(aggregated, tmp)
         return aggregated or single_value
+
     def put(self, key, value):
         """Put a key"""
         if isinstance(value, (int, str)):

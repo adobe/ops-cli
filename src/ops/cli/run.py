@@ -1,12 +1,12 @@
-#Copyright 2019 Adobe. All rights reserved.
-#This file is licensed to you under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License. You may obtain a copy
-#of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Copyright 2019 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-#Unless required by applicable law or agreed to in writing, software distributed under
-#the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-#OF ANY KIND, either express or implied. See the License for the specific language
-#governing permissions and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
 
 from .parser import configure_common_ansible_args, SubParserConfig
 
@@ -29,9 +29,19 @@ class CommandParserConfig(SubParserConfig):
 
     def configure(self, parser):
         configure_common_ansible_args(parser)
-        parser.add_argument('host_pattern', type=str, help='Limit the run to the following hosts')
-        parser.add_argument('shell_command', type=str, help='Shell command you want to run')
-        parser.add_argument('extra_args', type=str, nargs='*', help='Extra ansible argumetns')
+        parser.add_argument(
+            'host_pattern',
+            type=str,
+            help='Limit the run to the following hosts')
+        parser.add_argument(
+            'shell_command',
+            type=str,
+            help='Shell command you want to run')
+        parser.add_argument(
+            'extra_args',
+            type=str,
+            nargs='*',
+            help='Extra ansible argumetns')
 
     def get_help(self):
         return 'Runs a command against hosts in the cluster'
@@ -42,7 +52,8 @@ class CommandParserConfig(SubParserConfig):
 
 class CommandRunner(object):
 
-    def __init__(self, ops_config, root_dir, inventory_generator, cluster_config_path, cluster_config):
+    def __init__(self, ops_config, root_dir, inventory_generator,
+                 cluster_config_path, cluster_config):
 
         self.inventory_generator = inventory_generator
         self.root_dir = root_dir

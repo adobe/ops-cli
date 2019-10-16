@@ -1,12 +1,12 @@
-#Copyright 2019 Adobe. All rights reserved.
-#This file is licensed to you under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License. You may obtain a copy
-#of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Copyright 2019 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-#Unless required by applicable law or agreed to in writing, software distributed under
-#the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-#OF ANY KIND, either express or implied. See the License for the specific language
-#governing permissions and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
 
 import boto
 import json
@@ -64,7 +64,8 @@ class Ec2Inventory(object):
 
         self.bastion_filters['instance-state-name'] = 'running'
 
-        for reservation in conn.get_all_instances(filters=self.bastion_filters):
+        for reservation in conn.get_all_instances(
+                filters=self.bastion_filters):
             for instance in reservation.instances:
                 return instance.ip_address
 
@@ -84,11 +85,17 @@ class Ec2Inventory(object):
             cfg.load_credential_file(os.path.expanduser("~/.aws/config"))
             session_token = cfg.get(self.boto_profile, "aws_session_token")
 
-            conn = ec2.connect_to_region(region, security_token=session_token, profile_name=self.boto_profile)
+            conn = ec2.connect_to_region(
+                region,
+                security_token=session_token,
+                profile_name=self.boto_profile)
 
-            # connect_to_region will fail "silently" by returning None if the region name is wrong or not supported
+            # connect_to_region will fail "silently" by returning None if the
+            # region name is wrong or not supported
             if conn is None:
-                print("region name: {} likely not supported, or AWS is down. connection to region failed.".format(region))
+                print(
+                    "region name: {} likely not supported, or AWS is down. "
+                    "connection to region failed.".format(region))
                 sys.exit(1)
 
             reservations = conn.get_all_instances(filters=self.filters)
@@ -108,7 +115,8 @@ class Ec2Inventory(object):
                 self.add_instance(bastion_ip, instance, region)
 
         except boto.provider.ProfileNotFoundError as e:
-            raise Exception("{}, configure it with 'aws configure --profile {}'".format(e.message, self.boto_profile))
+            raise Exception(
+                "{}, configure it with 'aws configure --profile {}'".format(e.message, self.boto_profile))
 
         except boto.exception.BotoServerError as e:
             print(e)
@@ -118,9 +126,13 @@ class Ec2Inventory(object):
         ''' Gets details about a specific instance '''
         conn = ec2.connect_to_region(region)
 
-        # connect_to_region will fail "silently" by returning None if the region name is wrong or not supported
+        # connect_to_region will fail "silently" by returning None if the
+        # region name is wrong or not supported
         if conn is None:
-            print("region name: %s likely not supported, or AWS is down.  connection to region failed." % region)
+            print(
+                "region name: %s likely not supported, or AWS is down. "
+                "connection to region failed." % region
+            )
             sys.exit(1)
 
         reservations = conn.get_all_instances([instance_id])
@@ -149,7 +161,8 @@ class Ec2Inventory(object):
         else:
             ansible_ssh_host = instance.private_ip_address
 
-        # Add to index and append the instance id afterwards if it's already there
+        # Add to index and append the instance id afterwards if it's already
+        # there
         if dest in self.index:
             dest = dest + "-" + instance.id.replace("i-", "")
 
@@ -178,7 +191,8 @@ class Ec2Inventory(object):
         # Inventory: Group by availability zone
         self.push(self.inventory, instance.placement, dest)
 
-        self.inventory["_meta"]["hostvars"][dest] = self.get_host_info_dict_from_instance(instance)
+        self.inventory["_meta"]["hostvars"][dest] = self.get_host_info_dict_from_instance(
+            instance)
         self.inventory["_meta"]["hostvars"][dest]['ansible_ssh_host'] = ansible_ssh_host
 
     def get_host_info_dict_from_instance(self, instance):
@@ -188,18 +202,19 @@ class Ec2Inventory(object):
             key = self.to_safe('ec2_' + key)
 
             # Handle complex types
-            # state/previous_state changed to properties in boto in https://github.com/boto/boto/commit/a23c379837f698212252720d2af8dec0325c9518
+            # state/previous_state changed to properties in boto in
+            # https://github.com/boto/boto/commit/a23c379837f698212252720d2af8dec0325c9518
             if key == 'ec2__state':
                 instance_vars['ec2_state'] = instance.state or ''
                 instance_vars['ec2_state_code'] = instance.state_code
             elif key == 'ec2__previous_state':
                 instance_vars['ec2_previous_state'] = instance.previous_state or ''
                 instance_vars['ec2_previous_state_code'] = instance.previous_state_code
-            elif type(value) in integer_types or type(value) == bool:
+            elif type(value) in integer_types or isinstance(value, bool):
                 instance_vars[key] = value
             elif type(value) in string_types:
                 instance_vars[key] = value.strip()
-            elif type(value) == type(None):
+            elif value is None:
                 instance_vars[key] = ''
             elif key == 'ec2_region':
                 instance_vars[key] = value.name
@@ -216,11 +231,14 @@ class Ec2Inventory(object):
                     group_ids.append(group.id)
                     group_names.append(group.name)
                 instance_vars["ec2_security_group_ids"] = ','.join(group_ids)
-                instance_vars["ec2_security_group_names"] = ','.join(group_names)
+                instance_vars["ec2_security_group_names"] = ','.join(
+                    group_names)
         # add non ec2 prefix private ip address that are being used in cross provider command
         # e.g ssh, sync
-        instance_vars['private_ip'] = instance_vars.get('ec2_private_ip_address', '')
-        instance_vars['private_ip_address'] = instance_vars.get('ec2_private_ip_address', '')
+        instance_vars['private_ip'] = instance_vars.get(
+            'ec2_private_ip_address', '')
+        instance_vars['private_ip_address'] = instance_vars.get(
+            'ec2_private_ip_address', '')
         return instance_vars
 
     def get_host_info(self):
@@ -240,7 +258,8 @@ class Ec2Inventory(object):
         (region, instance_id) = self.index[self.host]
 
         instance = self.get_instance(region, instance_id)
-        return self.json_format_dict(self.get_host_info_dict_from_instance(instance), True)
+        return self.json_format_dict(
+            self.get_host_info_dict_from_instance(instance), True)
 
     def push(self, my_dict, key, element):
         ''' Push an element onto an array that may not have been defined in
@@ -269,7 +288,7 @@ class Ec2Inventory(object):
         ''' Converts 'bad' characters in a string to underscores so they can be
         used as Ansible groups '''
 
-        return re.sub("[^A-Za-z0-9\-]", "_", word)
+        return re.sub(r"[^A-Za-z0-9\-]", "_", word)
 
     def json_format_dict(self, data, pretty=True):
         ''' Converts a dict to a JSON object and dumps it as a formatted

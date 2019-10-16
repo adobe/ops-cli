@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-#Copyright 2019 Adobe. All rights reserved.
-#This file is licensed to you under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License. You may obtain a copy
-#of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Copyright 2019 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-#Unless required by applicable law or agreed to in writing, software distributed under
-#the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-#OF ANY KIND, either express or implied. See the License for the specific language
-#governing permissions and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
 #
 # Copyright (c) 2016 Matt Davis, <mdavis@ansible.com>
 #                    Chris Houseknecht, <house@redhat.com>
@@ -271,8 +271,8 @@ class AzureRM(object):
 
         self.credentials = self._get_credentials(args)
         if not self.credentials:
-            self.fail("Failed to get credentials. Either pass as parameters, set environment variables, "
-                      "or define a profile in ~/.azure/credentials.")
+            self.fail("Failed to get credentials. Either pass as parameters, "
+                      "set environment variables, or define a profile in ~/.azure/credentials.")
 
         if self.credentials.get('subscription_id', None) is None:
             self.fail("Credentials did not include a subscription_id value.")
@@ -286,7 +286,8 @@ class AzureRM(object):
                                                                  secret=self.credentials['secret'],
                                                                  tenant=self.credentials['tenant'])
         elif self.credentials.get('ad_user') is not None and self.credentials.get('password') is not None:
-            self.azure_credentials = UserPassCredentials(self.credentials['ad_user'], self.credentials['password'])
+            self.azure_credentials = UserPassCredentials(
+                self.credentials['ad_user'], self.credentials['password'])
         else:
             self.fail("Failed to authenticate with provided credentials. Some attributes were missing. "
                       "Credentials must include client_id, secret and tenant or ad_user and password.")
@@ -311,10 +312,11 @@ class AzureRM(object):
         for key in AZURE_CREDENTIAL_ENV_MAPPING:
             try:
                 credentials[key] = config.get(profile, key, raw=True)
-            except:
+            except BaseException:
                 pass
 
-        if credentials.get('client_id') is not None or credentials.get('ad_user') is not None:
+        if credentials.get('client_id') is not None or credentials.get(
+                'ad_user') is not None:
             return credentials
 
         return None
@@ -335,7 +337,8 @@ class AzureRM(object):
 
     def _get_credentials(self, params):
         # Get authentication credentials.
-        # Precedence: cmd line parameters-> environment variables-> default profile in ~/.azure/credentials.
+        # Precedence: cmd line parameters-> environment variables-> default
+        # profile in ~/.azure/credentials.
 
         self.log('Getting credentials')
 
@@ -362,25 +365,28 @@ class AzureRM(object):
         # try default profile from ~./azure/credentials
         default_credentials = self._get_profile()
         if default_credentials:
-            self.log('Retrieved default profile credentials from ~/.azure/credentials.')
+            self.log(
+                'Retrieved default profile credentials from ~/.azure/credentials.')
             return default_credentials
 
         return None
 
     def _register(self, key):
         try:
-            # We have to perform the one-time registration here. Otherwise, we receive an error the first
-            # time we attempt to use the requested client.
+            # We have to perform the one-time registration here. Otherwise,
+            # we receive an error the first time we attempt to use the requested client.
             resource_client = self.rm_client
             resource_client.providers.register(key)
         except Exception as exc:
-            self.fail("One-time registration of {0} failed - {1}".format(key, str(exc)))
+            self.fail(
+                "One-time registration of {0} failed - {1}".format(key, str(exc)))
 
     @property
     def network_client(self):
         self.log('Getting network client')
         if not self._network_client:
-            self._network_client = NetworkManagementClient(self.azure_credentials, self.subscription_id)
+            self._network_client = NetworkManagementClient(
+                self.azure_credentials, self.subscription_id)
             self._register('Microsoft.Network')
         return self._network_client
 
@@ -388,14 +394,16 @@ class AzureRM(object):
     def rm_client(self):
         self.log('Getting resource manager client')
         if not self._resource_client:
-            self._resource_client = ResourceManagementClient(self.azure_credentials, self.subscription_id)
+            self._resource_client = ResourceManagementClient(
+                self.azure_credentials, self.subscription_id)
         return self._resource_client
 
     @property
     def compute_client(self):
         self.log('Getting compute client')
         if not self._compute_client:
-            self._compute_client = ComputeManagementClient(self.azure_credentials, self.subscription_id)
+            self._compute_client = ComputeManagementClient(
+                self.azure_credentials, self.subscription_id)
             self._register('Microsoft.Compute')
         return self._compute_client
 
@@ -454,15 +462,15 @@ class AzureInventory(object):
     def _parse_cli_args(self):
         # Parse command line arguments
         parser = argparse.ArgumentParser(
-                description='Produce an Ansible Inventory file for an Azure subscription')
+            description='Produce an Ansible Inventory file for an Azure subscription')
         parser.add_argument('--list', action='store_true', default=True,
-                           help='List instances (default: True)')
+                            help='List instances (default: True)')
         parser.add_argument('--debug', action='store_true', default=False,
-                           help='Send debug messages to STDOUT')
+                            help='Send debug messages to STDOUT')
         parser.add_argument('--host', action='store',
-                           help='Get all information about an instance')
+                            help='Get all information about an instance')
         parser.add_argument('--pretty', action='store_true', default=False,
-                           help='Pretty print JSON output(default: False)')
+                            help='Pretty print JSON output(default: False)')
         parser.add_argument('--profile', action='store',
                             help='Azure profile contained in ~/.azure/credentials')
         parser.add_argument('--subscription_id', action='store',
@@ -492,12 +500,14 @@ class AzureInventory(object):
             # get VMs for requested resource groups
             for resource_group in self.resource_groups:
                 try:
-                    virtual_machines = self._compute_client.virtual_machines.list(resource_group)
+                    virtual_machines = self._compute_client.virtual_machines.list(
+                        resource_group)
                 except Exception as exc:
-                    sys.exit("Error: fetching virtual machines for resource group {0} - {1}".format(resource_group,
-                                                                                                   str(exc)))
+                    sys.exit("Error: fetching virtual machines "
+                             "for resource group {0} - {1}".format(resource_group, str(exc)))
                 if self._args.host or self.tags:
-                    selected_machines = self._selected_machines(virtual_machines)
+                    selected_machines = self._selected_machines(
+                        virtual_machines)
                     self._load_machines(selected_machines)
                 else:
                     self._load_machines(virtual_machines)
@@ -506,7 +516,8 @@ class AzureInventory(object):
             try:
                 virtual_machines = self._compute_client.virtual_machines.list_all()
             except Exception as exc:
-                sys.exit("Error: fetching virtual machines - {0}".format(str(exc)))
+                sys.exit(
+                    "Error: fetching virtual machines - {0}".format(str(exc)))
 
             if self._args.host or self.tags or self.locations:
                 selected_machines = self._selected_machines(virtual_machines)
@@ -518,9 +529,10 @@ class AzureInventory(object):
         for machine in machines:
             id_dict = azure_id_to_dict(machine.id)
 
-            #TODO - The API is returning an ID value containing resource group name in ALL CAPS. If/when it gets
-            #       fixed, we should remove the .lower(). Opened Issue
+            # TODO - The API is returning an ID value containing resource group name in ALL CAPS.
+            #       If/when it gets fixed, we should remove the .lower(). Opened Issue
             #       #574: https://github.com/Azure/azure-sdk-for-python/issues/574
+
             resource_group = id_dict['resourceGroups'].lower()
 
             if self.group_by_security_group:
@@ -556,7 +568,8 @@ class AzureInventory(object):
             )
 
             if self.include_powerstate:
-                host_vars['powerstate'] = self._get_powerstate(resource_group, machine.name)
+                host_vars['powerstate'] = self._get_powerstate(
+                    resource_group, machine.name)
 
             if machine.storage_profile.image_reference:
                 host_vars['image'] = dict(
@@ -599,7 +612,8 @@ class AzureInventory(object):
                         host_vars['private_ip'] = ip_config.private_ip_address
                         host_vars['private_ip_alloc_method'] = ip_config.private_ip_allocation_method
                         if ip_config.public_ip_address:
-                            public_ip_reference = self._parse_ref_id(ip_config.public_ip_address.id)
+                            public_ip_reference = self._parse_ref_id(
+                                ip_config.public_ip_address.id)
                             public_ip_address = self._network_client.public_ip_addresses.get(
                                 public_ip_reference['resourceGroups'],
                                 public_ip_reference['publicIPAddresses'])
@@ -612,7 +626,6 @@ class AzureInventory(object):
                                 host_vars['fqdn'] = public_ip_address.dns_settings.fqdn
                         else:
                             host_vars['ansible_host'] = ip_config.private_ip_address
-
 
             self._add_host(host_vars)
 
@@ -633,7 +646,8 @@ class AzureInventory(object):
             self._security_groups = dict()
         if not self._security_groups.get(resource_group):
             self._security_groups[resource_group] = dict()
-            for group in self._network_client.network_security_groups.list(resource_group):
+            for group in self._network_client.network_security_groups.list(
+                    resource_group):
                 if group.network_interfaces:
                     for interface in group.network_interfaces:
                         self._security_groups[resource_group][interface.id] = dict(
@@ -647,10 +661,11 @@ class AzureInventory(object):
                                                            name,
                                                            expand='instanceview')
         except Exception as exc:
-            sys.exit("Error: fetching instanceview for host {0} - {1}".format(name, str(exc)))
+            sys.exit(
+                "Error: fetching instanceview for host {0} - {1}".format(name, str(exc)))
 
         return next((s.code.replace('PowerState/', '')
-                    for s in vm.instance_view.statuses if s.code.startswith('PowerState')), None)
+                     for s in vm.instance_view.statuses if s.code.startswith('PowerState')), None)
 
     def _add_host(self, vars):
 
@@ -702,7 +717,8 @@ class AzureInventory(object):
         file_settings = self._load_settings()
         if file_settings:
             for key in AZURE_CONFIG_SETTINGS:
-                if key in ('resource_groups', 'tags', 'locations') and file_settings.get(key):
+                if key in ('resource_groups', 'tags',
+                           'locations') and file_settings.get(key):
                     values = file_settings.get(key).split(',')
                     if len(values) > 0:
                         setattr(self, key, values)
@@ -712,7 +728,8 @@ class AzureInventory(object):
         else:
             env_settings = self._get_env_settings()
             for key in AZURE_CONFIG_SETTINGS:
-                if key in('resource_groups', 'tags', 'locations') and env_settings.get(key):
+                if key in('resource_groups', 'tags',
+                          'locations') and env_settings.get(key):
                     values = env_settings.get(key).split(',')
                     if len(values) > 0:
                         setattr(self, key, values)
@@ -745,14 +762,20 @@ class AzureInventory(object):
 
     def _load_settings(self):
         basename = os.path.splitext(os.path.basename(__file__))[0]
-        default_path = os.path.join(os.path.dirname(__file__), (basename + '.ini'))
-        path = os.path.expanduser(os.path.expandvars(os.environ.get('AZURE_INI_PATH', default_path)))
+        default_path = os.path.join(
+            os.path.dirname(__file__),
+            (basename + '.ini'))
+        path = os.path.expanduser(
+            os.path.expandvars(
+                os.environ.get(
+                    'AZURE_INI_PATH',
+                    default_path)))
         config = None
         settings = None
         try:
             config = ConfigParser.ConfigParser()
             config.read(path)
-        except:
+        except BaseException:
             pass
 
         if config is not None:
@@ -760,7 +783,7 @@ class AzureInventory(object):
             for key in AZURE_CONFIG_SETTINGS:
                 try:
                     settings[key] = config.get('azure', key, raw=True)
-                except:
+                except BaseException:
                     pass
 
         return settings
@@ -793,21 +816,24 @@ class AzureInventory(object):
 
     def _to_safe(self, word):
         ''' Converts 'bad' characters in a string to underscores so they can be used as Ansible groups '''
-        regex = "[^A-Za-z0-9\_"
+        regex = r"[^A-Za-z0-9\_"
         if not self.replace_dash_in_groups:
-            regex += "\-"
+            regex += r"\-"
         return re.sub(regex + "]", "_", word)
 
 
 def main():
     if not HAS_AZURE:
-        sys.exit("The Azure python sdk is not installed (try 'pip install azure==2.0.0rc5') - {0}".format(HAS_AZURE_EXC))
+        sys.exit(
+            "The Azure python sdk is not installed "
+            "(try 'pip install azure==2.0.0rc5') - {0}".format(HAS_AZURE_EXC))
 
     if LooseVersion(azure_compute_version) != LooseVersion(AZURE_MIN_VERSION):
         sys.exit("Expecting azure.mgmt.compute.__version__ to be {0}. Found version {1} "
                  "Do you have Azure == 2.0.0rc5 installed?".format(AZURE_MIN_VERSION, azure_compute_version))
 
     AzureInventory()
+
 
 if __name__ == '__main__':
     main()

@@ -1,12 +1,12 @@
-#Copyright 2019 Adobe. All rights reserved.
-#This file is licensed to you under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License. You may obtain a copy
-#of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Copyright 2019 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-#Unless required by applicable law or agreed to in writing, software distributed under
-#the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-#OF ANY KIND, either express or implied. See the License for the specific language
-#governing permissions and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
 
 import sys
 import logging
@@ -43,6 +43,7 @@ def configure_logging(args):
             logging.basicConfig(level=logging.DEBUG)
         else:
             logging.basicConfig(level=logging.INFO)
+
 
 class AppContainer(Container):
     def __init__(self, argv=None):
@@ -120,7 +121,9 @@ class AppContainer(Container):
         # Bind some very useful dependencies
         self.console_args = cache(instance(args))
         self.command = lambda c: self.console_args.command
-        self.cluster_config_path = cache(lambda c: get_cluster_config_path(c.root_dir, c.console_args))
+        self.cluster_config_path = cache(
+            lambda c: get_cluster_config_path(
+                c.root_dir, c.console_args))
         self.root_dir = cache(lambda c: get_root_dir(c.console_args))
         self.cluster_name = lambda c: c.cluster_config['cluster']
         self.package_dir = lambda c: os.path.dirname(__file__)
@@ -150,11 +153,12 @@ def run(args=None):
 
     output = app_container.run()
 
-    if type(output) is int:
+    if isinstance(output, int):
         return output
     else:
         ret = app_container.execute(output)
         sys.exit(ret)
+
 
 def get_cluster_config_path(root_dir, console_args):
     """ Return config path + root_dir if path is relative """
@@ -170,7 +174,10 @@ def get_root_dir(args):
 
     if args.root_dir:
         if not os.path.isdir(os.path.realpath(args.root_dir)):
-            raise OpsException("Specified root dir '%s' does not exists" % os.path.realpath(args.root_dir))
+            raise OpsException(
+                "Specified root dir '%s' does not exists" %
+                os.path.realpath(
+                    args.root_dir))
 
         return os.path.realpath(args.root_dir)
 

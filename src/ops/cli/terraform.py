@@ -30,47 +30,69 @@ class TerraformParserConfig(SubParserConfig):
 
     def configure(self, parser):
         parser.add_argument('subcommand',
-                            help='apply | console | destroy | import | output | plan | refresh | show | taint | template | untaint | validate',
+                            help='apply | console | destroy | import | output | plan | '
+                                 'refresh | show | taint | template | untaint | validate',
                             type=str)
-        parser.add_argument('--var', help='the output var to show', type=str, default='')
+        parser.add_argument(
+            '--var',
+            help='the output var to show',
+            type=str,
+            default='')
         parser.add_argument('--module',
-                            help='for use with "taint", "untaint" and "import". The module to use. e.g.: vpc', type=str)
+                            help='for use with "taint", "untaint" and "import". '
+                                 'The module to use. e.g.: vpc', type=str)
         parser.add_argument('--resource',
-                            help='for use with "taint", "untaint" and "import". The resource to target. e.g.: aws_instance.nat',
+                            help='for use with "taint", "untaint" and "import".'
+                                 'The resource to target. e.g.: aws_instance.nat',
                             type=str)
         parser.add_argument('--name',
-                            help='for use with "import". The name or ID of the imported resource. e.g.: i-abcd1234',
+                            help='for use with "import". The name or ID of the imported resource. '
+                                 'e.g.: i-abcd1234',
                             type=str)
-        parser.add_argument('--plan', help='for use with "show", show the plan instead of the statefile',
+        parser.add_argument('--plan', help='for use with "show", '
+                                           'show the plan instead of the statefile',
                             action='store_true')
         parser.add_argument('--state-location', help='control how the remote states are used',
                             choices=['local', 'remote', 'any'], default='any', type=str)
         parser.add_argument('--force-copy',
-                            help='for use with "plan" to do force state change automatically during init phase',
+                            help='for use with "plan" to do force state change '
+                                 'automatically during init phase',
                             action='store_true')
         parser.add_argument('--template-location',
-                            help='for use with "template". The folder where to save the tf files, without showing',
+                            help='for use with "template". The folder where to save the tf files, '
+                                 'without showing',
                             type=str)
         parser.add_argument('--skip-refresh', help='for use with "plan". Skip refresh of statefile',
                             action='store_false', dest='do_refresh')
         parser.set_defaults(do_refresh=True)
         parser.add_argument('--raw-output',
-                            help='for use with "plan". Show raw plan output without piping through terraform landscape - '
-                                 'https://github.com/coinbase/terraform-landscape (if terraform landscape is not enabled in opsconfig.yaml '
+                            help='for use with "plan". Show raw plan output without piping through '
+                                 'terraform landscape - https://github.com/coinbase/terraform-landscape '
+                                 '(if terraform landscape is not enabled in opsconfig.yaml '
                                  'this will have no impact)', action='store_true',
                             dest='raw_plan_output')
         parser.set_defaults(raw_plan_output=False)
         parser.add_argument('--path-name',
-                            help='in case multiple terraform paths are defined, this allows to specify which one to use when running terraform',
+                            help='in case multiple terraform paths are defined, '
+                                 'this allows to specify which one to use when running terraform',
                             type=str)
-        parser.add_argument('--terraform-path', type=str, default=None, help='Path to terraform files')
+        parser.add_argument(
+            '--terraform-path',
+            type=str,
+            default=None,
+            help='Path to terraform files')
         parser.add_argument('--skip-plan',
                             help='for use with "apply"; runs terraform apply without running a plan first',
                             action='store_true')
         parser.add_argument('--auto-approve',
-                            help='for use with "apply". Proceeds with the apply without waiting for user confirmation.',
+                            help='for use with "apply". Proceeds with the apply without'
+                                 'waiting for user confirmation.',
                             action='store_true')
-        parser.add_argument('terraform_args', type=str, nargs='*', help='Extra terraform args')
+        parser.add_argument(
+            'terraform_args',
+            type=str,
+            nargs='*',
+            help='Extra terraform args')
 
         return parser
 
@@ -122,15 +144,15 @@ class TerraformParserConfig(SubParserConfig):
 
         # Specify which terraform path to use
         ops clusters/qe1.yaml terraform plan --path-name terraformFolder1
-        
+
         # Run terraform v2 integration
         ops data/env=dev/region=va6/project=ee/cluster=experiments terraform plan
         '''
 
 
 class TerraformRunner(object):
-    def __init__(self, root_dir, cluster_config_path, cluster_config, inventory_generator, ops_config, template,
-                 execute):
+    def __init__(self, root_dir, cluster_config_path, cluster_config, inventory_generator, 
+                 ops_config, template, execute):
         self.cluster_config_path = cluster_config_path
         self.cluster_config = cluster_config
         self.root_dir = root_dir
@@ -141,15 +163,20 @@ class TerraformRunner(object):
 
     def check_ops_version(self):
         # Check if the cluster_config has a strict requirement of OPS version
-        # But only if 'ops_min_version' is specified. Not all clusters configs enforce this
+        # But only if 'ops_min_version' is specified. Not all clusters configs
+        # enforce this
         if "terraform" in self.cluster_config.conf:
             if "ops_min_version" in self.cluster_config.conf["terraform"]:
-                ops_min_version = str(self.cluster_config.conf["terraform"]["ops_min_version"])
+                ops_min_version = str(
+                    self.cluster_config.conf["terraform"]["ops_min_version"])
                 validate_ops_version(ops_min_version)
 
     def run(self, args):
         self.check_ops_version()
-        terraform_config_path = os.environ.get("TF_CLI_CONFIG_FILE", self.ops_config.terraform_config_path)
+        terraform_config_path = os.environ.get(
+                                                "TF_CLI_CONFIG_FILE",
+                                                self.ops_config.terraform_config_path
+                                                )
         os.environ["TF_CLI_CONFIG_FILE"] = terraform_config_path
         logger.info("Set TF_CLI_CONFIG_FILE=%s", terraform_config_path)
         if os.path.isdir(self.cluster_config_path):
@@ -171,44 +198,60 @@ class TerraformRunner(object):
     def run_v2_integration(self, args):
         logging.basicConfig(level=logging.INFO)
         config_path = os.path.join(self.cluster_config_path, '')
-        terraform_path = '../ee-k8s-infra/' if args.terraform_path is None else os.path.join(args.terraform_path, '')
+        terraform_path = '../ee-k8s-infra/' if args.terraform_path is None else os.path.join(
+            args.terraform_path, '')
         terraform_path = '{}compositions/terraform/'.format(terraform_path)
 
         ops_config = self.cluster_config.ops_config.config
         composition_order = ops_config["compositions"]["order"]["terraform"]
         excluded_config_keys = ops_config["compositions"]["excluded_config_keys"]
 
-        tf_config_generator = TerraformConfigGenerator(composition_order, excluded_config_keys)
+        tf_config_generator = TerraformConfigGenerator(
+            composition_order, excluded_config_keys)
         reverse_order = "destroy" == args.subcommand
-        compositions = tf_config_generator.get_sorted_compositions(config_path, reverse=reverse_order)
+        compositions = tf_config_generator.get_sorted_compositions(
+            config_path, reverse=reverse_order)
         if len(compositions) == 0:
-            raise Exception("No terraform compositions were detected in {}.".format(config_path))
+            raise Exception(
+                "No terraform compositions were detected in {}.".format(config_path))
 
-        return self.run_v2_compositions(args, config_path, tf_config_generator, terraform_path, compositions)
+        return self.run_v2_compositions(
+            args, config_path, tf_config_generator, terraform_path, compositions)
 
-    def run_v2_compositions(self, args, config_path, tf_config_generator, terraform_path, compositions):
+    def run_v2_compositions(self, args, config_path,
+                            tf_config_generator, terraform_path, compositions):
         should_finish = False
         return_code = 0
         for composition in compositions:
             if should_finish:
-                logger.info("Skipping 'terraform %s' for composition '%s' because of previous failure.", args.subcommand, composition)
+                logger.info(
+                    "Skipping 'terraform %s' for composition '%s' because of previous failure.",
+                    args.subcommand,
+                    composition)
                 continue
 
             logger.info("Running composition: %s", composition)
-            tf_config_generator.generate_files(config_path, terraform_path, composition)
-            command = self.run_v2_composition(args, terraform_path, composition)
+            tf_config_generator.generate_files(
+                config_path, terraform_path, composition)
+            command = self.run_v2_composition(
+                args, terraform_path, composition)
             return_code = self.execute(command)
             if return_code != 0:
                 should_finish = True
-                logger.error("Command finished with nonzero exit code for composition '%s'. Will skip remaining compositions.", composition)
+                logger.error(
+                    "Command finished with nonzero exit code for composition '%s'."
+                    "Will skip remaining compositions.", composition
+                )
 
         return return_code
 
     def run_v2_composition(self, args, terraform_path, composition):
         config = self.cluster_config
         config['terraform'] = {}
-        config['terraform']["path"] = "{}{}".format(terraform_path, composition)
+        config['terraform']["path"] = "{}{}".format(
+            terraform_path, composition)
         config['terraform']["variables_file"] = "variables.tfvars.json"
-        cluster_id = hashlib.md5(self.cluster_config_path.encode('utf-8')).hexdigest()[:6]
+        cluster_id = hashlib.md5(
+            self.cluster_config_path.encode('utf-8')).hexdigest()[:6]
         config['cluster'] = "auto_generated_{}".format(cluster_id)
         return self.run_composition(args, config)

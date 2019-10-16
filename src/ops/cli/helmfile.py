@@ -26,9 +26,20 @@ class HelmfileParserConfig(SubParserConfig):
         return 'Wrap common helmfile tasks using hierarchical configuration support'
 
     def configure(self, parser):
-        parser.add_argument('subcommand', help='plan | sync | apply | template', type=str)
-        parser.add_argument('extra_args', type=str, nargs='*', help='Extra args')
-        parser.add_argument('--helmfile-path', type=str, default=None, help='Dir to where helmfile.yaml is located')
+        parser.add_argument(
+            'subcommand',
+            help='plan | sync | apply | template',
+            type=str)
+        parser.add_argument(
+            'extra_args',
+            type=str,
+            nargs='*',
+            help='Extra args')
+        parser.add_argument(
+            '--helmfile-path',
+            type=str,
+            default=None,
+            help='Dir to where helmfile.yaml is located')
         return parser
 
     def get_epilog(self):
@@ -52,13 +63,16 @@ class HelmfileRunner(CompositionConfigGenerator, object):
     def run(self, args):
         config_path_prefix = os.path.join(self.cluster_config_path, '')
         default_helmfiles = '../ee-k8s-infra/compositions/helmfiles'
-        args.helmfile_path = default_helmfiles if args.helmfile_path is None else os.path.join(args.helmfile_path, '')
+        args.helmfile_path = default_helmfiles if args.helmfile_path is None else os.path.join(
+            args.helmfile_path, '')
 
         compositions = self.get_sorted_compositions(config_path_prefix)
         if len(compositions) == 0 or compositions[0] != "helmfiles":
-            raise Exception("Please provide the full path to composition=helmfiles")
+            raise Exception(
+                "Please provide the full path to composition=helmfiles")
         composition = compositions[0]
-        conf_path = self.get_config_path_for_composition(config_path_prefix, composition)
+        conf_path = self.get_config_path_for_composition(
+            config_path_prefix, composition)
         data = self.generate_helmfile_config(conf_path, args)
         self.setup_kube_config(data)
 
@@ -70,7 +84,8 @@ class HelmfileRunner(CompositionConfigGenerator, object):
             cluster_name = data['cluster']['fqdn']
             aws_profile = data['account']['name']
             region = data['region']['location']
-            file_location = self.generate_eks_kube_config(cluster_name, aws_profile, region)
+            file_location = self.generate_eks_kube_config(
+                cluster_name, aws_profile, region)
             os.environ['KUBECONFIG'] = file_location
 
     def generate_eks_kube_config(self, cluster_name, aws_profile, region):
@@ -81,7 +96,8 @@ class HelmfileRunner(CompositionConfigGenerator, object):
                                                                                                     file_location)
         return_code = self.execute(dict(command=cmd))
         if return_code != 0:
-            raise Exception("Unable to generate EKS kube config. Exit code was {}".format(return_code))
+            raise Exception(
+                "Unable to generate EKS kube config. Exit code was {}".format(return_code))
         return file_location
 
     @staticmethod
@@ -94,7 +110,8 @@ class HelmfileRunner(CompositionConfigGenerator, object):
         output_file = args.helmfile_path + "/hiera-generated.yaml"
         logger.info('Generating helmfiles config %s', output_file)
         return self.config_generator.generate_config(config_path=path,
-                                                     filters=["helm", "account", "region", "cluster"],
+                                                     filters=[
+                                                         "helm", "account", "region", "cluster"],
                                                      output_format="yaml",
                                                      output_file=output_file,
                                                      print_data=True)
