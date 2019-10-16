@@ -110,14 +110,16 @@ class HelmfileRunner(CompositionConfigGenerator, object):
         output_file = args.helmfile_path + "/hiera-generated.yaml"
         logger.info('Generating helmfiles config %s', output_file)
 
-        excluded_keys = []
-        filtered_keys = []
 
-        if "helmfile" in self.ops_config["compositions"]["excluded_config_keys"]:
-            excluded_keys += self.ops_config["compositions"]["excluded_config_keys"]["helmfile"]
+        try:
+            excluded_keys = self.ops_config["compositions"]["excluded_config_keys"]["helmfile"]
+        except KeyError:
+            excluded_keys = []
 
-        if "helmfile" in self.ops_config["compositions"]["filtered_output_keys"]:
-            filtered_keys += self.ops_config["compositions"]["filtered_output_keys"]["helmfile"]
+        try:
+            filtered_keys = self.ops_config["compositions"]["filtered_output_keys"]["helmfile"]
+        except KeyError:
+            filtered_keys = []
 
         return self.config_generator.generate_config(config_path=path,
                                                      filters=filtered_keys,
