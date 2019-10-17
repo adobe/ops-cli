@@ -8,11 +8,12 @@
 # OF ANY KIND, either express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
 
-import boto
 import json
 import re
 import sys
 import os
+
+import boto
 from boto import ec2
 from boto.pyami.config import Config
 
@@ -59,7 +60,7 @@ class Ec2Inventory(object):
         Find ips for the bastion box
         """
 
-        if not len(self.bastion_filters.values()):
+        if not self.bastion_filters.values():
             return
 
         self.bastion_filters['instance-state-name'] = 'running'
@@ -70,14 +71,15 @@ class Ec2Inventory(object):
                 return instance.ip_address
 
     def do_api_calls_update_cache(self):
-        ''' Do API calls to each region, and save data in cache files '''
+        """ Do API calls to each region, and save data in cache files """
 
         for region in self.regions:
             self.get_instances_by_region(region)
 
     def get_instances_by_region(self, region):
-        ''' Makes an AWS EC2 API call to the list of instances in a particular
-        region '''
+        """Makes an AWS EC2 API call to the list of instances in a particular
+        region
+        """
 
         try:
             cfg = Config()
@@ -93,10 +95,9 @@ class Ec2Inventory(object):
             # connect_to_region will fail "silently" by returning None if the
             # region name is wrong or not supported
             if conn is None:
-                print(
+                sys.exit(
                     "region name: {} likely not supported, or AWS is down. "
                     "connection to region failed.".format(region))
-                sys.exit(1)
 
             reservations = conn.get_all_instances(filters=self.filters)
 
@@ -119,21 +120,19 @@ class Ec2Inventory(object):
                 "{}, configure it with 'aws configure --profile {}'".format(e.message, self.boto_profile))
 
         except boto.exception.BotoServerError as e:
-            print(e)
-            sys.exit(1)
+            sys.exit(e)
 
     def get_instance(self, region, instance_id):
-        ''' Gets details about a specific instance '''
+        """ Gets details about a specific instance """
         conn = ec2.connect_to_region(region)
 
         # connect_to_region will fail "silently" by returning None if the
         # region name is wrong or not supported
         if conn is None:
-            print(
+            sys.exit(
                 "region name: %s likely not supported, or AWS is down. "
                 "connection to region failed." % region
             )
-            sys.exit(1)
 
         reservations = conn.get_all_instances([instance_id])
         for reservation in reservations:
@@ -172,15 +171,13 @@ class Ec2Inventory(object):
         for grouping in set(self.group_callbacks):
             given_groups = grouping(instance)
             for group in given_groups:
-                if not group:
-                    continue
-                self.push(self.inventory, group, dest)
+                if group:
+                    self.push(self.inventory, group, dest)
 
         # Group by all tags
         for tag in instance.tags.values():
-            if not tag:
-                continue
-            self.push(self.inventory, tag, dest)
+            if tag:
+                self.push(self.inventory, tag, dest)
 
         # Inventory: Group by region
         self.push(self.inventory, region, dest)
@@ -242,9 +239,9 @@ class Ec2Inventory(object):
         return instance_vars
 
     def get_host_info(self):
-        ''' Get variables about a specific host '''
+        """ Get variables about a specific host """
 
-        if len(self.index) == 0:
+        if not self.index:
             # Need to load index from cache
             self.load_index_from_cache()
 
@@ -262,8 +259,9 @@ class Ec2Inventory(object):
             self.get_host_info_dict_from_instance(instance), True)
 
     def push(self, my_dict, key, element):
-        ''' Push an element onto an array that may not have been defined in
-        the dict '''
+        """ Push an element onto an array that may not have been defined in
+        the dict
+        """
         if key == element:
             return
         group_info = my_dict.setdefault(key, [])
@@ -276,7 +274,7 @@ class Ec2Inventory(object):
                 group_info.append(element)
 
     def push_group(self, my_dict, key, element):
-        ''' Push a group as a child of another group. '''
+        """ Push a group as a child of another group. """
         parent_group = my_dict.setdefault(key, {})
         if not isinstance(parent_group, dict):
             parent_group = my_dict[key] = {'hosts': parent_group}
@@ -285,19 +283,20 @@ class Ec2Inventory(object):
             child_groups.append(element)
 
     def to_safe(self, word):
-        ''' Converts 'bad' characters in a string to underscores so they can be
-        used as Ansible groups '''
+        """ Converts 'bad' characters in a string to underscores so they can be
+        used as Ansible groups
+        """
 
         return re.sub(r"[^A-Za-z0-9\-]", "_", word)
 
     def json_format_dict(self, data, pretty=True):
-        ''' Converts a dict to a JSON object and dumps it as a formatted
-        string '''
+        """ Converts a dict to a JSON object and dumps it as a formatted
+        string
+        """
 
         if pretty:
             return json.dumps(data, sort_keys=True, indent=2)
-        else:
-            return json.dumps(data)
+        return json.dumps(data)
 
     def group_by_tag(self, param):
         self.group(lambda instance: [instance.tags.get(param, 'no-' + param)])
