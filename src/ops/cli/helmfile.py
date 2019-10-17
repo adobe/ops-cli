@@ -30,14 +30,10 @@ class HelmfileParserConfig(SubParserConfig):
 
     def configure(self, parser):
         parser.add_argument(
-            'subcommand',
-            help='plan | sync | apply | template',
-            type=str)
-        parser.add_argument(
-            'extra_args',
+            'helmfile_args',
             type=str,
             nargs='*',
-            help='Extra args')
+            help='Full subcommand of helmfile including params')
         parser.add_argument(
             '--helmfile-path',
             type=str,
@@ -51,9 +47,9 @@ class HelmfileParserConfig(SubParserConfig):
             # Run helmfile sync
             ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile sync
             # Run helmfile sync for a single chart
-            ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile sync -- --selector chart=nginx-controller
+            ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile -- --selector chart=nginx-controller sync
             # Run helmfile sync with concurrency flag
-            ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile --concurrency=1 sync -- --selector chart=nginx-controller
+            ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile -- --selector chart=nginx-controller sync --concurrency=1
         '''
 
 
@@ -153,10 +149,7 @@ class HelmfileRunner(CompositionConfigGenerator, object):
                                                      print_data=True)
 
     def get_helmfile_command(self, args):
-        extra_args = ' '.join(args.extra_args)
-        helm_concurent_proc = '--concurrency={}'.format(args.concurrency) if args.concurrency else ''
-        return "cd {helmfile_path} && helmfile {extra_args} {subcommand} {concurrency}".format(
+        helmfile_args = ' '.join(args.helmfile_args)
+        return "cd {helmfile_path} && helmfile {helmfile_args}".format(
             helmfile_path=args.helmfile_path,
-            extra_args=extra_args,
-            subcommand=args.subcommand,
-            concurrency=helm_concurent_proc)
+            helmfile_args=helmfile_args)
