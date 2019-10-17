@@ -9,6 +9,52 @@ We use multiple tools to manage our infrastructure at Adobe. The purpose of `ops
 `ops-cli` integrates with the Azure and AWS cli, in order to provide inventory, ssh, sync, tunnel and the possibility to run ansible playbooks on a fleet of EC2 instances.
 It can be used to add a layer of templating (using jinja2) on top of Terraform files. This is useful for removing duplicated code when it comes to spinning up infrastructure across multiple environments (stage/sandbox/prod) and across teams. Useful for both AWS and [Kubernetes deployments](https://github.com/adobe/ops-cli/tree/master/examples/aws-kubernetes).
 
+Table of Contents
+=================
+   * [How it works?](#how-it-works)
+   * [Use cases](#use-cases)
+      * [Manage AWS EC2 instances](#manage-aws-ec2-instances)
+      * [Terraform](#terraform)
+      * [Run terraform by using hierarchical configs](#run-terraform-by-using-hierarchical-configs)
+      * [Create Kubernetes cluster (using AWS EKS)](#create-kubernetes-cluster-using-aws-eks)
+   * [Installing](#installing)
+      * [Local](#local)
+         * [Virtualenv](#virtualenv)
+         * [Ops tool installation](#ops-tool-installation)
+            * [Python 3](#python-3)
+            * [Python 2](#python-2)
+         * [Terraform](#terraform-1)
+      * [Using docker image](#using-docker-image)
+            * [Optional: install ops in development mode](#optional-install-ops-in-development-mode)
+      * [Configuring](#configuring)
+         * [AWS](#aws)
+      * [Azure](#azure)
+      * [Examples](#examples)
+      * [Usage help](#usage-help)
+      * [More help](#more-help)
+      * [Tool configuration: .opsconfig.yaml](#tool-configuration-opsconfigyaml)
+         * [Inventory](#inventory)
+            * [AWS example](#aws-example)
+            * [Azure example](#azure-example)
+            * [Inventory usage](#inventory-usage)
+         * [Terraform](#terraform-2)
+            * [Terraform landscape](#terraform-landscape)
+         * [SSH](#ssh)
+            * [SSHPass](#sshpass)
+         * [Play](#play)
+         * [Run command](#run-command)
+         * [Sync files](#sync-files)
+         * [Noop](#noop)
+         * [Packer](#packer)
+      * [Secrets Management](#secrets-management)
+         * [Vault](#vault)
+         * [Amazon Secrets Manager (SSM)](#amazon-secrets-manager-ssm)
+      * [Using jinja2 filters in playbooks and terraform templates](#using-jinja2-filters-in-playbooks-and-terraform-templates)
+      * [SKMS](#skms)
+      * [Development](#development)
+         * [Running tests](#running-tests)
+      * [Troubleshooting](#troubleshooting)
+      
 # How it works?
 
 You define a cluster configuration, using a yaml file. The yaml file contains different kind of sections, one for each plugin. For instance, you could have a section for Terraform files, a section for AWS instructions, Kubernetes Helm charts and so forth.
