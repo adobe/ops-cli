@@ -11,7 +11,9 @@
 from .parser import SubParserConfig
 from .parser import configure_common_ansible_args, configure_common_arguments
 import getpass
+import logging
 
+logger = logging.getLogger(__name__)
 
 class PlaybookParserConfig(SubParserConfig):
     def get_name(self):
@@ -66,7 +68,8 @@ class PlaybookRunner(object):
         self.cluster_config_path = cluster_config_path
         self.cluster_config = cluster_config
 
-    def run(self, args):
+    def run(self, args, extra_args):
+        logger.info("Found extra_args %s", extra_args)
         inventory_path, ssh_config_path = self.inventory_generator.generate()
 
         ssh_config = "ANSIBLE_SSH_ARGS='-F %s'" % ssh_config_path
