@@ -92,10 +92,19 @@ class HelmfileRunner(CompositionConfigGenerator, object):
             os.environ['KUBECONFIG'] = file_location
         else:
             logger.info('cluster.fqdn key missing in cluster definition'
-                        '\n unable to generate EKS kubeconfig'
-                        '\n current default context is:\n %s '
+                        '\n unable to generate EKS kubeconfig\n '
+                        'looking for system kubernetes context')
+
+            try:
+                contexts, active_context = config.list_kube_config_contexts()
+            except Exception as ex:
+                logger.error('could not find system kubeconfig context')
+                logger.error(ex)
+                sys.exit()
+
+            logger.info('current default context is:\n %s '
                         '\n do you want to proceed with this context?',
-                        config.list_kube_config_contexts()[1])
+                        active_context)
             answer = six.moves.input("Only 'yes' will be accepted to approve.\n Enter a value:")
             if answer != "yes":
                 sys.exit()
