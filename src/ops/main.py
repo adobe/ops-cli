@@ -12,9 +12,9 @@ import sys
 import logging
 import os
 
-from .cli.config_generator import ConfigGeneratorParserConfig, ConfigGeneratorRunner
 from simpledi import Container, auto, cache, instance, ListInstanceProvider
 
+from .cli.config_generator import ConfigGeneratorParserConfig, ConfigGeneratorRunner
 from .cli.config import ClusterConfigGenerator, ClusterConfig
 from .cli.inventory import InventoryParserConfig
 from .cli.inventory import InventoryRunner
@@ -155,9 +155,8 @@ def run(args=None):
 
     if isinstance(output, int):
         return output
-    else:
-        ret = app_container.execute(output)
-        sys.exit(ret)
+    ret = app_container.execute(output)
+    sys.exit(ret)
 
 
 def get_cluster_config_path(root_dir, console_args):
@@ -165,8 +164,7 @@ def get_cluster_config_path(root_dir, console_args):
 
     if os.path.isabs(console_args.cluster_config_path):
         return console_args.cluster_config_path
-    else:
-        return os.path.join(root_dir, console_args.cluster_config_path)
+    return os.path.join(root_dir, console_args.cluster_config_path)
 
 
 def get_root_dir(args):
