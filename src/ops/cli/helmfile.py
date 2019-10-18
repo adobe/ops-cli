@@ -11,7 +11,10 @@
 
 import logging
 import os
+import six
+import sys
 
+from kubernetes import config
 from ops.cli.parser import SubParserConfig
 from ops.hierarchical.composition_config_generator import CompositionConfigGenerator
 
@@ -88,7 +91,15 @@ class HelmfileRunner(CompositionConfigGenerator, object):
                 cluster_name, aws_profile, region)
             os.environ['KUBECONFIG'] = file_location
         else:
-            raise Exception("Unable to generate EKS kube config. Missing key cluster.fqdn in generated config")
+            logger.info('cluster.fqdn key missing in cluster definition'
+                        '\n unable to generate EKS kubeconfig'
+                        '\n current default context is:\n %s '
+                        '\n do you want to proceed with this context?',
+                        config.list_kube_config_contexts()[1])
+            answer = six.moves.input("Only 'yes' will be accepted to approve.\n Enter a value:")
+            if answer != "yes":
+                sys.exit()
+
 
     def generate_eks_kube_config(self, cluster_name, aws_profile, region):
         file_location = self.get_tmp_file()
