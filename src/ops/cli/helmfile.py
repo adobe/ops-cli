@@ -87,6 +87,8 @@ class HelmfileRunner(CompositionConfigGenerator, object):
             file_location = self.generate_eks_kube_config(
                 cluster_name, aws_profile, region)
             os.environ['KUBECONFIG'] = file_location
+        else:
+            raise Exception("Unable to generate EKS kube config. Missing key cluster.fqdn in generated config")
 
     def generate_eks_kube_config(self, cluster_name, aws_profile, region):
         file_location = self.get_tmp_file()
