@@ -726,3 +726,6 @@ Either install the tool in a virtualenv or:
     brew install openssl  
     brew link openssl --force
 ```
+
+## License
+[Apache License 2.0](/LICENSE)
