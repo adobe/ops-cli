@@ -19,16 +19,14 @@ logger = logging.getLogger(__name__)
 def file_tree(config_path, search_fname):
     """ From the current dir returns a list with all the files in the file tree to the root dir """
 
-    parts = os.path.realpath(config_path).split('/')
+    parts = os.path.realpath(config_path)
 
     file_stack = []
 
     while parts:
-        dir_name = '/'.join(parts)
-        fname = dir_name + '/' + search_fname
+        fname = '/'.join((parts, search_fname))
         file_stack.append(fname)
-
-        parts = parts[:-1]
+        parts = parts.rpartition('/')[0]
 
     return file_stack
 
@@ -129,7 +127,7 @@ class OpsConfig(object):
 
     @property
     def ansible_config_path(self):
-        value = self.config.get('ansible.config_path', None)
+        value = self.config.get('ansible.config_path')
         if value:
             return value
         else:
