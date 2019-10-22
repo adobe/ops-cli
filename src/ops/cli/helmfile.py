@@ -81,7 +81,7 @@ class HelmfileRunner(CompositionConfigGenerator, object):
         return dict(command=command)
 
     def setup_kube_config(self, data):
-        if  data['helm']['global']['clusterType'] == 'eks':
+        if data['helm']['global']['clusterType'] == 'eks':
             cluster_name = data['helm']['global']['fqdn']
             aws_profile = data['helm']['global']['aws']['name']
             region = data['helm']['global']['region']['location']
