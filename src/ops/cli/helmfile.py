@@ -76,7 +76,7 @@ class HelmfileRunner(CompositionConfigGenerator, object):
     def setup_kube_config(self, data):
         if data['helm']['global']['clusterType'] == 'eks':
             cluster_name = data['helm']['global']['fqdn']
-            aws_profile = data['helm']['global']['aws']['name']
+            aws_profile = data['helm']['global']['aws']['profile']
             region = data['helm']['global']['region']['location']
             file_location = self.generate_eks_kube_config(
                 cluster_name, aws_profile, region)
