@@ -89,7 +89,7 @@ class HelmfileRunner(CompositionConfigGenerator, object):
                 cluster_name, aws_profile, region)
             os.environ['KUBECONFIG'] = file_location
         else:
-            logger.info('currently only eks type clusters supported')
+            logger.warning('currently only eks type clusters supported')
             sys.exit(1)
 
     def generate_eks_kube_config(self, cluster_name, aws_profile, region):
