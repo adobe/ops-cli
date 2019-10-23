@@ -8,12 +8,14 @@
 # OF ANY KIND, either express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
 
+import logging
 import getpass
 import subprocess
 
 from .parser import SubParserConfig
 from . import *
 
+logger = logging.getLogger(__name__)
 
 class SyncParserConfig(SubParserConfig):
     def configure(self, parser):
@@ -64,7 +66,8 @@ class SyncRunner(object):
         self.cluster_config = cluster_config
         self.ops_config = ops_config
 
-    def run(self, args):
+    def run(self, args, extra_args):
+        logger.info("Found extra_args %s", extra_args)
         inventory_path, ssh_config_path = self.inventory_generator.generate()
         src = PathExpr(args.src)
         dest = PathExpr(args.dest)

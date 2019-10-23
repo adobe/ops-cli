@@ -30,15 +30,6 @@ class HelmfileParserConfig(SubParserConfig):
 
     def configure(self, parser):
         parser.add_argument(
-            'subcommand',
-            help='plan | sync | apply | template',
-            type=str)
-        parser.add_argument(
-            'extra_args',
-            type=str,
-            nargs='*',
-            help='Extra args')
-        parser.add_argument(
             '--helmfile-path',
             type=str,
             default=None,
@@ -51,7 +42,9 @@ class HelmfileParserConfig(SubParserConfig):
             # Run helmfile sync
             ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile sync
             # Run helmfile sync for a single chart
-            ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile sync -- --selector chart=nginx-controller
+            ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile --selector chart=nginx-controller sync
+            # Run helmfile sync with concurrency flag
+            ops data/env=dev/region=va6/project=ee/cluster=experiments/composition=helmfiles helmfile --selector chart=nginx-controller sync --concurrency=1
         '''
 
 
@@ -63,7 +56,7 @@ class HelmfileRunner(CompositionConfigGenerator, object):
         self.cluster_config_path = cluster_config_path
         self.execute = execute
 
-    def run(self, args):
+    def run(self, args, extra_args):
         config_path_prefix = os.path.join(self.cluster_config_path, '')
         default_helmfiles = '../ee-k8s-infra/compositions/helmfiles'
         args.helmfile_path = default_helmfiles if args.helmfile_path is None else os.path.join(
@@ -79,7 +72,7 @@ class HelmfileRunner(CompositionConfigGenerator, object):
         data = self.generate_helmfile_config(conf_path, args)
         self.setup_kube_config(data)
 
-        command = self.get_helmfile_command(args)
+        command = self.get_helmfile_command(args, extra_args)
         return dict(command=command)
 
     def setup_kube_config(self, data):
@@ -150,6 +143,8 @@ class HelmfileRunner(CompositionConfigGenerator, object):
                                                      output_file=output_file,
                                                      print_data=True)
 
-    def get_helmfile_command(self, args):
-        cmd = ' '.join(args.extra_args + [args.subcommand])
-        return "cd {} && helmfile {}".format(args.helmfile_path, cmd)
+    def get_helmfile_command(self, args, extra_args):
+        helmfile_args = ' '.join(extra_args)
+        return "cd {helmfile_path} && helmfile {helmfile_args}".format(
+            helmfile_path=args.helmfile_path,
+            helmfile_args=helmfile_args)

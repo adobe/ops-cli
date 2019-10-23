@@ -20,7 +20,6 @@ import pkg_resources
 
 logger = logging.getLogger(__name__)
 
-
 class TerraformParserConfig(SubParserConfig):
     def get_name(self):
         return 'terraform'
@@ -171,7 +170,8 @@ class TerraformRunner(object):
                     self.cluster_config.conf["terraform"]["ops_min_version"])
                 validate_ops_version(ops_min_version)
 
-    def run(self, args):
+    def run(self, args, extra_args):
+        logger.info("Found extra_args %s", extra_args)
         self.check_ops_version()
         terraform_config_path = os.environ.get(
                                                 "TF_CLI_CONFIG_FILE",

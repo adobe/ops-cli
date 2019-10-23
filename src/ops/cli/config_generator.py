@@ -12,6 +12,7 @@ import logging
 from himl.main import ConfigRunner
 from ops.cli.parser import SubParserConfig
 
+logger = logging.getLogger(__name__)
 
 class ConfigGeneratorParserConfig(SubParserConfig):
     def get_name(self):
@@ -35,7 +36,8 @@ class ConfigGeneratorRunner(object):
     def __init__(self, cluster_config_path):
         self.cluster_config_path = cluster_config_path
 
-    def run(self, args):
+    def run(self, args, extra_args):
+        logger.info("Found extra_args %s", extra_args)
         logging.basicConfig(level=logging.INFO)
         args.path = self.cluster_config_path
         if args.output_file is None:

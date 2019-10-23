@@ -9,12 +9,14 @@
 # governing permissions and limitations under the License.
 
 import yaml
+import logging
 
 from ansible.parsing.yaml.dumper import AnsibleDumper
 from ansible.utils.color import stringc
 from . import display
 from .parser import configure_common_arguments, SubParserConfig
 
+logger = logging.getLogger(__name__)
 
 class InventoryParserConfig(SubParserConfig):
     def get_name(self):
@@ -45,7 +47,8 @@ class InventoryRunner(object):
         self.ansible_inventory = ansible_inventory
         self.cluster_name = cluster_name
 
-    def run(self, args):
+    def run(self, args, extra_args):
+        logger.info("Found extra_args %s", extra_args)
         for host in self.get_inventory_hosts(args):
             group_names = [group.name for group in host.get_groups()]
             group_names = sorted(group_names)
