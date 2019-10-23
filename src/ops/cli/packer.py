@@ -8,9 +8,11 @@
 # OF ANY KIND, either express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
 
+import logging
 from ops.cli.parser import SubParserConfig
 from . import aws
 
+logger = logging.getLogger(__name__)
 
 class PackerParserConfig(SubParserConfig):
     def get_name(self):
@@ -39,7 +41,8 @@ class PackerRunner(object):
         self.cluster_config = cluster_config
         self.root_dir = root_dir
 
-    def run(self, args):
+    def run(self, args, extra_args):
+        logger.info("Found extra_args %s", extra_args)
         config_all = self.cluster_config.all()
 
         packer_variables = config_all['packer']['variables']

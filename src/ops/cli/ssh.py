@@ -20,7 +20,9 @@ import sys
 import getpass
 import re
 import os
+import logging
 
+logger = logging.getLogger(__name__)
 IP_HOST_REG_EX = re.compile(r'^((\d+)\.(\d+)\.(\d+)\.(\d+):)?(\d+)$')
 
 
@@ -126,7 +128,8 @@ class SshRunner(object):
         self.cluster_config = cluster_config
         self.ansible_inventory = ansible_inventory
 
-    def run(self, args):
+    def run(self, args, extra_args):
+        logger.info("Found extra_args %s", extra_args)
         if args.keygen:
             if self.cluster_config.has_ssh_keys:
                 err('Cluster already has ssh keys, refusing to overwrite')

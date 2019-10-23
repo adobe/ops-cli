@@ -8,8 +8,10 @@
 # OF ANY KIND, either express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
 
+import logging
 from .parser import configure_common_ansible_args, SubParserConfig
 
+logger = logging.getLogger(__name__)
 
 class CommandParserConfig(SubParserConfig):
     def get_epilog(self):
@@ -61,7 +63,8 @@ class CommandRunner(object):
         self.cluster_config_path = cluster_config_path
         self.cluster_config = cluster_config
 
-    def run(self, args):
+    def run(self, args, extra_args):
+        logger.info("Found extra_args %s", extra_args)
         inventory_path, ssh_config_path = self.inventory_generator.generate()
         limit = args.host_pattern
 

@@ -75,6 +75,10 @@ class RootParser(object):
         RootParser._check_args_for_unicode(args)
         return self._get_parser().parse_args(args)
 
+    def parse_known_args(self, args=None):
+        RootParser._check_args_for_unicode(args)
+        return self._get_parser().parse_known_args(args)
+
 
 class SubParserConfig(object):
     def get_name(self):

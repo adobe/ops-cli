@@ -113,13 +113,14 @@ class AppContainer(Container):
         self.inventory_plugins = inventory_plugins
 
     def configure(self):
-        args = self.root_parser.parse_args(self.argv)
+        args, extra_args = self.root_parser.parse_known_args(self.argv)
         configure_logging(args)
 
-        logger.debug('cli args: %s', args)
+        logger.debug('cli args: %s, extra_args: %s', args, extra_args)
 
         # Bind some very useful dependencies
         self.console_args = cache(instance(args))
+        self.console_extra_args = cache(instance(extra_args))
         self.command = lambda c: self.console_args.command
         self.cluster_config_path = cache(
             lambda c: get_cluster_config_path(
@@ -144,7 +145,7 @@ class AppContainer(Container):
         command_name = '%s_runner' % self.console_args.command
         runner_instance = self.get_instance(command_name)
 
-        return runner_instance.run(self.console_args)
+        return runner_instance.run(self.console_args, self.console_extra_args)
 
 
 def run(args=None):
