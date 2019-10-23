@@ -11,10 +11,8 @@
 
 import logging
 import os
-import six
 import sys
 
-from kubernetes import config
 from ops.cli.parser import SubParserConfig
 from ops.hierarchical.composition_config_generator import CompositionConfigGenerator
 
@@ -76,32 +74,16 @@ class HelmfileRunner(CompositionConfigGenerator, object):
         return dict(command=command)
 
     def setup_kube_config(self, data):
-        if 'cluster' in data and 'fqdn' in data['cluster'] and 'eks' in data['cluster']['fqdn']:
-            cluster_name = data['cluster']['fqdn']
-            aws_profile = data['account']['name']
-            region = data['region']['location']
+        if data['helm']['global']['clusterType'] == 'eks':
+            cluster_name = data['helm']['global']['fqdn']
+            aws_profile = data['helm']['global']['aws']['name']
+            region = data['helm']['global']['region']['location']
             file_location = self.generate_eks_kube_config(
                 cluster_name, aws_profile, region)
             os.environ['KUBECONFIG'] = file_location
         else:
-            logger.info('cluster.fqdn key missing in cluster definition'
-                        '\n unable to generate EKS kubeconfig\n '
-                        'looking for system kubernetes context')
-
-            try:
-                contexts, active_context = config.list_kube_config_contexts()
-            except Exception as ex:
-                logger.error('could not find system kubeconfig context')
-                logger.error(ex)
-                sys.exit()
-
-            logger.info('current default context is:\n %s '
-                        '\n do you want to proceed with this context?',
-                        active_context)
-            answer = six.moves.input("Only 'yes' will be accepted to approve.\n Enter a value:")
-            if answer != "yes":
-                sys.exit()
-
+            logger.warning('currently only eks type clusters supported')
+            sys.exit(1)
 
     def generate_eks_kube_config(self, cluster_name, aws_profile, region):
         file_location = self.get_tmp_file()
