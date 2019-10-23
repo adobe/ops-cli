@@ -637,10 +637,10 @@ request_scheduler: org.apache.cassandra.scheduler.NoScheduler
 # the request scheduling. Currently the only valid option is keyspace.
 # request_scheduler_id: keyspace
 
-# index_interval controls the sampling of entries from the primrary
+# index_interval controls the sampling of entries from the primary
 # row index in terms of space versus time.  The larger the interval,
-# the smaller and less effective the sampling will be.  In technicial
-# terms, the interval coresponds to the number of index entries that
+# the smaller and less effective the sampling will be.  In technical
+# terms, the interval corresponds to the number of index entries that
 # are skipped between taking each sample.  All the sampled entries
 # must fit in memory.  Generally, a value between 128 and 512 here
 # coupled with a large key cache size on CFs results in the best trade

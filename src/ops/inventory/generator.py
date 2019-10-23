@@ -78,7 +78,7 @@ class CachedInventoryGenerator(object):
             default_cache_dir, self.cluster_config['inventory']))
 
     def clear_cache(self):
-        # Note: This function is not used when --refesh-cache is passed
+        # Note: This function is not used when --refresh-cache is passed
         cache = self._get_cache()
         if cache:
             display.display(

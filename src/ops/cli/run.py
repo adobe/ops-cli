@@ -43,7 +43,7 @@ class CommandParserConfig(SubParserConfig):
             'extra_args',
             type=str,
             nargs='*',
-            help='Extra ansible argumetns')
+            help='Extra ansible arguments')
 
     def get_help(self):
         return 'Runs a command against hosts in the cluster'

@@ -371,7 +371,7 @@ class WebApiClient(object):
             return self.status
 
     def get_response_header(self):
-        """Returns the reponse header of the last request"""
+        """Returns the response header of the last request"""
         return self.response_header
 
     def get_response_string(self):

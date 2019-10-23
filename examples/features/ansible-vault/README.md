@@ -1,4 +1,4 @@
-## Minimal example to cover usage of vault with ansible playbboks
+## Minimal example to cover usage of vault with ansible playbooks
 
 ### Editing vault items
 
