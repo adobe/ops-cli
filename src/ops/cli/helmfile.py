@@ -56,9 +56,8 @@ class HelmfileRunner(CompositionConfigGenerator, object):
 
     def run(self, args, extra_args):
         config_path_prefix = os.path.join(self.cluster_config_path, '')
-        default_helmfiles = '../ee-k8s-infra/compositions/helmfiles'
-        args.helmfile_path = default_helmfiles if args.helmfile_path is None else os.path.join(
-            args.helmfile_path, '')
+        args.helmfile_path = self.ops_config['helmfile.root_path']
+        args.helmfile_path = os.path.join(args.helmfile_path, '')
 
         compositions = self.get_sorted_compositions(config_path_prefix)
         if len(compositions) == 0 or compositions[0] != "helmfiles":

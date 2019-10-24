@@ -198,8 +198,9 @@ class TerraformRunner(object):
     def run_v2_integration(self, args):
         logging.basicConfig(level=logging.INFO)
         config_path = os.path.join(self.cluster_config_path, '')
-        terraform_path = '../ee-k8s-infra/' if args.terraform_path is None else os.path.join(
-            args.terraform_path, '')
+
+        terraform_path = self.ops_config["terraform.root_path"]
+        terraform_path = os.path.join(terraform_path, '')
         terraform_path = '{}compositions/terraform/'.format(terraform_path)
 
         ops_config = self.cluster_config.ops_config.config
