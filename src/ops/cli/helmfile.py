@@ -13,6 +13,7 @@ import logging
 import os
 import sys
 
+from ops.git_utils import checkout_repo
 from ops.cli.parser import SubParserConfig
 from ops.hierarchical.composition_config_generator import CompositionConfigGenerator
 
@@ -68,6 +69,12 @@ class HelmfileRunner(CompositionConfigGenerator, object):
             config_path_prefix, composition)
         data = self.generate_helmfile_config(conf_path, args)
         self.setup_kube_config(data)
+
+        checkout_repo(
+            self.ops_config["helmfile.root_path"],
+            self.ops_config['helmfile.generated_config_path'],
+            lambda c: c['project']['ee_version']
+        )
 
         command = self.get_helmfile_command(args, extra_args)
         return dict(command=command)

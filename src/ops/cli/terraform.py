@@ -11,6 +11,7 @@
 import os
 import hashlib
 import logging
+from ops.git_utils import checkout_repo
 from ops.cli.parser import SubParserConfig
 from ops.terraform.terraform_cmd_generator import TerraformCommandGenerator
 from ops.hierarchical.composition_config_generator import TerraformConfigGenerator
@@ -247,6 +248,11 @@ class TerraformRunner(object):
         return return_code
 
     def run_v2_composition(self, args, terraform_path, composition):
+        checkout_repo(
+            self.ops_config["terraform.root_path"],
+            self.ops_config['terraform.generated_config_path'],
+            lambda c: c['config']['project']['ee_version']
+        )
         config = self.cluster_config
         config['terraform'] = {}
         config['terraform']["path"] = "{}{}".format(
