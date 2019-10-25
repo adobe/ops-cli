@@ -14,15 +14,32 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
+
+def setup_repo(repo_path, upstream_repo):
+    """
+    Ensure that the repo is present or clone it from upstream otherwise.
+    """
+    try:
+        git.Repo(repo_path, search_parent_directories=True)
+    except git.NoSuchPathError:
+        logger.warning(
+            "Repo '%s' not found. Cloning from upstream '%s'", repo_path, upstream_repo
+        )
+        git.Repo.clone_from(upstream_repo, repo_path)
+
+
 def checkout_repo(repo_path, config_path, get_version):
     with open(config_path) as f:
         conf = yaml.load(f, Loader=yaml.FullLoader)
 
     version = get_version(conf)
     repo = git.Repo(repo_path, search_parent_directories=True)
+
     repo.git.fetch()
     repo.git.checkout(version)
 
-    logger.info("Checked out repo '%s' to version '%s'",
-                repo.git.rev_parse("--show-toplevel"),
-                version)
+    logger.info(
+        "Checked out repo '%s' to version '%s'",
+        repo.git.rev_parse("--show-toplevel"),
+        version,
+    )

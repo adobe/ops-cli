@@ -13,7 +13,7 @@ import logging
 import os
 import sys
 
-from ops.git_utils import checkout_repo
+from ops.git_utils import checkout_repo, setup_repo
 from ops.cli.parser import SubParserConfig
 from ops.hierarchical.composition_config_generator import CompositionConfigGenerator
 
@@ -54,6 +54,11 @@ class HelmfileRunner(CompositionConfigGenerator, object):
         self.ops_config = ops_config
         self.cluster_config_path = cluster_config_path
         self.execute = execute
+
+        setup_repo(
+            self.ops_config["helmfile.root_path"],
+            self.ops_config["helmfile.upstream_repo"],
+        )
 
     def run(self, args, extra_args):
         config_path_prefix = os.path.join(self.cluster_config_path, '')
@@ -110,7 +115,7 @@ class HelmfileRunner(CompositionConfigGenerator, object):
             return tmp_file.name
 
     def generate_helmfile_config(self, path, args):
-        output_file = args.helmfile_path + "/hiera-generated.yaml"
+        output_file = os.path.join(args.helmfile_path, "hiera-generated.yaml")
         logger.info('Generating helmfiles config %s', output_file)
 
 

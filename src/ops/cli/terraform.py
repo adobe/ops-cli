@@ -11,7 +11,7 @@
 import os
 import hashlib
 import logging
-from ops.git_utils import checkout_repo
+from ops.git_utils import checkout_repo, setup_repo
 from ops.cli.parser import SubParserConfig
 from ops.terraform.terraform_cmd_generator import TerraformCommandGenerator
 from ops.hierarchical.composition_config_generator import TerraformConfigGenerator
@@ -197,6 +197,11 @@ class TerraformRunner(object):
         return generator.generate(args)
 
     def run_v2_integration(self, args):
+        setup_repo(
+            self.ops_config["terraform.root_path"],
+            self.ops_config["terraform.upstream_repo"],
+        )
+
         logging.basicConfig(level=logging.INFO)
         config_path = os.path.join(self.cluster_config_path, '')
 
@@ -253,6 +258,7 @@ class TerraformRunner(object):
             self.ops_config['terraform.generated_config_path'],
             lambda c: c['config']['project']['ee_version']
         )
+
         config = self.cluster_config
         config['terraform'] = {}
         config['terraform']["path"] = "{}{}".format(
