@@ -225,7 +225,7 @@ class ManagedVaultSecret(object):
             if self.actual_policy['engine'] == 'passgen':
                 try:
                     import passgen
-                except ImportErrori as e:
+                except ImportError as e:
                     display(
                         'MANAGED-SECRET: You need passgen python module '
                         'in order to use the passgen engine.'
