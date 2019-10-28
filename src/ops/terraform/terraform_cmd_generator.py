@@ -341,7 +341,7 @@ class TerraformCommandGenerator(object):
         home_dir = os.environ.get('HOME')
         plan_variables['shared_credentials_file'] = '"{}/.aws/credentials"'.format(
             home_dir)
-        # plan_variables['access_key'] = '"%s"' % aws.acess_key(profile_name)
+        # plan_variables['access_key'] = '"%s"' % aws.access_key(profile_name)
         # plan_variables['secret_key'] = '"%s"' % aws.secret_key(profile_name)
 
     def get_terraform_path(self):

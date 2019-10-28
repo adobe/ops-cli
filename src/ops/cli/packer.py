@@ -50,7 +50,7 @@ class PackerRunner(object):
         if config_all['packer']['clouds'] is not None:
             if 'aws' in config_all['packer']['clouds']:
                 profile_name = config_all['packer']['clouds']['aws']['boto_profile']
-                packer_variables['aws_access_key'] = aws.acess_key(
+                packer_variables['aws_access_key'] = aws.access_key(
                     profile_name)
                 packer_variables['aws_secret_key'] = aws.secret_key(
                     profile_name)
