@@ -170,7 +170,7 @@ def skms(args):
             dictionary_of_hosts[info['cluster']]['hosts'].append(
                 info['name'].encode('utf-8'))
 
-        # tie some extra information to hostname in the meta varaiables
+        # tie some extra information to hostname in the meta variables
         dictionary_of_hosts['_meta']['hostvars'][info['name'].encode('utf-8')] = {
             'ec2_id': info['device_id'].encode('utf-8'),
             'ansible_ssh_host': info['primary_ip_address'].encode('utf-8'),

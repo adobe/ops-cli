@@ -555,7 +555,7 @@ usage: ops cluster_config_path run [-h] [--ask-sudo-pass] [--limit LIMIT]
 positional arguments:
   host_pattern     Limit the run to the following hosts
   shell_command    Shell command you want to run
-  extra_args       Extra ansible argumetns
+  extra_args       Extra ansible arguments
 
 optional arguments:
   -h, --help       show this help message and exit
@@ -644,12 +644,12 @@ A cluster file will only need to use a construct like the following:
 db_password: "{{'secret/campaign/generated_password'|managed_vault_secret(policy=128)}}"
 ```
 Which will translate behind the scenes in :
-- look up in vault the secrets at secret/campaign/generated_password in the default key 'value' (Adobe convention that can be overriden with the key parameter)
+- look up in vault the secrets at secret/campaign/generated_password in the default key 'value' (Adobe convention that can be overridden with the key parameter)
 - if the value there is missing, generate a new secret using the engine passgen with a policy of length 128 characters
 - return the generated value
 - if the value at that path already exist, just return that value.
 This allows us to just refer in cluster files a secret that actually exists in vault and make sure we only generate it once - if it was already created by os or any other system, we will just use what is already there.
-The reference is by means of fixed form jinja call  added to the cluster file, which ends up interpretted later during the templating phase.
+The reference is by means of fixed form jinja call  added to the cluster file, which ends up interpreted later during the templating phase.
 
 ### Amazon Secrets Manager (SSM)
 

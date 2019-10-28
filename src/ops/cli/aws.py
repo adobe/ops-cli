@@ -11,7 +11,7 @@
 from . import get_output
 
 
-def acess_key(profile):
+def access_key(profile):
     return get_output(
         'aws configure get aws_access_key_id --profile %s' % profile)
 
