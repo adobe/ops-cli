@@ -9,7 +9,7 @@ WORKDIR /sources
 RUN wget -q -O terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip \
     && unzip terraform.zip -d /usr/local/bin \
     && rm -rf terraform.zip
-RUN apk add --virtual=build bash gcc libffi-dev musl-dev openssl-dev make
+RUN apk add --virtual=build bash gcc libffi-dev musl-dev openssl-dev make git
 RUN ln -s /usr/local/bin/python /usr/bin/python
 RUN pip --no-cache-dir install virtualenv \
     && virtualenv /azure-cli \
