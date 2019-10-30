@@ -78,7 +78,7 @@ class HelmfileRunner(CompositionConfigGenerator, object):
         checkout_repo(
             self.ops_config["helmfile.root_path"],
             self.ops_config['helmfile.generated_config_path'],
-            lambda c: c['project']['ee_version']
+            lambda c: c['infrastructure']['version']
         )
 
         command = self.get_helmfile_command(args, extra_args)

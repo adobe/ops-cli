@@ -256,7 +256,7 @@ class TerraformRunner(object):
         checkout_repo(
             self.ops_config["terraform.root_path"],
             self.ops_config['terraform.generated_config_path'],
-            lambda c: c['config']['project']['ee_version']
+            lambda c: c['config']['infrastructure']['version']
         )
 
         config = self.cluster_config
