@@ -1,4 +1,5 @@
 ops.egg-info/
+*.DS_Store
 *.plan
 *.tf.json
 *.tfvars.json

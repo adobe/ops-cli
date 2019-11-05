@@ -14,5 +14,5 @@ hvac==0.9.3
 passgen
 inflection==0.3.1
 kubernetes==9.0.0
-himl==0.2.2
+himl==0.3.0
 six
