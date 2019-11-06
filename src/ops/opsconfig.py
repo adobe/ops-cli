@@ -75,6 +75,18 @@ class OpsConfig(object):
         # Remove .terraform folder before each terraform plan, to prevent reuse of installed backends (it can confuse terraform when the cluster backend is
         # not the same for all of them)
         'terraform.remove_local_cache': False,
+
+        # Where the terraform repo will be stored.
+        'terraform.root_path': '~/.ops/terraform',
+
+        # From where to fetch the terraform repo if it doesn't exist.
+        'terraform.upstream_repo': None,
+
+        # Where the helmfile repo will be stored.
+        'helmfile.root_path': '~/.ops/helmfile',
+
+        # From where to fetch the helmfile repo if it doesn't exist.
+        'helmfile.upstream_repo': None,
     }
 
     DEFAULT_PATHS = [

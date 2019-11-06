@@ -146,7 +146,7 @@ class TerraformCommandGenerator(object):
             if self.ops_config['terraform.landscape'] and not args.raw_plan_output:
                 landscape = '| landscape'
 
-            cmd = "cd {root_dir}/{terraform_path} && " \
+            cmd = "cd {terraform_path} && " \
                   "{remove_local_cache}" \
                   "terraform get -update && " \
                   "{terraform_init_command}" \
@@ -154,7 +154,6 @@ class TerraformCommandGenerator(object):
                   "terraform plan " \
                   "{variables_file}" \
                   "-out={plan_file} -refresh=false -input=false {vars} {state_argument}".format(
-                      root_dir=self.root_dir,
                       terraform_path=terraform_path,
                       terraform_init_command=terraform_init_command,
                       vars=vars,
@@ -174,13 +173,12 @@ class TerraformCommandGenerator(object):
             self.inventory_generator.clear_cache()
             if args.skip_plan:
                 # Run Terraform apply without running a plan first
-                cmd = "cd {root_dir}/{terraform_path} && " \
+                cmd = "cd {terraform_path} && " \
                       "{remove_local_cache}" \
                       "{terraform_init_command}" \
                       "rm -f {plan_file} && terraform apply {vars}" \
                       "-refresh=true {state_argument} {variables_file} {auto_approve}".format(
                           plan_file=plan_file,
-                          root_dir=self.root_dir,
                           state_argument=state_argument,
                           remove_local_cache=remove_local_cache,
                           terraform_init_command=terraform_init_command,
@@ -190,11 +188,10 @@ class TerraformCommandGenerator(object):
                           auto_approve=auto_approve
                       )
             else:
-                cmd = "cd {root_dir}/{terraform_path} && " \
+                cmd = "cd {terraform_path} && " \
                       "terraform apply " \
                       "-refresh=true {state_out_argument} {plan_file}; code=$?; rm -f {plan_file}; exit $code".format(
                           plan_file=plan_file,
-                          root_dir=self.root_dir,
                           state_out_argument=state_out_argument,
                           terraform_path=terraform_path,
                           vars=vars,
@@ -203,13 +200,12 @@ class TerraformCommandGenerator(object):
 
         elif args.subcommand == 'destroy':
             generate_module_templates = True
-            cmd = "cd {root_dir}/{terraform_path} && " \
+            cmd = "cd {terraform_path} && " \
                   "{remove_local_cache}" \
                   "{terraform_init_command}" \
                   "terraform plan -destroy " \
                   "-refresh=true {vars} {variables_file} {state_argument} && " \
                   "terraform destroy {vars} {variables_file} {state_argument} -refresh=true {auto_approve}".format(
-                      root_dir=self.root_dir,
                       terraform_path=terraform_path,
                       variables_file=variables_file,
                       vars=vars,
@@ -219,30 +215,27 @@ class TerraformCommandGenerator(object):
                       auto_approve=auto_approve
                   )
         elif args.subcommand == 'output':
-            cmd = "cd {root_dir}/{terraform_path} && " \
+            cmd = "cd {terraform_path} && " \
                   "terraform output {state_argument} {output}".format(
-                      root_dir=self.root_dir,
                       terraform_path=terraform_path,
                       output=args.var,
                       state_argument=state_argument
                   )
         elif args.subcommand == 'refresh':
             generate_module_templates = True
-            cmd = "cd {root_dir}/{terraform_path} && " \
+            cmd = "cd {terraform_path} && " \
                   "terraform get -update && " \
                   "terraform refresh {variables_file} {state_argument} {vars}".format(
-                      root_dir=self.root_dir,
                       terraform_path=terraform_path,
                       vars=vars,
                       variables_file=variables_file,
                       state_argument=state_argument
                   )
         elif args.subcommand == 'taint' or args.subcommand == 'untaint':
-            cmd = "cd {root_dir}/{terraform_path} && " \
+            cmd = "cd {terraform_path} && " \
                   "{remove_local_cache}" \
                   "{terraform_init_command}" \
                   "terraform {command} {state_argument} -module={module} {resource}".format(
-                      root_dir=self.root_dir,
                       command=args.subcommand,
                       terraform_path=terraform_path,
                       resource=args.resource,
@@ -257,17 +250,15 @@ class TerraformCommandGenerator(object):
             else:
                 state = state_file
 
-            cmd = "cd {root_dir}/{terraform_path} && " \
+            cmd = "cd {terraform_path} && " \
                   "terraform show {state}".format(
-                      root_dir=self.root_dir,
                       terraform_path=terraform_path,
                       state=state
                   )
         elif args.subcommand == 'import':
             generate_module_templates = True
-            cmd = "cd {root_dir}/{terraform_path} && " \
+            cmd = "cd {terraform_path} && " \
                   "terraform import {state_argument} {vars} module.{module}.{resource} {name}".format(
-                      root_dir=self.root_dir,
                       command=args.subcommand,
                       terraform_path=terraform_path,
                       resource=args.resource,
@@ -278,9 +269,8 @@ class TerraformCommandGenerator(object):
                   )
         elif args.subcommand == 'console':
             generate_module_templates = True
-            cmd = "cd {root_dir}/{terraform_path} && " \
+            cmd = "cd {terraform_path} && " \
                   "terraform {command} {state_argument} {vars}".format(
-                      root_dir=self.root_dir,
                       command=args.subcommand,
                       terraform_path=terraform_path,
                       state_argument=state_argument,
@@ -288,12 +278,11 @@ class TerraformCommandGenerator(object):
                   )
         elif args.subcommand == 'validate':
             generate_module_templates = True
-            cmd = "cd {root_dir}/{terraform_path} && " \
+            cmd = "cd {terraform_path} && " \
                   "{remove_local_cache}" \
                   "{terraform_init_command} " \
                   "terraform {command} {vars} {variables_file}".format(
                       command=args.subcommand,
-                      root_dir=self.root_dir,
                       remove_local_cache=remove_local_cache,
                       terraform_init_command=terraform_init_command,
                       terraform_path=terraform_path,
@@ -305,12 +294,11 @@ class TerraformCommandGenerator(object):
             #  - command = "state push errored.tfstate"
             #  - command = "force-unlock <LOCK_ID>"
             generate_module_templates = True
-            cmd = "cd {root_dir}/{terraform_path} && " \
+            cmd = "cd {terraform_path} && " \
                   "{remove_local_cache}" \
                   "{terraform_init_command} " \
                   "terraform {command}".format(
                       command=args.subcommand,
-                      root_dir=self.root_dir,
                       remove_local_cache=remove_local_cache,
                       terraform_init_command=terraform_init_command,
                       terraform_path=terraform_path,

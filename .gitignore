@@ -12,3 +12,4 @@ dist/
 buildrunner.results
 .idea
 .env
+src/ops_cli.egg-info
