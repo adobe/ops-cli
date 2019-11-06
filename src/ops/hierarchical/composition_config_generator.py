@@ -100,9 +100,10 @@ class TerraformConfigGenerator(CompositionConfigGenerator, object):
                                               output_file=output_file,
                                               print_data=True)
 
-    def generate_variables_config(
-            self, composition, config_path, composition_path):
-        output_file = "{}variables.tfvars.json".format(composition_path)
+    def generate_variables_config(self, composition, config_path, composition_path):
+        output_file = os.path.expanduser(
+            os.path.join(composition_path, "variables.tfvars.json")
+        )
         logger.info('Generating terraform config %s', output_file)
 
         excluded_keys = ["helm", "provider"]
@@ -143,7 +144,7 @@ class HierarchicalConfigGenerator(object):
                                              exclude_keys=exclude_keys,
                                              enclosing_key=enclosing_key,
                                              output_format=output_format,
-                                             output_file=output_file,
+                                             output_file=os.path.expanduser(output_file),
                                              print_data=print_data)
 
     @staticmethod

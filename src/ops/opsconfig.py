@@ -82,17 +82,11 @@ class OpsConfig(object):
         # From where to fetch the terraform repo if it doesn't exist.
         'terraform.upstream_repo': None,
 
-        # From where to read the generated config for terraform.
-        'terraform.generated_config_path': '~/.ops/terraform/variables.tfvars.json',
-
         # Where the helmfile repo will be stored.
         'helmfile.root_path': '~/.ops/helmfile',
 
         # From where to fetch the helmfile repo if it doesn't exist.
         'helmfile.upstream_repo': None,
-
-        # From where to read the generated config for helmfile releases.
-        'helmfile.generated_config_path': '~/.ops/helmfile/hiera-generated.yaml'
     }
 
     DEFAULT_PATHS = [
