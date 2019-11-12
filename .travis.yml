@@ -39,9 +39,7 @@ deploy:
     skip_cleanup: true
     api_key: "$GITHUB_API_KEY"
     file_glob: true
-    file:
-      - "dist/**/*"
-      - "requirements.txt"
+    file: "dist/**/*"
     on:
       tags: true
   - provider: script
