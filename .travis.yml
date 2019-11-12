@@ -29,19 +29,23 @@ before_deploy:
   - git add requirements.txt
 deploy:
   - provider: pypi
+    skip_cleanup: true
     user: adobe
     password:
       secure: lRjP7ej0IeJilu8JedGfKS9an9JZNGLYG6ODdMbfJODblvEWzImjBkHXUeVAJ7YVmppT2kv5f2zGfrO2JiFUVevnlvlbRU0owQf2kCRIeDmafqqHk9WwdsWuOHDbRZ5zE+hkP7dQh3XG4OM3f9//9CI0gk19AkZs5d76aFrDgjkIAMMV7aMw2gz7blkHU/n7ZKRdcLzsdFOFrSS507kiI1x3NTGgzCU+1jYqds6JLLVJMXCVlSlxQV9SkP3HcvE+JIVQ9UfsuwwoFFFAOm/tEYmJAMIeOhIbCNcXYRdwRHByoEuG3OHIChLKfPpf+c47G1oReFPtSmZVbYHdkr3gPoKU05X0zbNY8lN/biuYq6ykp0nB6+swst3kG/l4HRx5WaCtPDB6TefTzFtIvwETuAKdFq6UoB1sSgu3GAK2hucFPsKYLEXPct2i8O3GAtgUrT5VSPgx9oEk9fNqhonP2kC95yEiBeRdZ7ZdqWdFKApQccBmrncp/vRVPDKAlGWiVg22yPYbbxgW/f7qX2vvCqc9BUJFsgv4FfInHWhfWA6pX6slNIEj/92g8ecBGBDPGTojIAZ2GpU6DFzlGMhNQWQm7XJaq/s/E6ZaUfi9JkT3MmEX5YZ+01yh2ovQR1wq/ZyxdUkQS1DBvrk8sIV8ZUFurpNV8uILUtLr8eJUyUs=
     on:
       tags: true
   - provider: releases
-    api_key: "$GITHUB_API_KEY"
     skip_cleanup: true
+    api_key: "$GITHUB_API_KEY"
     file_glob: true
-    file: "dist/**/*"
+    file:
+      - "dist/**/*"
+      - "requirements.txt"
     on:
       tags: true
   - provider: script
+    skip_cleanup: true
     script: bash build_scripts/docker_push.sh
     on:
       tags: true
