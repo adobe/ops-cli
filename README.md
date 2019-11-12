@@ -1,6 +1,9 @@
 # Ops CLI
 [![Build Status](https://www.travis-ci.com/adobe/ops-cli.svg?token=8uHqfhgsxdvJ93qWAxhn&branch=master)](https://www.travis-ci.com/adobe/ops-cli) [![Docker pull](https://img.shields.io/docker/pulls/adobe/ops-cli)](https://hub.docker.com/r/adobe/ops-cli) [![](https://images.microbadger.com/badges/version/adobe/ops-cli.svg)](https://microbadger.com/images/adobe/ops-cli "Get your own version badge on microbadger.com") [![License](https://img.shields.io/github/license/adobe/ops-cli)](https://github.com/adobe/ops-cli/blob/master/LICENSE)
 
+**From version 2.0 onward, `ops-cli` requires Python3.  
+If you're still using Python2, use `ops-cli` version <2.0**
+
 **ops-cli** is a python wrapper for [Terraform](https://www.terraform.io/), [Ansible](https://www.ansible.com/) and SSH for cloud automation. 
 
 We use multiple tools to manage our infrastructure at Adobe. The purpose of `ops-cli` is to gather the common cluster configurations in a single place and, based on these, interact with the above mentioned tools. In this way, we can avoid duplication and can quickly spin up new clusters (either production or development ones). All we need to do is customize the cluster configuration file ([example here](https://github.com/adobe/ops-cli/blob/master/examples/aws-kubernetes/clusters/my-kubernetes-cluster.yaml)).
@@ -8,8 +11,10 @@ We use multiple tools to manage our infrastructure at Adobe. The purpose of `ops
 `ops-cli` integrates with the Azure and AWS cli, in order to provide inventory, ssh, sync, tunnel and the possibility to run ansible playbooks on a fleet of EC2 instances.
 It can be used to add a layer of templating (using jinja2) on top of Terraform files. This is useful for removing duplicated code when it comes to spinning up infrastructure across multiple environments (stage/sandbox/prod) and across teams. Useful for both AWS and [Kubernetes deployments](https://github.com/adobe/ops-cli/tree/master/examples/aws-kubernetes).
 
-Table of Contents
-=================
+# Table of Contents
+<!--ts-->
+   * [Ops CLI](#ops-cli)
+   * [Table of Contents](#table-of-contents)
    * [How it works?](#how-it-works)
    * [Use cases](#use-cases)
       * [Manage AWS EC2 instances](#manage-aws-ec2-instances)
@@ -21,13 +26,11 @@ Table of Contents
          * [Virtualenv](#virtualenv)
          * [Ops tool installation](#ops-tool-installation)
             * [Python 3](#python-3)
-            * [Python 2](#python-2)
          * [Terraform](#terraform-1)
       * [Using docker image](#using-docker-image)
-            * [Optional: install ops in development mode](#optional-install-ops-in-development-mode)
       * [Configuring](#configuring)
          * [AWS](#aws)
-      * [Azure](#azure)
+         * [Azure](#azure)
       * [Examples](#examples)
       * [Usage help](#usage-help)
       * [More help](#more-help)
@@ -50,10 +53,16 @@ Table of Contents
          * [Amazon Secrets Manager (SSM)](#amazon-secrets-manager-ssm)
       * [Using jinja2 filters in playbooks and terraform templates](#using-jinja2-filters-in-playbooks-and-terraform-templates)
       * [SKMS](#skms)
-      * [Development](#development)
-         * [Running tests](#running-tests)
-      * [Troubleshooting](#troubleshooting)
-      
+   * [Development](#development)
+      * [Install ops in development mode](#install-ops-in-development-mode)
+      * [Running tests](#running-tests)
+   * [Troubleshooting](#troubleshooting)
+   * [License](#license)
+
+<!-- Added by: amuraru, at: Tue Nov 12 10:23:17 EET 2019 -->
+
+<!--te-->
+
 # How it works?
 
 You define a cluster configuration, using a yaml file. The yaml file contains different kind of sections, one for each plugin. For instance, you could have a section for Terraform files, a section for AWS instructions, Kubernetes Helm charts and so forth.
@@ -142,27 +151,8 @@ workon ops
 # uninstall previous `ops` version (if you have it)
 pip uninstall ops --yes
 
-# install ops-cli v2.0.0 stable release
+# install ops-cli v2.0.1 stable release
 pip install --upgrade ops-cli
-```
-
-#### Python 2
-```sh
-# Make sure pip is up to date
-curl https://bootstrap.pypa.io/2.6/get-pip.py | python2
-
-# Install virtualenv
-pip2 install -U virtualenv
-
-# create virtualenv
-virtualenv ops
-source ops/bin/activate
-
-# uninstall previous `ops` version (if you have it)
-pip uninstall ops --yes
-
-# install ops-cli v2.0.0 stable release
-pip2 install --upgrade ops-cli
 ```
 
 
@@ -177,7 +167,7 @@ You can try out `ops-cli`, by using docker. The docker image has all required pr
 
 To start out a container, running the latest `ops-cli` docker image run:
 ```sh
-docker run -it adobe/ops-cli:2.0.0 bash
+docker run -it adobe/ops-cli:2.0.1 bash
 ```
 
 After the container has started, you can start using `ops-cli`:
@@ -199,24 +189,16 @@ ops clusters/my-kubernetes-cluster.yaml terraform --path-name aws-eks plan
 # in order to setup aws-kubernetes follow the steps from https://github.com/adobe/ops-cli/blob/master/examples/aws-kubernetes/README.md
 ```
 
-#### Optional: install `ops` in development mode
-
-```
-git clone https://github.com/adobe/ops-cli.git
-cd ops
-# Install openssl
-brew install openssl libyaml
-env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" python setup.py develop
-```
 
 ## Configuring
+
 ### AWS
 If you plan to use ops with AWS, you must configure credentials for each account
 ```shell
 $ aws configure --profile aws_account_name
 ```
 
-## Azure
+### Azure
 TBD
 
 ## Examples
@@ -460,15 +442,15 @@ In case you want to use the OSX Keychain to store your password and reuse across
 
 1. Open `Keychain Access` app on OSX
   1. Create a new keychain (`File -> New Keychain`), let's say `aam`
-  1. Select the `aam` keychain and add a new password entry in this (`File -> New Password Item`):
+  2. Select the `aam` keychain and add a new password entry in this (`File -> New Password Item`):
     - Name: `idm`
     - Kind: `application password`
     - Account: `your_ldap_account` (e.g. `johnsmith`)
     - Where: `idm`
 
-1. Create `$HOME/bin` dir - this is where the scripts below are saved
+2. Create `$HOME/bin` dir - this is where the scripts below are saved
 
-1. Create `~/bin/askpass` script and update the ldap account there:
+3. Create `~/bin/askpass` script and update the ldap account there:
 
   ```bash
   cat > ~/bin/askpass  <<"EOF"
@@ -700,13 +682,23 @@ username: <username>
 password: <password>
 ```
 
-## Development
+# Development
 
-### Running tests
+## Install `ops` in development mode
+
+```
+git clone https://github.com/adobe/ops-cli.git
+cd ops
+# Install openssl
+brew install openssl libyaml
+env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" python setup.py develop
+```
+
+## Running tests
 
 - on your machine: `py.test tests`
 
-## Troubleshooting
+# Troubleshooting
 
 - Permission issues when installing: you should install the tool in a python virtualenv
 
@@ -726,5 +718,5 @@ Either install the tool in a virtualenv or:
     brew link openssl --force
 ```
 
-## License
+# License
 [Apache License 2.0](/LICENSE)

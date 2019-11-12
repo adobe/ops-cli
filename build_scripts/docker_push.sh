@@ -2,5 +2,5 @@
 set -e
 
 echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-docker tag ops adobe/ops-cli:2.0.0
-docker push adobe/ops-cli:2.0.0
+docker tag ops adobe/ops-cli:2.0.1
+docker push adobe/ops-cli:2.0.1
