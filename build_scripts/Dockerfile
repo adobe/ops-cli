@@ -41,6 +41,8 @@ RUN adduser ops -Du 2342 -h /home/ops \
     # Install ops python package
     && pip --no-cache-dir install --upgrade /dist/ops-*.tar.gz \
     && rm -rf /dist \
+    # Dry-run
+    && ops --verbose -h \
     && apk del --purge build \
     && wget -q https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl \
     && chmod +x /usr/local/bin/kubectl \
