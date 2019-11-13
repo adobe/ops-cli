@@ -80,7 +80,8 @@ class HelmfileRunner(CompositionConfigGenerator, object):
         checkout_repo(
             self.ops_config["helmfile.root_path"],
             os.path.join(args.helmfile_path, HIERA_OUTPUT_FILENAME),
-            lambda c: c['infrastructure']['helmfile']['version']
+            lambda c: c['infrastructure']['helmfile']['version'],
+            git_fetch=args.git_fetch
         )
 
         command = self.get_helmfile_command(args, extra_args)

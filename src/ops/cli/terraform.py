@@ -259,7 +259,8 @@ class TerraformRunner(object):
         checkout_repo(
             self.ops_config["terraform.root_path"],
             os.path.join(terraform_path, composition + os.sep + TERRAFORM_VARIABLES_FILENAME),
-            lambda c: c['config']['infrastructure']['terraform']['version']
+            lambda c: c['config']['infrastructure']['terraform']['version'],
+            git_fetch=args.git_fetch
         )
 
         config = self.cluster_config

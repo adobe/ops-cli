@@ -34,6 +34,18 @@ class RootParser(object):
             help='The cluster config path cluster.yaml')
         parser.add_argument('--root-dir', type=str, help='The root of the resource tree - '
                                                          'it can be an absolute path or relative to the current dir')
+
+        gitfetchHelp = "Whether to call `git fetch` and receive updates from the infrastructure repository." \
+                       " To be used in conjunction with the terraform or helmfile commands"
+        git_fetch_parser = parser.add_mutually_exclusive_group(required=False)
+        git_fetch_parser.add_argument(
+            '--git-fetch', dest='git_fetch', action='store_true', help=gitfetchHelp
+        )
+        git_fetch_parser.add_argument(
+            '--no-git-fetch', dest='git_fetch', action='store_false', help=gitfetchHelp
+        )
+        parser.set_defaults(git_fetch=True)
+
         parser.add_argument('--verbose', '-v', action='count',
                             help='Get more verbose output from commands')
         configure_common_arguments(parser)

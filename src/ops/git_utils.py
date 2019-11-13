@@ -31,14 +31,16 @@ def setup_repo(repo_path, upstream_repo):
         git.Repo.clone_from(upstream_repo, repo_path)
 
 
-def checkout_repo(repo_path, config_path, get_version):
+def checkout_repo(repo_path, config_path, get_version, git_fetch=True):
     with open(os.path.expanduser(config_path)) as f:
         conf = yaml.load(f, Loader=yaml.FullLoader)
 
     version = get_version(conf)
     repo = git.Repo(repo_path, search_parent_directories=True)
 
-    repo.git.fetch()
+    if git_fetch:
+        repo.git.fetch()
+
     repo.git.checkout(version)
 
     logger.info(
