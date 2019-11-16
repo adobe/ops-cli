@@ -34,7 +34,6 @@ class RootParser(object):
             help='The cluster config path cluster.yaml')
         parser.add_argument('--root-dir', type=str, help='The root of the resource tree - '
                                                          'it can be an absolute path or relative to the current dir')
-
         parser.add_argument('--verbose', '-v', action='count',
                             help='Get more verbose output from commands')
         configure_common_arguments(parser)
