@@ -39,12 +39,17 @@ def checkout_repo(repo_path, config_path, get_version, git_fetch=True):
     repo = git.Repo(repo_path, search_parent_directories=True)
 
     if git_fetch:
+        logger.info(
+            "Fetching remote git refs on repo '%s'",
+            repo.git.rev_parse("--show-toplevel"),
+        )
+
         repo.git.fetch()
 
-    repo.git.checkout(version)
-
     logger.info(
-        "Checked out repo '%s' to version '%s'",
+        "Checking out repo '%s' to version '%s'",
         repo.git.rev_parse("--show-toplevel"),
         version,
     )
+
+    repo.git.checkout(version)
