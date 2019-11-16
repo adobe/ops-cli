@@ -20,6 +20,10 @@ def setup_repo(repo_path, upstream_repo):
     """
     Ensure that the repo is present or clone it from upstream otherwise.
     """
+    # no-op if the upstream repo is not defined.
+    if not upstream_repo:
+        return
+
     repo_path = os.path.expanduser(repo_path)
 
     try:
@@ -30,21 +34,18 @@ def setup_repo(repo_path, upstream_repo):
         )
         git.Repo.clone_from(upstream_repo, repo_path)
 
+    logger.info("Fetching remote git refs on repo '%s'", repo_path)
 
-def checkout_repo(repo_path, config_path, get_version, git_fetch=True):
+    repo = git.Repo(repo_path, search_parent_directories=True)
+    repo.git.fetch()
+
+
+def checkout_repo(repo_path, config_path, get_version):
     with open(os.path.expanduser(config_path)) as f:
         conf = yaml.load(f, Loader=yaml.FullLoader)
 
     version = get_version(conf)
     repo = git.Repo(repo_path, search_parent_directories=True)
-
-    if git_fetch:
-        logger.info(
-            "Fetching remote git refs on repo '%s'",
-            repo.git.rev_parse("--show-toplevel"),
-        )
-
-        repo.git.fetch()
 
     logger.info(
         "Checking out repo '%s' to version '%s'",

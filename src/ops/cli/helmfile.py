@@ -59,7 +59,7 @@ class HelmfileRunner(CompositionConfigGenerator, object):
 
         setup_repo(
             self.ops_config["helmfile.root_path"],
-            self.ops_config["helmfile.upstream_repo"],
+            self.ops_config["helmfile.upstream_repo"]
         )
 
     def run(self, args, extra_args):
@@ -80,8 +80,7 @@ class HelmfileRunner(CompositionConfigGenerator, object):
         checkout_repo(
             self.ops_config["helmfile.root_path"],
             os.path.join(args.helmfile_path, HIERA_OUTPUT_FILENAME),
-            lambda c: c['infrastructure']['helmfile']['version'],
-            git_fetch=args.git_fetch
+            lambda c: c['infrastructure']['helmfile']['version']
         )
 
         command = self.get_helmfile_command(args, extra_args)

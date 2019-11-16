@@ -202,7 +202,7 @@ class TerraformRunner(object):
     def run_v2_integration(self, args):
         setup_repo(
             self.ops_config["terraform.root_path"],
-            self.ops_config["terraform.upstream_repo"],
+            self.ops_config["terraform.upstream_repo"]
         )
 
         logging.basicConfig(level=logging.INFO)
@@ -259,8 +259,7 @@ class TerraformRunner(object):
         checkout_repo(
             self.ops_config["terraform.root_path"],
             os.path.join(terraform_path, composition + os.sep + TERRAFORM_VARIABLES_FILENAME),
-            lambda c: c['config']['infrastructure']['terraform']['version'],
-            git_fetch=args.git_fetch
+            lambda c: c['config']['infrastructure']['terraform']['version']
         )
 
         config = self.cluster_config
