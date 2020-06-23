@@ -65,7 +65,7 @@ resource "aws_security_group_rule" "aam-eks-cluster-ingress-node-https" {
 }
 
 resource "aws_security_group_rule" "aam-eks-cluster-ingress-workstation-https" {
-  cidr_blocks       = ["${var.whitelist_cidrs}"]
+  cidr_blocks       = ["${var.allowed_cidrs}"]
   description       = "Allow workstation to communicate with the cluster API Server"
   from_port         = 443
   protocol          = "tcp"

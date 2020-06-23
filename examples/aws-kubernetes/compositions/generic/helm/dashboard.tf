@@ -20,7 +20,7 @@ resource "kubernetes_service" "dashboard" {
     selector {
       app = "kubernetes-dashboard"
     }
-    load_balancer_source_ranges = ["${var.whitelist_cidrs}"]
+    load_balancer_source_ranges = ["${var.allowed_cidrs}"]
     port {
       port = 443
       target_port = 8443
