@@ -22,9 +22,9 @@ variable "short-region" {
   type    = "string"
 }
 
-variable "whitelist_cidrs" {
+variable "allowed_cidrs" {
   default = [
-    "{{ terraform.kubernetes.aws.whitelist_my_ip }}"
+    "{{ terraform.kubernetes.aws.allow_my_ip }}"
   ]
   type = "list"
 }

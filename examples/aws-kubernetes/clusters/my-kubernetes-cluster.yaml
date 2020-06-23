@@ -20,7 +20,7 @@ terraform:
       account_id: 11111111111 # enter your AWS account id here. This is used for the cluster-autoscaler helm chart.
       short_region: va6
       availability_zones: '["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d"]'
-      whitelist_my_ip: "192.168.0.1/32" # enter your public ip (eg. by using http://ipv4.icanhazip.com)
+      allow_my_ip: "192.168.0.1/32" # enter your public ip (eg. by using http://ipv4.icanhazip.com)
       tags:
         Cluster: mykubernetescluster
       worker_nodes:
