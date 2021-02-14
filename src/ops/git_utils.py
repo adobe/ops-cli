@@ -33,7 +33,7 @@ def setup_repo(repo_path, upstream_repo):
 
 def checkout_repo(repo_path, config_path, get_version):
     with open(os.path.expanduser(config_path)) as f:
-        conf = yaml.load(f, Loader=yaml.FullLoader)
+        conf = yaml.load(f, Loader=yaml.SafeLoader)
 
     version = get_version(conf)
     repo = git.Repo(repo_path, search_parent_directories=True)
