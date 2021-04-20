@@ -2,7 +2,7 @@ simpledi>=0.2
 awscli==1.16.206
 boto3==1.9.196
 boto==2.49.0
-ansible==2.7.16
+ansible==2.9.20
 PyYAML==5.1
 azure-common==1.1.20
 azure==4.0.0
