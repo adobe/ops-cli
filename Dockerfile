@@ -1,4 +1,4 @@
-FROM python:3.7-alpine3.10 AS compile-image
+FROM python:3-alpine AS compile-image
 ARG TERRAFORM_VERSION="0.12.6"
 ARG AZURE_CLI_VERSION="2.0.67"
 
@@ -14,7 +14,7 @@ RUN ln -s /usr/local/bin/python /usr/bin/python
 RUN pip --no-cache-dir install virtualenv \
     && virtualenv /azure-cli \
     && source /azure-cli/bin/activate \
-    && pip install azure-cli==${AZURE_CLI_VERSION} \
+    && env CRYPTOGRAPHY_DONT_BUILD_RUST=1 pip install azure-cli==${AZURE_CLI_VERSION} \
     && deactivate
 RUN bash build_scripts/freeze_requirements.sh
 RUN bash build_scripts/run_tests.sh
