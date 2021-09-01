@@ -150,7 +150,7 @@ workon ops
 # uninstall previous `ops` version (if you have it)
 pip uninstall ops --yes
 
-# install ops-cli v2.0.10 stable release
+# install ops-cli v2.0.11 stable release
 pip install --upgrade ops-cli
 ```
 
@@ -166,7 +166,7 @@ You can try out `ops-cli`, by using docker. The docker image has all required pr
 
 To start out a container, running the latest `ops-cli` docker image run:
 ```sh
-docker run -it ghcr.io/adobe/ops-cli:2.0.10 bash
+docker run -it ghcr.io/adobe/ops-cli:2.0.11 bash
 ```
 
 After the container has started, you can start using `ops-cli`:
