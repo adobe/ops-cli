@@ -1,5 +1,5 @@
 # Ops CLI
-[![Build Status](https://www.travis-ci.com/adobe/ops-cli.svg?token=8uHqfhgsxdvJ93qWAxhn&branch=master)](https://www.travis-ci.com/adobe/ops-cli) [![Docker pull](https://img.shields.io/docker/pulls/adobe/ops-cli)](https://hub.docker.com/r/adobe/ops-cli) [![](https://images.microbadger.com/badges/version/adobe/ops-cli.svg)](https://microbadger.com/images/adobe/ops-cli "Get your own version badge on microbadger.com") [![License](https://img.shields.io/github/license/adobe/ops-cli)](https://github.com/adobe/ops-cli/blob/master/LICENSE)
+[![Build status](https://github.com/adobe/ops-cli/actions/workflows/release.yml/badge.svg)](https://github.com/adobe/ops-cli/actions/workflows/release.yml) [![Docker image](https://img.shields.io/badge/Docker-ghcr.io/adobe/opscli-brightgreen.svg?style=flat-square)](https://github.com/adobe/ops-cli/pkgs/container/ops-cli) [![License](https://img.shields.io/github/license/adobe/ops-cli)](https://github.com/adobe/ops-cli/blob/master/LICENSE)
 
 **From version 2.0 onward, `ops-cli` requires Python3.  
 If you're still using Python2, use `ops-cli` version <2.0**
@@ -166,7 +166,7 @@ You can try out `ops-cli`, by using docker. The docker image has all required pr
 
 To start out a container, running the latest `ops-cli` docker image run:
 ```sh
-docker run -it adobe/ops-cli:2.0.7 bash
+docker run -it ghcr.io/adobe/ops-cli:2.0.7 bash
 ```
 
 After the container has started, you can start using `ops-cli`:
