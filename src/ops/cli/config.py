@@ -13,6 +13,7 @@ import os
 
 import yaml
 
+from ansible.module_utils.common.collections import ImmutableDict
 from ansible.parsing.dataloader import DataLoader
 from ansible.plugins.loader import PluginLoader
 from ansible.template import Templar
@@ -20,6 +21,7 @@ from ansible.utils.vars import load_extra_vars
 from ansible.vars.manager import VariableManager
 from ops.cli import display
 from ansible import constants as C
+from ansible import context
 import logging
 
 logger = logging.getLogger(__name__)
@@ -113,9 +115,12 @@ class JinjaConfigGenerator(object):
             get_cluster_name(
                 self.cluster_config_path))
 
-        options = collections.namedtuple('options', 'extra_vars')
-        variable_manager.extra_vars = load_extra_vars(
-            loader=data_loader, options=options(extra_vars=extra_vars))
+        context_cliargs = dict(context.CLIARGS)
+        context_cliargs['extra_vars'] = tuple(extra_vars)
+
+        context.CLIARGS = ImmutableDict(context_cliargs)
+        variable_manager._extra_vars = load_extra_vars(
+            loader=data_loader)
 
         variables = variable_manager.get_vars()
 
@@ -149,9 +154,12 @@ class ClusterConfigGenerator(object):
                 self.cluster_config_path))
         extra_vars.extend(configurations)
 
-        options = collections.namedtuple('options', 'extra_vars')
-        variable_manager.extra_vars = load_extra_vars(
-            loader=data_loader, options=options(extra_vars=extra_vars))
+        context_cliargs = dict(context.CLIARGS)
+        context_cliargs['extra_vars'] = tuple(extra_vars)
+
+        context.CLIARGS = ImmutableDict(context_cliargs)
+        variable_manager._extra_vars = load_extra_vars(
+            loader=data_loader)
 
         read_variables = variable_manager.get_vars()
 
