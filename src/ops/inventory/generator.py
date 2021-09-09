@@ -142,7 +142,7 @@ class InventoryGenerator(object):
         if 'inventory' not in self.cluster_config:
             raise Exception(
                 "No inventory entry found in configuration for " +
-                self.cluster_config['cluster'])
+                self.cluster_config.get('cluster', 'None'))
 
         errors = []
         inventory_settings = self.cluster_config.get('inventory', {})
