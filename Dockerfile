@@ -68,14 +68,11 @@ USER ops
 ENV HOME=/home/ops
 WORKDIR /home/ops
 
-RUN helm plugin install https://github.com/databus23/helm-diff
-
-
-
 USER root
-RUN HELM_HOME=/home/ops/.helm helm plugin install https://github.com/futuresimple/helm-secrets
-RUN HELM_HOME=/home/ops/.helm helm plugin install https://github.com/rimusz/helm-tiller
-RUN chown -R ops:ops /home/ops/.helm
+RUN helm plugin install https://github.com/databus23/helm-diff
+RUN helm plugin install https://github.com/jkroepke/helm-secrets --version v3.8.2
+RUN helm plugin install https://github.com/rimusz/helm-tiller
+
 
 COPY --from=compile-image /azure-cli /home/ops/.local/azure-cli
 COPY build_scripts/bin/az /home/ops/bin/
