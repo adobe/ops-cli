@@ -115,14 +115,10 @@ class JinjaConfigGenerator(object):
             get_cluster_name(
                 self.cluster_config_path))
 
-        options = {}
-        for var in extra_vars:
-            vals = var.split('=')
-            if len(vals) == 2:
-              options[vals[0]] = vals[1]
-            else:
-              options[vals[0]] = ''
-        context.CLIARGS = ImmutableDict(extra_vars=[options])
+        context_cliargs = dict(context.CLIARGS)
+        context_cliargs['extra_vars'] = tuple(extra_vars)
+
+        context.CLIARGS = ImmutableDict(context_cliargs)
         variable_manager._extra_vars = load_extra_vars(
             loader=data_loader)
 
@@ -158,14 +154,10 @@ class ClusterConfigGenerator(object):
                 self.cluster_config_path))
         extra_vars.extend(configurations)
 
-        options = {}
-        for var in extra_vars:
-            vals = var.split('=')
-            if len(vals) == 2:
-              options[vals[0]] = vals[1]
-            else:
-              options[vals[0]] = ''
-        context.CLIARGS = ImmutableDict(extra_vars=[options])
+        context_cliargs = dict(context.CLIARGS)
+        context_cliargs['extra_vars'] = tuple(extra_vars)
+
+        context.CLIARGS = ImmutableDict(context_cliargs)
         variable_manager._extra_vars = load_extra_vars(
             loader=data_loader)
 
