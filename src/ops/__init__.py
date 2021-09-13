@@ -83,8 +83,10 @@ class Executor(object):
         return exit_code
 
     def shadow_credentials(self, cmd):
+        if isinstance(cmd, (bytes, bytearray)):
+            cmd = cmd.decode("utf-8")
         cmd = re.sub(r"secret_key=.{20}", "secret_key=****", cmd)
-        cmd = re.sub(r'access_key=.{10}', 'access_key=****', cmd)
+        cmd = re.sub(r"access_key=.{10}", "access_key=****", cmd)
 
         return cmd
 
