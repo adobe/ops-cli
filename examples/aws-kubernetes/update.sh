@@ -31,5 +31,4 @@ brew_install_or_upgrade kubernetes-helm
 brew_install_or_upgrade kubectl
 brew_install_or_upgrade jq
 
-helm init --client-only
 helm repo update

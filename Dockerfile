@@ -68,8 +68,6 @@ USER ops
 ENV HOME=/home/ops
 WORKDIR /home/ops
 
-RUN helm init --client-only
-
 RUN curl -sSL https://github.com/databus23/helm-diff/releases/download/v${HELM_DIFF_VERSION}/helm-diff-linux.tgz | tar xvz -C $(helm home)/plugins
 
 
