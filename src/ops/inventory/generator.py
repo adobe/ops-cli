@@ -118,7 +118,7 @@ class InventoryGenerator(object):
         self.cache_dir = ops_config.get('cache.dir')
 
         self.generated_path = None
-        self.ssh_config_path = None
+        self.ssh_config_path = {}
         self.errors = []
 
     def generate(self):
@@ -322,4 +322,4 @@ class AnsibleInventory(object):
         return self.inventory.get_vars(str(host))
 
     def get_ssh_config(self):
-        return self.ssh_config_path
+        return self.ssh_config_path.get("ssh.config")

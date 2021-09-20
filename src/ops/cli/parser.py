@@ -109,5 +109,7 @@ def configure_common_ansible_args(parser):
                         help='Ask sudo pass for commands that need sudo')
     parser.add_argument('--limit', type=str,
                         help='Limit run to a specific server subgroup. Eg: --limit newton-dcs')
+    parser.add_argument('--noscb', action='store_false', dest='use_scb',
+                        help='Disable use of Shell Control Box (SCB) even it is enabled in the cluster config')
 
     return parser

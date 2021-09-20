@@ -1,0 +1,8 @@
+
+inventory:
+  - plugin: test_plugin
+
+scb:
+  enabled: true
+  host: "scb.example.com"
+  proxy_port: 2222
