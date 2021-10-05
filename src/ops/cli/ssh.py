@@ -68,7 +68,7 @@ class SshParserConfig(SubParserConfig):
         parser.add_argument(
             '--proxy',
             action="store_true",
-            help="Use SSH proxy, must pass --local or when using scb, either --auto_scb_port or" 
+            help="Use SSH proxy, must pass --local or when using scb, either --auto_scb_port or "
                  "no extra option which will use scb.proxy_port from cluster_config")
         parser.add_argument(
             '--nossh',
@@ -88,9 +88,10 @@ class SshParserConfig(SubParserConfig):
         parser.add_argument(
             '--auto_scb_port',
             action='store_true',
-            help='When using Shell Control Box (SCB) and creating a proxy, a random port is generated, '
-                 'which will be used in the ssh config for all playbook, run and sync operations'
-                )
+            help='When using Shell Control Box (SCB) and creating a proxy,'
+                 'a random port is generated, which will be used in the ssh config '
+                 'for all playbook, run and sync operations')
+
     def get_help(self):
         return 'SSH or create an SSH tunnel to a server in the cluster'
 
@@ -179,14 +180,14 @@ class SshRunner(object):
         scb_host = scb_settings.get('host') or self.ops_config.get('scb.host')
         scb_proxy_port = scb_settings.get('proxy_port')
 
-        if scb_enabled and not(scb_host):
+        if scb_enabled and not scb_host:
             err('When scb is enabled scb_host is required!')
             sys.exit(2)
 
         if args.proxy:
             if args.local is None and (args.auto_scb_port is False and not scb_proxy_port):
-                err('When using --proxy the --local parameter is required if not using --auto_scb_port '
-                    'and scb.proxy_port is not configured in the cluster config')
+                err('When using --proxy the --local parameter is required if not using '
+                    '--auto_scb_port and scb.proxy_port is not configured in the cluster config')
                 sys.exit(2)
 
         group = "%s,&%s" % (self.cluster_name, args.role)

@@ -29,7 +29,8 @@ class SyncParserConfig(SubParserConfig):
         parser.add_argument('src', type=str, help='Source dir')
         parser.add_argument('dest', type=str, help='Dest dir')
         parser.add_argument('--noscb', action='store_false', dest='use_scb',
-                            help='Disable use of Shell Control Box (SCB) even it is enabled in the cluster config')
+                            help='Disable use of Shell Control Box (SCB) '
+                                 'even if it is enabled in the cluster config')
         parser.add_argument(
             'opts',
             default=['-va --progress'],

@@ -33,7 +33,8 @@ class SshConfigGenerator(object):
         return dest_ssh_config
 
     def _get_ssh_config(self):
-        return [f"{self.ssh_data_dir}/{ssh_config_file}" for ssh_config_file in self.ssh_config_files]
+        return [f"{self.ssh_data_dir}/{ssh_config_file}"
+                for ssh_config_file in self.ssh_config_files]
 
     @staticmethod
     def get_ssh_config_path(cluster_config, ssh_config_paths, use_scb):
@@ -45,8 +46,10 @@ class SshConfigGenerator(object):
             ssh_config_path = SshConfigGenerator.generate_ssh_scb_config(ssh_config_tpl_path,
                                                                          scb_proxy_port)
             display.display(f"Connecting via scb proxy at 127.0.0.1:{scb_proxy_port}.\n"
-                            f"This proxy should have already been started and running in a different terminal window.\n"
-                            f"If there are connection issues double check that the proxy is running.",
+                            f"This proxy should have already been started and running "
+                            f"in a different terminal window.\n"
+                            f"If there are connection issues double check that "
+                            f"the proxy is running.",
                             color='blue',
                             stderr=True)
         else:

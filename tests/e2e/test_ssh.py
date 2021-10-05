@@ -35,12 +35,13 @@ def test_ssh_scb():
     command = run(current_dir + '/fixture/inventory/clusters/plugin_generator_scb.yaml', 'ssh',
                   'bastion', '--', '-TD', '8157')
 
-    assert re.match(r'ssh -F .+/ssh.config .+bastion.host@scb\.example.com -TD 8157', command['command'])
+    assert re.match(r'ssh -F .+/ssh.config .+bastion.host@scb\.example.com -TD 8157',
+                    command['command'])
 
 
 def test_ssh_scb_noscb():
-    command = run(current_dir + '/fixture/inventory/clusters/plugin_generator_scb.yaml', 'ssh', '--noscb',
-                  'bastion', '--', '-TD', '8157')
+    command = run(current_dir + '/fixture/inventory/clusters/plugin_generator_scb.yaml', 'ssh',
+                  '--noscb', 'bastion', '--', '-TD', '8157')
 
     assert re.match('ssh -F .+/ssh.config bastion.host -TD 8157', command['command'])
     assert "scb.example.com" not in command['command']
@@ -57,7 +58,8 @@ def test_ssh_scb_user():
     command = run(current_dir + '/fixture/inventory/clusters/plugin_generator_scb.yaml', 'ssh',
                   'bastion', '-l', 'remote_user')
 
-    assert re.match(r'ssh -F .+/ssh.config remote_user@bastion.host@scb\.example.com -l remote_user', command['command'])
+    assert re.match(r'ssh -F .+/ssh.config remote_user@bastion.host@scb\.example.com '
+                    r'-l remote_user', command['command'])
 
 
 def test_ssh_scb_user_noscb():
@@ -71,7 +73,8 @@ def test_ssh_scb_user_noscb():
 if not PY3:
     def test_ssh_user_unicode_dash():
         with pytest.raises(UnicodeDecodeError):
-            run(current_dir + '/fixture/inventory/clusters/plugin_generator.yaml', 'ssh', 'bastion', '–l', 'remote_user')
+            run(current_dir + '/fixture/inventory/clusters/plugin_generator.yaml', 'ssh',
+                'bastion', '–l', 'remote_user')
 
 
 def test_ssh_user_default():
@@ -94,7 +97,8 @@ def test_ssh_scb_user_default():
 
 def test_ssh_user_opsconfig():
     # we take the value from opsconfig, if present
-    container = app(current_dir + '/fixture/inventory/clusters/plugin_generator.yaml', 'ssh', 'bastion')
+    container = app(current_dir + '/fixture/inventory/clusters/plugin_generator.yaml',
+                    'ssh', 'bastion')
     container.ops_config.config['ssh.user'] = 'test'
 
     command = container.run()
@@ -117,7 +121,9 @@ def test_ssh_user_opsconfig_override():
 
 def test_ssh_scb_user_opsconfig():
     # we take the value from opsconfig, if present
-    container = app(current_dir + '/fixture/inventory/clusters/plugin_generator_scb.yaml', 'ssh', 'bastion')
+    container = app(current_dir + '/fixture/inventory/clusters/plugin_generator_scb.yaml',
+                    'ssh',
+                    'bastion')
     container.ops_config.config['ssh.user'] = 'test'
 
     command = container.run()
