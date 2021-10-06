@@ -84,7 +84,8 @@ class SshParserConfig(SubParserConfig):
             '--noscb',
             action='store_false',
             dest='use_scb',
-            help='Disable use of Shell Control Box (SCB) even it is enabled in the cluster config')
+            help='Disable use of Shell Control Box (SCB) even if it is '
+                 'enabled in the cluster config')
         parser.add_argument(
             '--auto_scb_port',
             action='store_true',
@@ -124,6 +125,18 @@ class SshParserConfig(SubParserConfig):
         # Create a proxy to a remote server that listens on a local port
         ops clusters/qe1.yaml ssh --proxy --local 8080 bastion
         ops clusters/qe1.yaml ssh --proxy --local 0.0.0.0:8080 bastion
+
+        # In case Shell Control Box (SCB) is configured and enabled on the cluster a proxy which
+        # will be used by all ops play, run and sync operations, can be created either using
+        # either the port configured the cluster config file or an auto generated port.
+        # In this case --local param must not be used
+        # Example for using the port configured in the cluster config
+        ops clusters/qe1.yaml ssh bastion --proxy
+        # Example for using the auto generated port
+        ops clusters/qe1.yaml ssh bastion --proxy --auto_scb_port
+        
+        # Disable use of Shell Control Box (SCB) even it is enabled in the cluster config
+        ops clusters/qe1.yaml ssh bastion --noscb
         '''
 
 
