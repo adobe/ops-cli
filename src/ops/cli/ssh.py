@@ -134,7 +134,7 @@ class SshParserConfig(SubParserConfig):
         ops clusters/qe1.yaml ssh bastion --proxy
         # Example for using the auto generated port
         ops clusters/qe1.yaml ssh bastion --proxy --auto_scb_port
-        
+
         # Disable use of Shell Control Box (SCB) even it is enabled in the cluster config
         ops clusters/qe1.yaml ssh bastion --noscb
         '''
