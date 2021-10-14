@@ -407,6 +407,13 @@ optional arguments:
   --nossh               Port tunnel a machine that does not have SSH. Implies
                         --ipaddress, and --tunnel; requires --local and
                         --remote
+  --keygen              Create a ssh keys pair to use with this infrastructure
+  --noscb               Disable use of Shell Control Box (SCB) even it is
+                        enabled in the cluster config
+  --auto_scb_port       When using Shell Control Box (SCB) and creating a
+                        proxy,a random port is generated, which will be used
+                        in the ssh config for all playbook, run and sync
+                        operations
 
     Examples:
         # SSH using current username as remote username
@@ -433,6 +440,19 @@ optional arguments:
 
         # Create a proxy to a remote server that listens on a local port
         ops clusters/qe1.yaml ssh --proxy --local 8080 bastion
+
+        # In case Shell Control Box (SCB) is configured and enabled on the cluster a proxy which
+        # will be used by all ops play, run and sync operations, can be created either using
+        # either the port configured the cluster config file or an auto generated port.
+        # In this case --local param must not be used
+        # Example for using the port configured in the cluster config
+        ops clusters/qe1.yaml ssh bastion --proxy
+        # Example for using the auto generated port
+        ops clusters/qe1.yaml ssh bastion --proxy --auto_scb_port
+
+
+        # Disable use of Shell Control Box (SCB) even it is enabled in the cluster config
+        ops clusters/qe1.yaml ssh bastion --noscb
 ```
 
 #### SSHPass
@@ -484,6 +504,38 @@ In case you want to use the OSX Keychain to store your password and reuse across
 
 1. Run `ops` tool
 
+#### SCB
+Shell Control Box (SCB) is an activity monitoring appliance from Balabit (now One Identity) that controls privileged access to remote servers.
+`ops` has support for using SCB as ssh proxy for the following operations: `ssh, tunnel, proxy, ansible play, run and sync`
+
+In order to use SCB an extra section needs to be added to the cluster config file:
+```
+scb:
+  enabled: true
+  host: "scb.example.com"
+  proxy_port: 2222 # optional
+```
+Having this config all ssh operations will be done via the scb host, unless the `--noscb` flag is used.
+
+When using `SCB`, `SSHPass` will not be used.
+
+For ansible `play`, `run` and `sync` operations to work via SCB a proxy needs to be created first and then run `ops` in a different terminal window or tab:
+```
+# 1. Create a proxy in a terminal window
+# Example for using the port configured in the cluster config
+ops clusters/qe1.yaml ssh bastion --proxy
+# Example for using the auto generated port
+ops clusters/qe1.yaml ssh bastion --proxy --auto_scb_port
+
+# 2. Run the play/run/sync command normally in a different terminal window or tab
+# A message will indicate the scb proxy is used
+ops clusters/qe1.yaml play ansible/plays/cluster/configure.yaml
+...
+Connecting via scb proxy at 127.0.0.1:2222.
+This proxy should have already been started and running in a different terminal window.
+If there are connection issues double check that the proxy is running.
+...
+```
 
 ### Play
 
@@ -491,7 +543,7 @@ Run an ansible playbook.
 
 ```
 usage: ops cluster_config_path play [-h] [-e EXTRA_VARS] [--ask-sudo-pass]
-                                    [--limit LIMIT]
+                                    [--limit LIMIT] [--noscb]
                                     playbook_path
                                     [ansible_args [ansible_args ...]]
 
@@ -506,6 +558,8 @@ optional arguments:
   --ask-sudo-pass       Ask sudo pass for commands that need sudo
   --limit LIMIT         Limit run to a specific server subgroup. Eg: --limit
                         newton-dcs
+  --noscb               Disable use of Shell Control Box (SCB) even if it is
+                        enabled in the cluster config
 
     Examples:
         # Run an ansible playbook
@@ -530,6 +584,7 @@ Run a bash command on the selected nodes.
 
 ```
 usage: ops cluster_config_path run [-h] [--ask-sudo-pass] [--limit LIMIT]
+                                   [--noscb]
                                    host_pattern shell_command
                                    [extra_args [extra_args ...]]
 
@@ -543,6 +598,8 @@ optional arguments:
   --ask-sudo-pass  Ask sudo pass for commands that need sudo
   --limit LIMIT    Limit run to a specific server subgroup. Eg: --limit
                    newton-dcs
+  --noscb          Disable use of Shell Control Box (SCB) even if it is
+                   enabled in the cluster config
 
     Examples:
         # Last 5 installed packages on each host
@@ -562,7 +619,8 @@ optional arguments:
 Performs `rsync` to/from a given set of nodes.
 
 ```
-usage: ops cluster_config_path sync [-h] [-l USER] src dest [opts [opts ...]]
+usage: ops cluster_config_path sync [-h] [-l USER] [--noscb]
+                                    src dest [opts [opts ...]]
 
 positional arguments:
   src                   Source dir
@@ -572,6 +630,8 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -l USER, --user USER  Value for remote user that will be used for ssh
+  --noscb               Disable use of Shell Control Box (SCB) even if it is
+                        enabled in the cluster config
 
         rsync wrapper for ops inventory conventions
 

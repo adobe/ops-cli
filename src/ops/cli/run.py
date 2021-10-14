@@ -10,6 +10,7 @@
 
 import logging
 from .parser import configure_common_ansible_args, SubParserConfig
+from ops.inventory.sshconfig import SshConfigGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -65,9 +66,11 @@ class CommandRunner(object):
 
     def run(self, args, extra_args):
         logger.info("Found extra_args %s", extra_args)
-        inventory_path, ssh_config_path = self.inventory_generator.generate()
+        inventory_path, ssh_config_paths = self.inventory_generator.generate()
         limit = args.host_pattern
-
+        ssh_config_path = SshConfigGenerator.get_ssh_config_path(self.cluster_config,
+                                                                 ssh_config_paths,
+                                                                 args.use_scb)
         extra_args = ' '.join(args.extra_args)
         command = """cd {root_dir}
 ANSIBLE_SSH_ARGS='-F {ssh_config}' ANSIBLE_CONFIG={ansible_config_path} ansible -i {inventory_path} '{limit}' \\

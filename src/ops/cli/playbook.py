@@ -10,10 +10,12 @@
 
 from .parser import SubParserConfig
 from .parser import configure_common_ansible_args, configure_common_arguments
+from ops.inventory.sshconfig import SshConfigGenerator
 import getpass
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class PlaybookParserConfig(SubParserConfig):
     def get_name(self):
@@ -70,9 +72,12 @@ class PlaybookRunner(object):
 
     def run(self, args, extra_args):
         logger.info("Found extra_args %s", extra_args)
-        inventory_path, ssh_config_path = self.inventory_generator.generate()
+        inventory_path, ssh_config_paths = self.inventory_generator.generate()
+        ssh_config_path = SshConfigGenerator.get_ssh_config_path(self.cluster_config,
+                                                                 ssh_config_paths,
+                                                                 args.use_scb)
+        ssh_config = f"ANSIBLE_SSH_ARGS='-F {ssh_config_path}'"
 
-        ssh_config = "ANSIBLE_SSH_ARGS='-F %s'" % ssh_config_path
         ansible_config = "ANSIBLE_CONFIG=%s" % self.ops_config.ansible_config_path
 
         # default user: read from cluster then from ops config then local user

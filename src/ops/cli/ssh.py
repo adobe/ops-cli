@@ -14,6 +14,7 @@ from . import display
 from .parser import SubParserConfig
 from .parser import configure_common_arguments
 from ansible.inventory.host import Host
+from ops.inventory.sshconfig import SshConfigGenerator
 
 from . import err
 import sys
@@ -67,17 +68,30 @@ class SshParserConfig(SubParserConfig):
         parser.add_argument(
             '--proxy',
             action="store_true",
-            help="Use SSH proxy, must pass --local")
+            help="Use SSH proxy, must pass --local or when using scb, either --auto_scb_port or "
+                 "no extra option which will use scb.proxy_port from cluster_config")
         parser.add_argument(
             '--nossh',
             action="store_true",
-            help="Port tunnel a machine that does not have SSH. " 
+            help="Port tunnel a machine that does not have SSH. "
                  "Implies --ipaddress, and --tunnel; requires --local and --remote"
                 )
         parser.add_argument(
             '--keygen',
             action='store_true',
             help='Create a ssh keys pair to use with this infrastructure')
+        parser.add_argument(
+            '--noscb',
+            action='store_false',
+            dest='use_scb',
+            help='Disable use of Shell Control Box (SCB) even if it is '
+                 'enabled in the cluster config')
+        parser.add_argument(
+            '--auto_scb_port',
+            action='store_true',
+            help='When using Shell Control Box (SCB) and creating a proxy,'
+                 'a random port is generated, which will be used in the ssh config '
+                 'for all playbook, run and sync operations')
 
     def get_help(self):
         return 'SSH or create an SSH tunnel to a server in the cluster'
@@ -111,6 +125,18 @@ class SshParserConfig(SubParserConfig):
         # Create a proxy to a remote server that listens on a local port
         ops clusters/qe1.yaml ssh --proxy --local 8080 bastion
         ops clusters/qe1.yaml ssh --proxy --local 0.0.0.0:8080 bastion
+
+        # In case Shell Control Box (SCB) is configured and enabled on the cluster a proxy which
+        # will be used by all ops play, run and sync operations, can be created either using
+        # either the port configured the cluster config file or an auto generated port.
+        # In this case --local param must not be used
+        # Example for using the port configured in the cluster config
+        ops clusters/qe1.yaml ssh bastion --proxy
+        # Example for using the auto generated port
+        ops clusters/qe1.yaml ssh bastion --proxy --auto_scb_port
+
+        # Disable use of Shell Control Box (SCB) even it is enabled in the cluster config
+        ops clusters/qe1.yaml ssh bastion --noscb
         '''
 
 
@@ -162,9 +188,19 @@ class SshRunner(object):
                 err('When using --tunnel or --nossh both the --local and --remote parameters are required')
                 sys.exit(2)
 
+        scb_settings = self.cluster_config.get('scb', {})
+        scb_enabled = scb_settings.get('enabled') and args.use_scb
+        scb_host = scb_settings.get('host') or self.ops_config.get('scb.host')
+        scb_proxy_port = scb_settings.get('proxy_port')
+
+        if scb_enabled and not scb_host:
+            err('When scb is enabled scb_host is required!')
+            sys.exit(2)
+
         if args.proxy:
-            if args.local is None:
-                err('When using --proxy the --local parameter is required')
+            if args.local is None and (args.auto_scb_port is False and not scb_proxy_port):
+                err('When using --proxy the --local parameter is required if not using '
+                    '--auto_scb_port and scb.proxy_port is not configured in the cluster config')
                 sys.exit(2)
 
         group = "%s,&%s" % (self.cluster_name, args.role)
@@ -203,12 +239,12 @@ class SshRunner(object):
             bastion = self.ansible_inventory.get_hosts(
                 'bastion')[0].vars.get('ansible_ssh_host')
             host = Host(name=args.role)
-            ssh_host = '{}--{}'.format(bastion, host.name)
+            ssh_host = f'{bastion}--{host.name}'
         ssh_user = self.cluster_config.get('ssh_user') or self.ops_config.get(
             'ssh.user') or getpass.getuser()
         if args.user:
             ssh_user = args.user
-        if ssh_user and not '-l' in args.ssh_opts:
+        if ssh_user and '-l' not in args.ssh_opts:
             args.ssh_opts.extend(['-l', ssh_user])
 
         if args.nossh:
@@ -224,22 +260,44 @@ class SshRunner(object):
         ssh_config = args.ssh_config or self.ops_config.get(
             'ssh.config') or self.ansible_inventory.get_ssh_config()
 
+        scb_ssh_host = None
+        if scb_enabled:
+            # scb->bastion->host vs scb->bastion
+            scb_delimiter = "--" if "--" in ssh_host else "@"
+            scb_ssh_host = f"{ssh_host}{scb_delimiter}{scb_host}"
+
         if args.tunnel:
             if args.ipaddress:
                 host_ip = host.vars.get('private_ip_address')
             else:
                 host_ip = 'localhost'
-            command = "ssh -F %s %s -4 -N -L %s:%s:%d" % (
-                ssh_config, ssh_host, args.local, host_ip, args.remote)
+            if scb_enabled:
+                command = f"ssh -F {ssh_config} {ssh_user}@{scb_ssh_host} " \
+                          f"-4 -T -L {args.local}:{host_ip}:{args.remote:d}"
+            else:
+                command = f"ssh -F {ssh_config} {ssh_host} " \
+                          f"-4 -N -L {args.local}:{host_ip}:{args.remote:d}"
         else:
-            command = "ssh -F %s %s" % (ssh_config, ssh_host)
+            if scb_enabled:
+                command = f"ssh -F {ssh_config} {ssh_user}@{scb_ssh_host}"
+            else:
+                command = f"ssh -F {ssh_config} {ssh_host}"
 
         if args.proxy:
-            command = "ssh -F %s %s -4 -N -D %s -f -o 'ExitOnForwardFailure yes'" % (
-                ssh_config, ssh_host, args.local)
+            if scb_enabled:
+                proxy_port = args.local or SshConfigGenerator.generate_ssh_scb_proxy_port(
+                    self.ansible_inventory.generated_path.rstrip("/inventory"),
+                    args.auto_scb_port,
+                    scb_proxy_port
+                )
+                command = f"ssh -F {ssh_config} {ssh_user}@{scb_ssh_host} " \
+                          f"-4 -T -D {proxy_port} -o 'ExitOnForwardFailure yes'"
+            else:
+                command = f"ssh -F {ssh_config} {ssh_host} " \
+                          f"-4 -N -D {args.local} -f -o 'ExitOnForwardFailure yes'"
 
         if args.ssh_opts:
-            command += " " + " ".join(args.ssh_opts)
+            command = f"{command} {' '.join(args.ssh_opts)}"
 
         # Check if optional sshpass is available and print info message
         sshpass_path = os.path.expanduser("~/bin/sshpass")

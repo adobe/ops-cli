@@ -14,8 +14,10 @@ import subprocess
 
 from .parser import SubParserConfig
 from . import *
+from ops.inventory.sshconfig import SshConfigGenerator
 
 logger = logging.getLogger(__name__)
+
 
 class SyncParserConfig(SubParserConfig):
     def configure(self, parser):
@@ -26,6 +28,9 @@ class SyncParserConfig(SubParserConfig):
             help='Value for remote user that will be used for ssh')
         parser.add_argument('src', type=str, help='Source dir')
         parser.add_argument('dest', type=str, help='Dest dir')
+        parser.add_argument('--noscb', action='store_false', dest='use_scb',
+                            help='Disable use of Shell Control Box (SCB) '
+                                 'even if it is enabled in the cluster config')
         parser.add_argument(
             'opts',
             default=['-va --progress'],
@@ -68,10 +73,13 @@ class SyncRunner(object):
 
     def run(self, args, extra_args):
         logger.info("Found extra_args %s", extra_args)
-        inventory_path, ssh_config_path = self.inventory_generator.generate()
+        inventory_path, ssh_config_paths = self.inventory_generator.generate()
         src = PathExpr(args.src)
         dest = PathExpr(args.dest)
 
+        ssh_config_path = SshConfigGenerator.get_ssh_config_path(self.cluster_config,
+                                                                 ssh_config_paths,
+                                                                 args.use_scb)
         if src.is_remote and dest.is_remote:
             display(
                 'Too remote expressions are not allowed',
