@@ -23,7 +23,7 @@ RUN bash build_scripts/build_package.sh
 RUN apk del --purge build
 
 
-FROM python:3.7-alpine3.10
+FROM python:3.8-alpine3.10
 ARG TERRAFORM_VERSION="0.12.6"
 ARG VAULT_VERSION="1.1.3"
 ARG KUBECTL_VERSION="v1.17.0"
