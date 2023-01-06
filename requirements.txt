@@ -4,7 +4,7 @@ boto3==1.18.33
 boto==2.49.0
 ansible==2.9.25
 PyYAML==5.4.1
-azure-common==1.1.27
+azure-common==1.1.28
 azure==4.0.0
 msrestazure==0.6.4
 Jinja2==2.11.3
