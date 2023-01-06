@@ -1,5 +1,5 @@
 simpledi>=0.2
-awscli==1.20.33
+awscli==1.27.44
 boto3==1.26.44
 boto==2.49.0
 ansible==2.9.25
