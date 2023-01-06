@@ -40,7 +40,7 @@ jobs:
     - name: Test package 
       run: pip install --no-cache-dir dist/ops*.tar.gz && ops --verbose -h
     - name: Publish package
-      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      uses: pypa/gh-action-pypi-publish@7eb3b701d11256e583f5b49899c5e7203deab573
       with:
         user: __token__
         password: ${{ secrets.ADOBE_BOT_PYPI_TOKEN }}
