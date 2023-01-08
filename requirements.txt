@@ -13,7 +13,7 @@ python-consul
 hvac==0.11.2
 passgen
 inflection==0.3.1
-kubernetes==18.20.0
+kubernetes==25.3.0
 himl==0.11.1
 six
 GitPython==3.1.*
