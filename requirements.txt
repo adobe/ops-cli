@@ -12,7 +12,7 @@ hashmerge
 python-consul
 hvac==0.11.2
 passgen
-inflection==0.3.1
+inflection==0.5.1
 kubernetes==18.20.0
 himl==0.11.1
 six
