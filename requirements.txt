@@ -1,4 +1,4 @@
-simpledi>=0.2
+simpledi==0.4.1
 awscli==1.27.45
 boto3==1.26.44
 boto==2.49.0
