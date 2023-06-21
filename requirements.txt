@@ -1,4 +1,4 @@
-simpledi>=0.2
+simpledi==0.4.1
 awscli==1.27.45
 boto3==1.26.44
 boto==2.49.0
@@ -13,7 +13,7 @@ python-consul
 hvac==0.11.2
 passgen
 inflection==0.5.1
-kubernetes==18.20.0
+kubernetes==26.1.0
 himl==0.11.1
 six
 GitPython==3.1.*
