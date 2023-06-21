@@ -14,6 +14,6 @@ hvac==0.11.2
 passgen
 inflection==0.5.1
 kubernetes==26.1.0
-himl==0.11.1
+himl==0.13.0
 six
 GitPython==3.1.*
