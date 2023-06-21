@@ -9,13 +9,14 @@
 # governing permissions and limitations under the License.
 
 from . import get_output
+from shlex import quote
 
 
 def access_key(profile):
     return get_output(
-        'aws configure get aws_access_key_id --profile %s' % profile)
+        'aws configure get aws_access_key_id --profile %s' % quote(profile))
 
 
 def secret_key(profile):
     return get_output(
-        'aws configure get aws_secret_access_key --profile %s' % profile)
+        'aws configure get aws_secret_access_key --profile %s' % quote(profile))
