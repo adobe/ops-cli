@@ -1,5 +1,3 @@
-**!!! NOT MAINTAINED ANYMORE - DO NOT USE IT !!**
-
 # Ops CLI
 [![Build status](https://github.com/adobe/ops-cli/actions/workflows/release.yml/badge.svg)](https://github.com/adobe/ops-cli/actions/workflows/release.yml) [![Docker image](https://img.shields.io/badge/Docker-ghcr.io/adobe/opscli-brightgreen.svg?style=flat-square)](https://github.com/adobe/ops-cli/pkgs/container/ops-cli) [![License](https://img.shields.io/github/license/adobe/ops-cli)](https://github.com/adobe/ops-cli/blob/master/LICENSE)
 

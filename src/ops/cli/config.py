@@ -119,6 +119,7 @@ class JinjaConfigGenerator(object):
         context_cliargs['extra_vars'] = tuple(extra_vars)
 
         context.CLIARGS = ImmutableDict(context_cliargs)
+        setattr(load_extra_vars, 'extra_vars', {})
         variable_manager._extra_vars = load_extra_vars(
             loader=data_loader)
 
@@ -158,12 +159,15 @@ class ClusterConfigGenerator(object):
         context_cliargs['extra_vars'] = tuple(extra_vars)
 
         context.CLIARGS = ImmutableDict(context_cliargs)
+        setattr(load_extra_vars, 'extra_vars', {})
         variable_manager._extra_vars = load_extra_vars(
             loader=data_loader)
 
         read_variables = variable_manager.get_vars()
 
         templar = Templar(data_loader, variables=read_variables)
-        templar._filter_loader = self.template.filter_plugin_loader
+
+        for filter in self.template.filter_plugin_loader.all():
+            templar.environment.filters.update(filter.filters())
 
         return templar.template(read_variables, fail_on_undefined=True)

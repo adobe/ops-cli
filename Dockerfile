@@ -1,4 +1,4 @@
-FROM python:3-alpine3.13 AS compile-image
+FROM python:3.11.4-alpine3.18 AS compile-image
 ARG TERRAFORM_VERSION="0.12.6"
 ARG AZURE_CLI_VERSION="2.0.67"
 
@@ -23,7 +23,7 @@ RUN bash build_scripts/build_package.sh
 RUN apk del --purge build
 
 
-FROM python:3.7-alpine3.10
+FROM python:3.11.4-alpine3.18
 ARG TERRAFORM_VERSION="0.12.6"
 ARG VAULT_VERSION="1.1.3"
 ARG KUBECTL_VERSION="v1.17.0"
