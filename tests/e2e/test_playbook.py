@@ -31,19 +31,25 @@ current_dir = os.path.dirname(__file__)
 def test_loading_of_modules_and_extensions(capsys, app):
     root_dir = current_dir + '/fixture/ansible'
     container = app(['-vv', '--root-dir', root_dir, 'clusters/test.yaml', 'play',
-                       'playbooks/play_module.yaml'])
+                       'playbooks/play_module.yaml', '--', '-e', 'test_cmd_var=true',
+                       '-e', '\'{"test_cmd_bool_var": false}\''])
     command = container.run()
     code = container.execute(command, pass_trough=False)
     out, err = capsys.readouterr()
     display(out, color='gray')
     display(err, color='red')
     assert code is 0
-
     # the filter plugins work
     assert '"msg": "filtered: filter_this"' in out
 
     # custom modules are interpreted
     assert '"the_module_works": "yep"' in out
+
+    # cmd extra_vars override playbook vars
+    assert '"test_cmd_var = True"' in out
+
+    # cmd extra_vars bool var
+    assert '"test_cmd_bool_var = False"' in out
 
     # cluster is present as a variable in the command line
     assert '-e cluster=test' in command['command']

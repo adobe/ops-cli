@@ -8,21 +8,22 @@
 # OF ANY KIND, either express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
 
-import collections
 import os
-
 import yaml
 
 from ansible.module_utils.common.collections import ImmutableDict
 from ansible.parsing.dataloader import DataLoader
-from ansible.plugins.loader import PluginLoader
 from ansible.template import Templar
-from ansible.utils.vars import load_extra_vars
+from ansible.utils.vars import combine_vars
 from ansible.vars.manager import VariableManager
 from ops.cli import display
 from ansible import constants as C
 from ansible import context
 import logging
+from ansible.errors import AnsibleOptionsError
+from ansible.module_utils._text import to_text
+from ansible.parsing.splitter import parse_kv
+from collections.abc import MutableMapping
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,38 @@ def get_cluster_name(cluster_config_path):
 
     return cluster_config_path.split(',')[0].split(
         '/')[-1].replace('.yaml', '').replace('.yml', '')
+
+
+def load_extra_vars(loader):
+    """
+    Overriding Ansible function using version before slight var loading optimization
+    in order to avoid caching issues https://github.com/ansible/ansible/pull/78835/files
+    """
+
+    extra_vars = {}
+    for extra_vars_opt in context.CLIARGS.get('extra_vars', tuple()):
+        data = None
+        extra_vars_opt = to_text(extra_vars_opt, errors='surrogate_or_strict')
+        if extra_vars_opt is None or not extra_vars_opt:
+            continue
+
+        if extra_vars_opt.startswith(u"@"):
+            # Argument is a YAML file (JSON is a subset of YAML)
+            data = loader.load_from_file(extra_vars_opt[1:])
+        elif extra_vars_opt[0] in [u'/', u'.']:
+            raise AnsibleOptionsError("Please prepend extra_vars filename '%s' with '@'" % extra_vars_opt)
+        elif extra_vars_opt[0] in [u'[', u'{']:
+            # Arguments as YAML
+            data = loader.load(extra_vars_opt)
+        else:
+            # Arguments as Key-value
+            data = parse_kv(extra_vars_opt)
+
+        if isinstance(data, MutableMapping):
+            extra_vars = combine_vars(extra_vars, data)
+        else:
+            raise AnsibleOptionsError("Invalid extra vars data supplied. '%s' could not be made into a dictionary" % extra_vars_opt)
+    return extra_vars
 
 
 class ClusterConfig(object):
@@ -119,7 +152,6 @@ class JinjaConfigGenerator(object):
         context_cliargs['extra_vars'] = tuple(extra_vars)
 
         context.CLIARGS = ImmutableDict(context_cliargs)
-        setattr(load_extra_vars, 'extra_vars', {})
         variable_manager._extra_vars = load_extra_vars(
             loader=data_loader)
 
@@ -159,7 +191,6 @@ class ClusterConfigGenerator(object):
         context_cliargs['extra_vars'] = tuple(extra_vars)
 
         context.CLIARGS = ImmutableDict(context_cliargs)
-        setattr(load_extra_vars, 'extra_vars', {})
         variable_manager._extra_vars = load_extra_vars(
             loader=data_loader)
 

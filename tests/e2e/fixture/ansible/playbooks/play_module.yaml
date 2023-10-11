@@ -1,8 +1,13 @@
 - hosts: web
   gather_facts: no
+  vars:
+    test_cmd_var: false
+    test_cmd_bool_var: True
   tasks:
     - debug: msg="{{ 'filter_this' | my_filter }}"
     - my_module:
         set_facts:
           the_module_works: yep
     - debug: var=the_module_works
+    - debug: msg="test_cmd_var = {{ test_cmd_var | bool }}"
+    - debug: msg="test_cmd_bool_var = {{ test_cmd_bool_var }}"
