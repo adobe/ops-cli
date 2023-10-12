@@ -286,7 +286,7 @@ class SshRunner(object):
         if args.proxy:
             if scb_enabled:
                 proxy_port = args.local or SshConfigGenerator.generate_ssh_scb_proxy_port(
-                    self.ansible_inventory.generated_path.rstrip("/inventory"),
+                    self.ansible_inventory.generated_path.removesuffix("/inventory"),
                     args.auto_scb_port,
                     scb_proxy_port
                 )

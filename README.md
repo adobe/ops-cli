@@ -42,6 +42,7 @@ It can be used to add a layer of templating (using jinja2) on top of Terraform f
             * [Terraform landscape](#terraform-landscape)
          * [SSH](#ssh)
             * [SSHPass](#sshpass)
+            * [Balabit SCB](#scb)
          * [Play](#play)
          * [Run command](#run-command)
          * [Sync files](#sync-files)

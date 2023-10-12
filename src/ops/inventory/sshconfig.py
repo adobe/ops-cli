@@ -90,7 +90,7 @@ class SshConfigGenerator(object):
         ssh_config_content = ssh_config_template.format(
             scb_proxy_port=scb_proxy_port
         )
-        ssh_config_path = ssh_config_tpl_path.rstrip("_tpl")
+        ssh_config_path = ssh_config_tpl_path.removesuffix("_tpl")
         with open(ssh_config_path, 'w') as f:
             f.write(ssh_config_content)
             os.fchmod(f.fileno(), 0o644)
