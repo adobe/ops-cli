@@ -9,7 +9,7 @@ msrestazure==0.6.4
 Jinja2==3.1.2
 hashmerge
 python-consul
-hvac==1.1.1
+hvac==1.2.1
 passgen
 inflection==0.5.1
 kubernetes==26.1.0
