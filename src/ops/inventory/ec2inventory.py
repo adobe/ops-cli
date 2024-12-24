@@ -11,26 +11,24 @@
 import json
 import re
 import sys
-import os
 
-import boto
-from boto import ec2
-from boto.pyami.config import Config
-
-from six import iteritems, string_types, integer_types
+import boto3
+from botocore.exceptions import NoRegionError, NoCredentialsError, PartialCredentialsError
 
 
 class Ec2Inventory(object):
-    def _empty_inventory(self):
+    @staticmethod
+    def _empty_inventory():
         return {"_meta": {"hostvars": {}}}
 
-    def __init__(self, boto_profile, regions, filters={}, bastion_filters={}):
+    def __init__(self, boto_profile, regions, filters=None, bastion_filters=None):
 
-        self.filters = filters
+        self.filters = filters or []
         self.regions = regions.split(',')
         self.boto_profile = boto_profile
-        self.bastion_filters = bastion_filters
+        self.bastion_filters = bastion_filters or []
         self.group_callbacks = []
+        self.boto3_session = self.create_boto3_session(boto_profile)
 
         # Inventory grouped by instance IDs, tags, security groups, regions,
         # and availability zones
@@ -38,6 +36,25 @@ class Ec2Inventory(object):
 
         # Index of hostname (address) to instance ID
         self.index = {}
+
+    def create_boto3_session(self, profile_name):
+        try:
+            # Use the profile to create a session
+            session = boto3.Session(profile_name=profile_name)
+
+            # Verify region
+            if not self.regions:
+                self.regions = [session.region_name]
+                if not self.regions[0]:
+                    raise NoRegionError
+
+            return session
+        except NoRegionError:
+            sys.exit(f"Region not specified and could not be determined for profile: {profile_name}")
+        except (NoCredentialsError, PartialCredentialsError):
+            sys.exit(f"Credentials not found or incomplete for profile: {profile_name}")
+        except Exception as e:
+            sys.exit(f"An error occurred: {str(e)}")
 
     def get_as_json(self):
         self.do_api_calls_update_cache()
@@ -55,20 +72,20 @@ class Ec2Inventory(object):
     def group(self, *args):
         self.group_callbacks.extend(args)
 
-    def find_bastion_box(self, conn):
+    def find_bastion_box(self, ec2_client):
         """
         Find ips for the bastion box
         """
 
-        if not self.bastion_filters.values():
+        if not self.bastion_filters:
             return
 
-        self.bastion_filters['instance-state-name'] = 'running'
+        self.bastion_filters.append({'Name': 'instance-state-name', 'Values': ['running']})
 
-        for reservation in conn.get_all_instances(
-                filters=self.bastion_filters):
-            for instance in reservation.instances:
-                return instance.ip_address
+        reservations = ec2_client.describe_instances(Filters=self.bastion_filters)['Reservations']
+        for reservation in reservations:
+            for instance in reservation['Instances']:
+                return instance['PublicIpAddress']
 
     def do_api_calls_update_cache(self):
         """ Do API calls to each region, and save data in cache files """
@@ -80,92 +97,67 @@ class Ec2Inventory(object):
         """Makes an AWS EC2 API call to the list of instances in a particular
         region
         """
+        ec2_client = self.boto3_session.client('ec2', region_name=region)
 
-        try:
-            cfg = Config()
-            cfg.load_credential_file(os.path.expanduser("~/.aws/credentials"))
-            cfg.load_credential_file(os.path.expanduser("~/.aws/config"))
-            session_token = cfg.get(self.boto_profile, "aws_session_token")
+        reservations = ec2_client.describe_instances(Filters=self.filters)['Reservations']
 
-            conn = ec2.connect_to_region(
-                region,
-                security_token=session_token,
-                profile_name=self.boto_profile)
+        bastion_ip = self.find_bastion_box(ec2_client)
+        instances = []
+        for reservation in reservations:
+            instances.extend(reservation['Instances'])
 
-            # connect_to_region will fail "silently" by returning None if the
-            # region name is wrong or not supported
-            if conn is None:
-                sys.exit(
-                    "region name: {} likely not supported, or AWS is down. "
-                    "connection to region failed.".format(region))
+        # sort the instance based on name and index, in this order
+        def sort_key(instance):
+            name = next((tag['Value'] for tag in instance.get('Tags', [])
+                         if tag['Key'] == 'Name'), '')
+            return "{}-{}".format(name, instance['InstanceId'])
 
-            reservations = conn.get_all_instances(filters=self.filters)
-
-            bastion_ip = self.find_bastion_box(conn)
-
-            instances = []
-            for reservation in reservations:
-                instances.extend(reservation.instances)
-
-            # sort the instance based on name and index, in this order
-            def sort_key(instance):
-                name = instance.tags.get('Name', '')
-                return "{}-{}".format(name, instance.id)
-
-            for instance in sorted(instances, key=sort_key):
-                self.add_instance(bastion_ip, instance, region)
-
-        except boto.provider.ProfileNotFoundError as e:
-            raise Exception(
-                "{}, configure it with 'aws configure --profile {}'".format(e.message, self.boto_profile))
-
-        except boto.exception.BotoServerError as e:
-            sys.exit(e)
+        for instance in sorted(instances, key=sort_key):
+            self.add_instance(bastion_ip, instance, region)
 
     def get_instance(self, region, instance_id):
         """ Gets details about a specific instance """
-        conn = ec2.connect_to_region(region)
-
+        ec2_client = self.boto3_session.client('ec2', region_name=region)
         # connect_to_region will fail "silently" by returning None if the
         # region name is wrong or not supported
-        if conn is None:
+        if ec2_client is None:
             sys.exit(
                 "region name: %s likely not supported, or AWS is down. "
                 "connection to region failed." % region
             )
 
-        reservations = conn.get_all_instances([instance_id])
+        reservations = ec2_client.describe_instances(InstanceIds=[instance_id])['Reservations']
         for reservation in reservations:
-            for instance in reservation.instances:
+            for instance in reservation['Instances']:
                 return instance
 
     def add_instance(self, bastion_ip, instance, region):
         """
-        :type instance: boto.ec2.instance.Instance
+        :type instance: dict
         """
 
         # Only want running instances unless all_instances is True
-        if instance.state != 'running':
+        if instance['State']['Name'] != 'running':
             return
 
         # Use the instance name instead of the public ip
-        dest = instance.tags.get('Name', instance.ip_address)
+        dest = next((tag['Value'] for tag in instance.get('Tags', []) if tag['Key'] == 'Name'), instance.get('PublicIpAddress'))
         if not dest:
             return
 
-        if bastion_ip and bastion_ip != instance.ip_address:
-            ansible_ssh_host = bastion_ip + "--" + instance.private_ip_address
-        elif instance.ip_address:
-            ansible_ssh_host = instance.ip_address
+        if bastion_ip and bastion_ip != instance.get('PublicIpAddress'):
+            ansible_ssh_host = bastion_ip + "--" + instance.get('PrivateIpAddress')
+        elif instance.get('PublicIpAddress'):
+            ansible_ssh_host = instance.get('PublicIpAddress')
         else:
-            ansible_ssh_host = instance.private_ip_address
+            ansible_ssh_host = instance.get('PrivateIpAddress')
 
         # Add to index and append the instance id afterwards if it's already
         # there
         if dest in self.index:
-            dest = dest + "-" + instance.id.replace("i-", "")
+            dest = dest + "-" + instance['InstanceId'].replace("i-", "")
 
-        self.index[dest] = [region, instance.id]
+        self.index[dest] = [region, instance['InstanceId']]
 
         # group with dynamic groups
         for grouping in set(self.group_callbacks):
@@ -175,9 +167,9 @@ class Ec2Inventory(object):
                     self.push(self.inventory, group, dest)
 
         # Group by all tags
-        for tag in instance.tags.values():
-            if tag:
-                self.push(self.inventory, tag, dest)
+        for tag in instance.get('Tags', []):
+            if tag['Value']:
+                self.push(self.inventory, tag['Value'], dest)
 
         # Inventory: Group by region
         self.push(self.inventory, region, dest)
@@ -186,56 +178,39 @@ class Ec2Inventory(object):
         self.push(self.inventory, ansible_ssh_host, dest)
 
         # Inventory: Group by availability zone
-        self.push(self.inventory, instance.placement, dest)
+        self.push(self.inventory, instance['Placement']['AvailabilityZone'], dest)
 
-        self.inventory["_meta"]["hostvars"][dest] = self.get_host_info_dict_from_instance(
-            instance)
+        self.inventory["_meta"]["hostvars"][dest] = self.get_host_info_dict_from_instance(instance)
         self.inventory["_meta"]["hostvars"][dest]['ansible_ssh_host'] = ansible_ssh_host
 
     def get_host_info_dict_from_instance(self, instance):
         instance_vars = {}
-        for key in vars(instance):
-            value = getattr(instance, key)
-            key = self.to_safe('ec2_' + key)
+        for key, value in instance.items():
+            safe_key = self.to_safe('ec2_' + key)
 
-            # Handle complex types
-            # state/previous_state changed to properties in boto in
-            # https://github.com/boto/boto/commit/a23c379837f698212252720d2af8dec0325c9518
-            if key == 'ec2__state':
-                instance_vars['ec2_state'] = instance.state or ''
-                instance_vars['ec2_state_code'] = instance.state_code
-            elif key == 'ec2__previous_state':
-                instance_vars['ec2_previous_state'] = instance.previous_state or ''
-                instance_vars['ec2_previous_state_code'] = instance.previous_state_code
-            elif type(value) in integer_types or isinstance(value, bool):
-                instance_vars[key] = value
-            elif type(value) in string_types:
-                instance_vars[key] = value.strip()
+            if key == 'State':
+                instance_vars['ec2_state'] = value['Name']
+                instance_vars['ec2_state_code'] = value['Code']
+            elif isinstance(value, (int, bool)):
+                instance_vars[safe_key] = value
+            elif isinstance(value, str):
+                instance_vars[safe_key] = value.strip()
             elif value is None:
-                instance_vars[key] = ''
-            elif key == 'ec2_region':
-                instance_vars[key] = value.name
-            elif key == 'ec2__placement':
-                instance_vars['ec2_placement'] = value.zone
-            elif key == 'ec2_tags':
-                for k, v in iteritems(value):
-                    key = self.to_safe('ec2_tag_' + k)
-                    instance_vars[key] = v
-            elif key == 'ec2_groups':
-                group_ids = []
-                group_names = []
-                for group in value:
-                    group_ids.append(group.id)
-                    group_names.append(group.name)
+                instance_vars[safe_key] = ''
+            elif key == 'Placement':
+                instance_vars['ec2_placement'] = value['AvailabilityZone']
+            elif key == 'Tags':
+                for tag in value:
+                    tag_key = self.to_safe('ec2_tag_' + tag['Key'])
+                    instance_vars[tag_key] = tag['Value']
+            elif key == 'SecurityGroups':
+                group_ids = [group['GroupId'] for group in value]
+                group_names = [group['GroupName'] for group in value]
                 instance_vars["ec2_security_group_ids"] = ','.join(group_ids)
-                instance_vars["ec2_security_group_names"] = ','.join(
-                    group_names)
-        # add non ec2 prefix private ip address that are being used in cross provider command
-        # e.g ssh, sync
-        instance_vars['private_ip'] = instance_vars.get(
-            'ec2_private_ip_address', '')
-        instance_vars['private_ip_address'] = instance_vars.get(
-            'ec2_private_ip_address', '')
+                instance_vars["ec2_security_group_names"] = ','.join(group_names)
+
+        instance_vars['private_ip'] = instance.get('PrivateIpAddress', '')
+        instance_vars['private_ip_address'] = instance.get('PrivateIpAddress', '')
         return instance_vars
 
     def get_host_info(self):
