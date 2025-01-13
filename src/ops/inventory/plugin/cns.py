@@ -27,13 +27,13 @@ def cns(args):
                 region=region,
                 boto_profile=profile,
                 cache=args.get('cache', 3600 * 24),
-                filters={
-                    'tag:cluster': cns_cluster
-                },
-                bastion={
-                    'tag:cluster': cns_cluster,
-                    'tag:role': 'bastion'
-                }
+                filters=[
+                    {'Name': 'tag:cluster', 'Values': [cns_cluster]}
+                ],
+                bastion=[
+                    {'Name': 'tag:cluster', 'Values': [cns_cluster]},
+                    {'Name': 'tag:role', 'Values': ['bastion']}
+                ]
             ))
 
             merge_inventories(result, json.loads(jsn))

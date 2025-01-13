@@ -12,15 +12,17 @@ from ops.inventory.ec2inventory import Ec2Inventory
 
 
 def ec2(args):
-    filters = args.get('filters', {})
-    bastion_filters = args.get('bastion', {})
+    filters = args.get('filters', [])
+    bastion_filters = args.get('bastion', [])
 
     if args.get('cluster') and not args.get('filters'):
-        filters['tag:cluster'] = args.get('cluster')
+        filters = [{'Name': 'tag:cluster', 'Values': [args.get('cluster')]}]
 
     if args.get('cluster') and not args.get('bastion'):
-        bastion_filters['tag:cluster'] = args.get('cluster')
-        bastion_filters['tag:role'] = 'bastion'
+        bastion_filters = [
+            {'Name': 'tag:cluster', 'Values': [args.get('cluster')]},
+            {'Name': 'tag:role', 'Values': ['bastion']}
+        ]
 
     return Ec2Inventory(boto_profile=args['boto_profile'],
                         regions=args['region'],

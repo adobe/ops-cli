@@ -53,7 +53,7 @@ class InventoryRunner(object):
             group_names = [group.name for group in host.get_groups()]
             group_names = sorted(group_names)
             group_string = ", ".join(group_names)
-            host_id = host.vars.get('ec2_id', '')
+            host_id = host.vars.get('ec2_InstanceId', '')
             if host_id != '':
                 name_and_id = "%s -- %s" % (stringc(host.name,
                                                     'blue'), stringc(host_id, 'blue'))
