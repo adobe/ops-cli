@@ -44,17 +44,17 @@ class Ec2Inventory(object):
 
             # Verify region
             if not self.regions:
-                self.regions = [session.region_name]
-                if not self.regions[0]:
+                if not session.region_name:
                     raise NoRegionError
+                self.regions = [session.region_name]
 
-            return session
         except NoRegionError:
             sys.exit(f"Region not specified and could not be determined for profile: {profile_name}")
         except (NoCredentialsError, PartialCredentialsError):
             sys.exit(f"Credentials not found or incomplete for profile: {profile_name}")
         except Exception as e:
             sys.exit(f"An error occurred: {str(e)}")
+        return session
 
     def get_as_json(self):
         self.do_api_calls_update_cache()
