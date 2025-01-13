@@ -693,6 +693,12 @@ Which will translate behind the scenes in :
 This allows us to just refer in cluster files a secret that actually exists in vault and make sure we only generate it once - if it was already created by os or any other system, we will just use what is already there.
 The reference is by means of fixed form jinja call  added to the cluster file, which ends up interpreted later during the templating phase.
 
+#### Vault auth
+Ops checks if a valid vault token is present in `~/.vault-token` or in the environment variable `VAULT_TOKEN`. If not, it will try to authenticate using the method defined in `OPS_VAULT_AUTH_METHOD` environment variable.
+The following methods are supported:
+- `okta` - use the Vault Okta auth method (default)
+- `ldap` - use the Vault ldap auth method
+
 ### Amazon Secrets Manager (SSM)
 
 Amazon offers the possibility to use their [Secrets Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html) in order to manage configuration data such as credentials, passwords and license keys.
