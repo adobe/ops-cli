@@ -34,8 +34,10 @@ class TerraformCommandGenerator(object):
         current_terraform_version = self.check_terraform_version()
         config = self.cluster_config
 
-        current_terraform_version_major = int(
-            current_terraform_version.split('.')[1])
+        current_terraform_version_major = int(current_terraform_version.removeprefix('v')
+                                              .split('.')[0])
+        current_terraform_version_minor = int(current_terraform_version
+                                              .split('.')[1])
         if 'enable_consul_remote_state' in config['terraform']:
             terraform_remote_state = config['terraform']['enable_consul_remote_state']
         elif config['terraform'].get('state', {'type': None}).get('type') == 's3':
@@ -69,7 +71,9 @@ class TerraformCommandGenerator(object):
             cluster=config['cluster'])
         landscape = ''
 
-        if current_terraform_version_major >= 9:
+        if (current_terraform_version_major == 0 and
+                current_terraform_version_minor >= 9 or
+                current_terraform_version_major > 0):
             if args.force_copy:
                 terraform_init_command = 'terraform init -force-copy && '
             else:
