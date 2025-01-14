@@ -171,14 +171,14 @@ class SimpleVault(object):
                 display("Okta MFA validation successful, token obtained.", color='green')
             else:
                 display("Okta MFA validation failed."
-                        "Please obtain a token manually (vault cli) and run ops again."
-                        , stderr=True, color='red')
+                        "Please obtain a token manually (vault cli) and run ops again.",
+                        stderr=True, color='red')
                 exit(1)
 
         except Exception as e:
             display(f"An error occurred during Okta authentication: {e}\n"
-                    "Please obtain a token manually (vault cli) and run ops again."
-                    , stderr=True, color='red')
+                    "Please obtain a token manually (vault cli) and run ops again.",
+                    stderr=True, color='red')
             exit(1)
 
     def get(self, path, key='value', wrap_ttl=None,
