@@ -19,11 +19,12 @@ Very simple secrets management that can be used to
   (ex: generate it only if it's not already there)
 - it will also attempt login, if it will be required
 '''
+
 import os
 import hvac
 import getpass
 from .cli import display
-from six import iteritems
+from six import iteritems, string_types
 
 MAX_LDAP_ATTEMPTS = 3
 
@@ -35,30 +36,6 @@ class SimpleVault(object):
     def __init__(
             self, vault_user=None, vault_addr=None, vault_token=None, namespace=None,
             mount_point=None, persistent_session=True, auto_prompt=True):
-        def try_reading_token_file():
-            ret = None
-            try:
-                ret = open(
-                    os.path.expanduser('~/.vault-token'),
-                    "r").read().strip()
-            except Exception:
-                ret = None
-                pass
-            return ret
-
-        def write_token(token=None):
-            try:
-                if token:
-                    open(
-                        os.path.expanduser('~/.vault-token'),
-                        "w").write(
-                        token.strip())
-            except Exception:
-                display(
-                    "Warning: could not persist token to ~/.vault-token",
-                    stderr=False,
-                    color='yellow')
-                pass
 
         self.vault_addr = vault_addr or os.getenv(
             'VAULT_ADDR', None) or "http://localhost:8200"
@@ -66,7 +43,7 @@ class SimpleVault(object):
         # How often we will create infrastructures
         # with vault running on the provisioner's machine ?
         self.vault_token = vault_token or os.getenv(
-            'VAULT_TOKEN', None) or try_reading_token_file()
+            'VAULT_TOKEN', None) or self.try_reading_token_file()
         self.vault_user = vault_user or os.getenv(
             'VAULT_USER', None) or getpass.getuser()
         self.mount_point = mount_point
@@ -82,34 +59,127 @@ class SimpleVault(object):
                     namespace=self.namespace,
                     token=self.vault_token)
 
+        auth_methods = {
+            'ldap': self.auth_with_ldap,
+            'okta': self.auth_with_okta
+        }
+        auth_method = os.getenv('OPS_VAULT_AUTH_METHOD', 'okta')
+
         while not self.vault_conn.is_authenticated() and auto_prompt:
             display("VAULT-LIB: Not authenticated to vault '%s'" %
                     self.vault_addr, stderr=True, color='red')
-            display("Note: the default LDAP username (%s) can be overwritten with VAULT_USER"
+            display("Note: the default Vault username (%s) can be overwritten with VAULT_USER"
                      % self.vault_user, stderr=True,
                     color='yellow')
             display(
                 "      or to pass a token directly use VAULT_TOKEN",
                 stderr=True,
                 color='yellow')
-            try:
-                self.ldap_attempts += 1
-                ldap_password = getpass.getpass(
-                    prompt='LDAP password for %s for server %s: ' %
-                    (self.vault_user, self.vault_addr))
-                auth_response = self.vault_conn.auth.ldap.login(
-                    username=self.vault_user, password=ldap_password)
-                self.vault_conn.is_authenticated()
-                self.vault_token = auth_response['auth']['client_token']
-                write_token(self.vault_token)
-            except Exception as e:
-                if self.ldap_attempts >= MAX_LDAP_ATTEMPTS:
-                    display(
-                        "FAILED authentication {} times".format(
-                            self.ldap_attempts), color='red')
-                    raise e
-                else:
-                    pass
+
+            auth_method_func = auth_methods.get(auth_method)
+            if not auth_method_func:
+                raise ValueError(f"Unsupported authentication method: {auth_method}")
+            auth_method_func()
+
+    @staticmethod
+    def try_reading_token_file():
+        ret = None
+        try:
+            ret = open(
+                os.path.expanduser('~/.vault-token'),
+                "r").read().strip()
+        except Exception:
+            ret = None
+            pass
+        return ret
+
+    @staticmethod
+    def write_token(token=None):
+        try:
+            if token:
+                open(
+                    os.path.expanduser('~/.vault-token'),
+                    "w").write(
+                    token.strip())
+        except Exception:
+            display(
+                "Warning: could not persist token to ~/.vault-token",
+                stderr=False,
+                color='yellow')
+            pass
+
+    def auth_with_ldap(self):
+        # LDAP authentication logic
+        try:
+            self.ldap_attempts += 1
+            ldap_password = getpass.getpass(
+                prompt='LDAP password for %s for server %s: ' %
+                       (self.vault_user, self.vault_addr))
+            auth_response = self.vault_conn.auth.ldap.login(
+                username=self.vault_user, password=ldap_password)
+            self.vault_conn.is_authenticated()
+            self.vault_token = auth_response['auth']['client_token']
+            self.write_token(self.vault_token)
+        except Exception as e:
+            if self.ldap_attempts >= MAX_LDAP_ATTEMPTS:
+                display(
+                    "FAILED authentication {} times".format(
+                        self.ldap_attempts), color='red')
+                raise e
+            else:
+                pass
+
+    def auth_with_okta(self):
+        try:
+            okta_password = getpass.getpass(
+                prompt=f"Okta password for {self.vault_user}: ")
+
+            display("Authenticating with Okta...", color='yellow')
+            auth_response = self.vault_conn.auth.okta.login(
+                username=self.vault_user, password=okta_password)
+
+            # Check the MFA requirement
+            auth_data = auth_response.get("auth", {})
+            mfa_requirement = auth_data.get("mfa_requirement")
+
+            mfa_request_id = mfa_requirement.get("mfa_request_id")
+            mfa_constraints = mfa_requirement.get("mfa_constraints", {})
+
+            okta_factors = mfa_constraints.get("okta", {}).get("any", [])
+            mfa_factor_id = okta_factors[0].get("id")
+
+            # Create the MFA validation payload
+            mfa_payload = {
+                "mfa_request_id": mfa_request_id,
+                "mfa_payload": {
+                    mfa_factor_id: []  # No MFA factor specific data required
+                }
+            }
+
+            # Make the MFA validation request
+            display("Performing Okta MFA validation. Check notification...", color='yellow')
+            mfa_response = self.vault_conn.adapter.post(
+                "/v1/sys/mfa/validate",
+                json=mfa_payload,
+            )
+
+            # Update token if provided after MFA
+            self.vault_token = self.vault_conn.adapter.get_login_token(mfa_response)
+            self.vault_conn.token = self.vault_token
+            self.write_token(self.vault_token)
+            if self.vault_conn.is_authenticated():
+                display("Okta MFA validation successful, token obtained.", color='green')
+            else:
+                display("Okta MFA validation failed."
+                        "Please obtain a token manually (vault cli) and run ops again.",
+                        stderr=True, color='red')
+                exit(1)
+
+        except Exception as e:
+            display(f"An error occurred during Okta authentication: {e}\n"
+                    "Please obtain a token manually (vault cli) and run ops again.",
+                    stderr=True, color='red')
+            exit(1)
 
     def get(self, path, key='value', wrap_ttl=None,
             default=None, fetch_all=False, raw=False):
@@ -149,7 +219,7 @@ class SimpleVault(object):
 
     def put(self, path, value, lease=None, wrap_ttl=None):
         payload = {}
-        if isinstance(value, (basestring, int, float, bool)):
+        if isinstance(value, (string_types, int, float, bool)):
             payload['value'] = str(value)
         elif isinstance(value, dict):
             for k, v in iteritems(value):
