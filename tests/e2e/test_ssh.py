@@ -61,6 +61,12 @@ def test_ssh_scb_user():
     assert re.match(r'ssh -F .+/ssh.config remote_user@bastion.host@scb\.example.com '
                     r'-l remote_user', command['command'])
 
+def test_ssh_scb_user_ssh_dest_user():
+    command = run(current_dir + '/fixture/inventory/clusters/plugin_generator_scb.yaml', 'ssh',
+                  'backend', '--ssh-dest-user', 'ec2-user', '-l', 'remote_user')
+
+    assert re.match(r'ssh -F .+/ssh.config -t remote_user@172.16.0.1@scb\.example.com '
+                    r'ssh ec2-user@172.16.0.2 -l remote_user', command['command'])
 
 def test_ssh_scb_user_noscb():
     command = run(current_dir + '/fixture/inventory/clusters/plugin_generator_scb.yaml', 'ssh',
