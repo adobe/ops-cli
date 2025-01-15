@@ -31,7 +31,8 @@ def app(*args):
                       "web": [
                         "web1.host",
                         "web2.host"
-                      ]
+                      ],
+                      "backend": ["172.16.0.1--172.16.0.2"]
                     }
                 """
 

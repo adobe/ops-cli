@@ -92,6 +92,12 @@ class SshParserConfig(SubParserConfig):
             help='When using Shell Control Box (SCB) and creating a proxy,'
                  'a random port is generated, which will be used in the ssh config '
                  'for all playbook, run and sync operations')
+        parser.add_argument(
+            '--ssh-dest-user',
+            type=str,
+            dest='ssh_dest_user',
+            help='SSH User for the destination host, different from the bastion or SCB user. '
+                 'Useful when LDAP is not working on the destination host.')
 
     def get_help(self):
         return 'SSH or create an SSH tunnel to a server in the cluster'
@@ -260,6 +266,12 @@ class SshRunner(object):
         ssh_config = args.ssh_config or self.ops_config.get(
             'ssh.config') or self.ansible_inventory.get_ssh_config()
 
+        ssh_host_bastion, ssh_host_dest = None, None
+        if args.ssh_dest_user:
+            ssh_host_parts = ssh_host.split('--')
+            ssh_host_bastion = ssh_host_parts[0]
+            ssh_host_dest = ssh_host_parts[1] if len(ssh_host_parts) > 1 else None
+
         scb_ssh_host = None
         if scb_enabled:
             # scb->bastion->host vs scb->bastion
@@ -280,8 +292,14 @@ class SshRunner(object):
         else:
             if scb_enabled:
                 command = f"ssh -F {ssh_config} {ssh_user}@{scb_ssh_host}"
+                if args.ssh_dest_user and ssh_host_dest:
+                    command = (f"ssh -F {ssh_config} -t {ssh_user}@{ssh_host_bastion}@{scb_host} "
+                               f"ssh {args.ssh_dest_user}@{ssh_host_dest}")
             else:
                 command = f"ssh -F {ssh_config} {ssh_host}"
+                if args.ssh_dest_user and ssh_host_dest:
+                    command = (f"ssh -F {ssh_config} -t {ssh_user}@{ssh_host_bastion} "
+                               f"ssh {args.ssh_dest_user}@{ssh_host_dest}")
 
         if args.proxy:
             if scb_enabled:
