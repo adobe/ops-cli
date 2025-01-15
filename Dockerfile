@@ -41,7 +41,7 @@ RUN adduser ops -Du 2342 -h /home/ops \
     && apk add --no-cache bash zsh ca-certificates curl jq openssh-client git \
     && apk add --virtual=build gcc libffi-dev musl-dev openssl-dev make \
     # Install ops python package
-    && env CRYPTOGRAPHY_DONT_BUILD_RUST=1 pip --no-cache-dir install --upgrade /dist/ops-*.tar.gz \
+    && env CRYPTOGRAPHY_DONT_BUILD_RUST=1 pip --no-cache-dir install --upgrade /dist/ops*.tar.gz \
     && rm -rf /dist \
     # Dry-run
     && ops --verbose -h \
