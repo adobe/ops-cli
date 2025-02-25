@@ -1,5 +1,5 @@
 simpledi==0.4.1
-awscli==1.32.6
+awscli==1.38.0
 boto3==1.34.6
 botocore==1.34.6
 urllib3==2.0.7
