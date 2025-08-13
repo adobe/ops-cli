@@ -73,9 +73,11 @@ class PlaybookRunner(object):
     def run(self, args, extra_args):
         logger.info("Found extra_args %s", extra_args)
         inventory_path, ssh_config_paths = self.inventory_generator.generate()
-        ssh_config_path = SshConfigGenerator.get_ssh_config_path(self.cluster_config,
+        ssh_config_generator = SshConfigGenerator(self.ops_config.package_dir)
+        ssh_config_path = ssh_config_generator.get_ssh_config_path(self.cluster_config,
                                                                  ssh_config_paths,
-                                                                 args.use_scb)
+                                                                 args)
+                                                                 
         ssh_config = f"ANSIBLE_SSH_ARGS='-F {ssh_config_path}'"
 
         ansible_config = "ANSIBLE_CONFIG=%s" % self.ops_config.ansible_config_path

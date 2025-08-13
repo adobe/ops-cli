@@ -762,7 +762,7 @@ env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/
 
 ## Running tests
 
-- on your machine: `py.test tests`
+- on your machine: `python -m pytest tests` or `build_scripts/run_tests.sh`
 
 # Troubleshooting
 
