@@ -26,6 +26,7 @@ def cns(args):
             jsn = ec2(dict(
                 region=region,
                 boto_profile=profile,
+                teleport_enabled=args.get('teleport_enabled', False),
                 cache=args.get('cache', 3600 * 24),
                 filters=[
                     {'Name': 'tag:cluster', 'Values': [cns_cluster]}

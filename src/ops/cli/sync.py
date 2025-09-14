@@ -32,10 +32,14 @@ class SyncParserConfig(SubParserConfig):
                             help='Disable use of Shell Control Box (SCB) '
                                  'even if it is enabled in the cluster config')
         parser.add_argument(
+            '--teleport',
+            action='store_false',
+            dest='use_teleport',
+            help='Use Teleport for SSH')
+        parser.add_argument(
             'opts',
-            default=['-va --progress'],
             nargs='*',
-            help='Rsync opts')
+            help='Sync opts')
 
     def get_help(self):
         return 'Sync files from/to a cluster'
@@ -54,6 +58,9 @@ class SyncParserConfig(SubParserConfig):
 
         # extra rsync options
         ops cluster.yml sync 'dcs[0]:/usr/local/demdex/conf' /tmp/configurator-data -l remote_user -- --progress
+
+        # extra sync option for Teleport (recursive download, quiet, port)
+        ops cluster.yml sync 'dcs[0]:/usr/local/demdex/conf' /tmp/configurator-data -- --recursive/port/quiet
         """
 
 
@@ -73,29 +80,36 @@ class SyncRunner(object):
 
     def run(self, args, extra_args):
         logger.info("Found extra_args %s", extra_args)
-        inventory_path, ssh_config_paths = self.inventory_generator.generate()
+        
         src = PathExpr(args.src)
         dest = PathExpr(args.dest)
+        remote = self.get_remote(dest, src)
 
-        ssh_config_path = SshConfigGenerator.get_ssh_config_path(self.cluster_config,
-                                                                 ssh_config_paths,
-                                                                 args.use_scb)
         if src.is_remote and dest.is_remote:
             display(
-                'Too remote expressions are not allowed',
+                'Two remote expressions are not allowed',
                 stderr=True,
                 color='red')
             return
-
-        if src.is_remote:
-            remote = src
-        else:
-            remote = dest
 
         display(
             "Looking for hosts for pattern '%s'" %
             remote.pattern, stderr=True)
 
+        if self.is_teleport_enabled(args):
+            command = self.execute_teleport_scp(args, src, dest)
+        else:
+            ssh_user = self.cluster_config.get('ssh_user') or self.ops_config.get('ssh.user') or getpass.getuser()
+            if remote.remote_user:
+                ssh_user = remote.remote_user
+            elif args.user:
+                ssh_user = args.user
+            ssh_host = self.populate_remote_hosts(remote)[0]
+            command = self.execute_rsync_scp(args, src, dest, ssh_user, ssh_host, self.get_ssh_config_path(args))
+
+        return dict(command=command)
+
+    def populate_remote_hosts(self, remote):
         remote_hosts = []
         hosts = self.ansible_inventory.get_hosts(remote.pattern)
         if not hosts:
@@ -106,28 +120,43 @@ class SyncRunner(object):
             for host in hosts:
                 ssh_host = host.get_vars().get('ansible_ssh_host') or host
                 remote_hosts.append(ssh_host)
+        return remote_hosts
 
-        for ssh_host in remote_hosts:
-            ssh_user = self.cluster_config.get('ssh_user') or self.ops_config.get(
-                'ssh.user') or getpass.getuser()
-            if remote.remote_user:
-                ssh_user = remote.remote_user
-            elif args.user:
-                ssh_user = args.user
+    def get_remote(self, dest, src):
+        if src.is_remote:
+            remote = src
+        else:
+            remote = dest
+        return remote
 
-            from_path = src.with_user_and_path(ssh_user, ssh_host)
-            to_path = dest.with_user_and_path(ssh_user, ssh_host)
+    def get_ssh_config_path(self, args):
+        ssh_config_generator = SshConfigGenerator(self.ops_config.package_dir)
+        _, ssh_config_paths = self.inventory_generator.generate()
+        return ssh_config_generator.get_ssh_config_path(self.cluster_config,
+                                                ssh_config_paths,
+                                                
+                                                args)
 
-            command = 'rsync {opts} {from_path} {to_path} -e "ssh -F {ssh_config}"'.format(
-                opts=" ".join(args.opts),
-                from_path=from_path,
-                to_path=to_path,
-                ssh_config=ssh_config_path
+    def execute_teleport_scp(self, args, src, dest):
+        return 'tsh scp {opts} {from_path} {to_path}'.format(
+                    from_path=src,
+                    to_path=dest,
+                    opts=" ".join(args.opts)
+                )
 
-            )
+    def execute_rsync_scp(self, args, src, dest, ssh_user, ssh_host, ssh_config_path):
+        from_path = src.with_user_and_path(ssh_user, ssh_host)
+        to_path = dest.with_user_and_path(ssh_user, ssh_host)
+        return 'rsync {opts} {from_path} {to_path} -e "ssh -F {ssh_config}"'.format(
+                    opts=" ".join(args.opts),
+                    from_path=from_path,
+                    to_path=to_path,
+                    ssh_config=ssh_config_path
+                )
+                
 
-            return dict(command=command)
-
+    def is_teleport_enabled(self, args):
+         return True if self.cluster_config.get('teleport', {}).get('enabled') and args.use_teleport else False
 
 class PathExpr(object):
 

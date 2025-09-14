@@ -112,5 +112,7 @@ def configure_common_ansible_args(parser):
     parser.add_argument('--noscb', action='store_false', dest='use_scb',
                         help='Disable use of Shell Control Box (SCB) even if '
                              'it is enabled in the cluster config')
+    parser.add_argument('--teleport', action='store_false', dest='use_teleport',
+                        help='Use Teleport for SSH')
 
     return parser

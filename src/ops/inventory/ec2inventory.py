@@ -17,11 +17,13 @@ from botocore.exceptions import NoRegionError, NoCredentialsError, PartialCreden
 
 
 class Ec2Inventory(object):
+
+
     @staticmethod
     def _empty_inventory():
         return {"_meta": {"hostvars": {}}}
 
-    def __init__(self, boto_profile, regions, filters=None, bastion_filters=None):
+    def __init__(self, boto_profile, regions, filters=None, bastion_filters=None, teleport_enabled=False):
 
         self.filters = filters or []
         self.regions = regions.split(',')
@@ -29,6 +31,7 @@ class Ec2Inventory(object):
         self.bastion_filters = bastion_filters or []
         self.group_callbacks = []
         self.boto3_session = self.create_boto3_session(boto_profile)
+        self.teleport_enabled = teleport_enabled
 
         # Inventory grouped by instance IDs, tags, security groups, regions,
         # and availability zones
@@ -145,7 +148,11 @@ class Ec2Inventory(object):
         if not dest:
             return
 
-        if bastion_ip and bastion_ip != instance.get('PublicIpAddress'):
+        if self.teleport_enabled:
+            ansible_ssh_host = self.get_tag_value(instance, ['hostname','CMDB_hostname','Adobe:FQDN'])
+            if not ansible_ssh_host:
+                ansible_ssh_host = instance.get('PrivateIpAddress')
+        elif bastion_ip and bastion_ip != instance.get('PublicIpAddress'):
             ansible_ssh_host = bastion_ip + "--" + instance.get('PrivateIpAddress')
         elif instance.get('PublicIpAddress'):
             ansible_ssh_host = instance.get('PublicIpAddress')
@@ -182,6 +189,13 @@ class Ec2Inventory(object):
 
         self.inventory["_meta"]["hostvars"][dest] = self.get_host_info_dict_from_instance(instance)
         self.inventory["_meta"]["hostvars"][dest]['ansible_ssh_host'] = ansible_ssh_host
+
+    def get_tag_value(self, instance, tag_keys):
+        for tag_key in tag_keys:
+            for tag in instance.get('Tags', []):
+                if tag['Key'] == tag_key:
+                    return tag['Value']
+        return None
 
     def get_host_info_dict_from_instance(self, instance):
         instance_vars = {}

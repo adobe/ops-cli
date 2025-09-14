@@ -14,6 +14,7 @@ from ops.inventory.ec2inventory import Ec2Inventory
 def ec2(args):
     filters = args.get('filters', [])
     bastion_filters = args.get('bastion', [])
+    teleport_enabled = args.get('teleport_enabled')
 
     if args.get('cluster') and not args.get('filters'):
         filters = [{'Name': 'tag:cluster', 'Values': [args.get('cluster')]}]
@@ -27,4 +28,6 @@ def ec2(args):
     return Ec2Inventory(boto_profile=args['boto_profile'],
                         regions=args['region'],
                         filters=filters,
-                        bastion_filters=bastion_filters).get_as_json()
+                        bastion_filters=bastion_filters,
+                        teleport_enabled=teleport_enabled
+                        ).get_as_json()

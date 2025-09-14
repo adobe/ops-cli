@@ -75,7 +75,7 @@ class SshParserConfig(SubParserConfig):
             action="store_true",
             help="Port tunnel a machine that does not have SSH. "
                  "Implies --ipaddress, and --tunnel; requires --local and --remote"
-                )
+            )
         parser.add_argument(
             '--keygen',
             action='store_true',
@@ -86,6 +86,11 @@ class SshParserConfig(SubParserConfig):
             dest='use_scb',
             help='Disable use of Shell Control Box (SCB) even if it is '
                  'enabled in the cluster config')
+        parser.add_argument(
+            '--teleport',
+            action='store_false',
+            dest='use_teleport',
+            help='Use Teleport for SSH')
         parser.add_argument(
             '--auto_scb_port',
             action='store_true',
@@ -162,169 +167,44 @@ class SshRunner(object):
 
     def run(self, args, extra_args):
         logger.info("Found extra_args %s", extra_args)
-        if args.keygen:
-            if self.cluster_config.has_ssh_keys:
-                err('Cluster already has ssh keys, refusing to overwrite')
-                sys.exit(2)
-            else:
-                pub_key_file = self.cluster_config.cluster_ssh_pubkey_file
-                prv_key_file = self.cluster_config.cluster_ssh_prvkey_file
-                display(
-                    'Trying to generate ssh keys in:\n{} and \n{}'.format(
-                        pub_key_file, prv_key_file))
-                if os.path.isfile(
-                        pub_key_file) or os.path.isfile(prv_key_file):
-                    err('Although we do not have a complete keyset, one of the files exists and we refuse to overwrite\n')
-                    sys.exit(2)
-                else:
-                    # generate ssh keypair. The passphrase will be the name of
-                    # the cluster
-                    cmd = "ssh-keygen -t rsa -b 4096 -N {} -f {}".format(
-                        self.cluster_name, prv_key_file).split(' ')
-                    print(cmd)
-                    call(cmd)
-            return
 
-        if args.local and not IP_HOST_REG_EX.match(args.local):
-            err('The --local parameter must be in the form of host-ip:port or port')
-            sys.exit(2)
-
-        if args.tunnel or args.nossh:
-            if args.local is None or args.remote is None:
-                err('When using --tunnel or --nossh both the --local and --remote parameters are required')
-                sys.exit(2)
-
-        scb_settings = self.cluster_config.get('scb', {})
-        scb_enabled = scb_settings.get('enabled') and args.use_scb
-        scb_host = scb_settings.get('host') or self.ops_config.get('scb.host')
-        scb_proxy_port = scb_settings.get('proxy_port')
-
-        if scb_enabled and not scb_host:
-            err('When scb is enabled scb_host is required!')
-            sys.exit(2)
-
-        if args.proxy:
-            if args.local is None and (args.auto_scb_port is False and not scb_proxy_port):
-                err('When using --proxy the --local parameter is required if not using '
-                    '--auto_scb_port and scb.proxy_port is not configured in the cluster config')
-                sys.exit(2)
+        self.check_if_keygen_arg(args)
+        self.exit_when_local_arg_not_match_regex(args)
+        self.exit_when_tunnel_used_with_incorrect_parameters(args)
+        self.exit_when_scb_enabled_but_scb_host_not_set(self.is_scb_enabled(args), self.get_scb_host(args))
+        self.exit_when_scb_proxy_used_with_incorect_parameters(args, self.get_scb_proxy_port(args))
 
         group = "%s,&%s" % (self.cluster_name, args.role)
-
-        args.index = args.index - 1
-        if args.index < 0:
-            args.index = 0
-
-        hosts = self.ansible_inventory.get_hosts(group)
-        if len(hosts) <= args.index:
-            group = args.role
-            hosts = self.ansible_inventory.get_hosts(group)
-            if not hosts:
-                display(
-                    "No host found in inventory, using provided name %s" %
-                    (args.role), color="purple", stderr=True)
+        self.set_args_index(args)
+        self.set_args_if_nossh(args)
 
         display("Expression %s matched hosts (max 10): " % group, stderr=True)
-        host_names = [host.name for host in hosts]
-        for name in host_names[:10]:
-            display(name, color='blue')
+        host_names = self.get_host_names(group, self.get_hosts_with_fallback(args, group))
+        display('\n'.join(host_names), color='blue')
 
-        host = None
-        if host_names:
-            if args.index < len(host_names):
-                host = self.ansible_inventory.get_host(host_names[args.index])
-            else:
-                display(
-                    "Index out of bounds for %s" %
-                    (group), color="red", stderr=True)
-                return
-        if host:
-            ssh_host = host.vars.get('ansible_ssh_host') or host.name
-        else:
-            # no host found in inventory, use the role provided
-            bastion = self.ansible_inventory.get_hosts(
-                'bastion')[0].vars.get('ansible_ssh_host')
-            host = Host(name=args.role)
-            ssh_host = f'{bastion}--{host.name}'
-        ssh_user = self.cluster_config.get('ssh_user') or self.ops_config.get(
-            'ssh.user') or getpass.getuser()
-        if args.user:
-            ssh_user = args.user
-        if ssh_user and '-l' not in args.ssh_opts:
-            args.ssh_opts.extend(['-l', ssh_user])
+        host = self.resolve_host(args, host_names, group)
+        ssh_host = self.resolve_ssh_host(args, host)
+        ssh_user = args.user or self.get_ssh_user_from_config()
 
-        if args.nossh:
-            args.tunnel = True
-            args.ipaddress = True
-            ssh_host = self.ansible_inventory.get_hosts(
-                'bastion')[0].vars.get('ansible_ssh_host')
+        self.ssh_opts_extend_with_user_arg(ssh_user, args)
 
-        # if args.tunnel or args.proxy:
-        #     ssh_config = args.ssh_config or 'ssh.tunnel.config'
-        # else:
-        #     ssh_config = args.ssh_config or self.ansible_inventory.get_ssh_config()
-        ssh_config = args.ssh_config or self.ops_config.get(
-            'ssh.config') or self.ansible_inventory.get_ssh_config()
 
-        ssh_host_bastion, ssh_host_dest = None, None
-        if args.ssh_dest_user:
-            ssh_host_parts = ssh_host.split('--')
-            ssh_host_bastion = ssh_host_parts[0]
-            ssh_host_dest = ssh_host_parts[1] if len(ssh_host_parts) > 1 else None
+        ssh_config = SshConfig(self.is_scb_enabled(args),
+                               self.is_teleport_enabled(args),
+                               self.get_ssh_config_prop(args),
+                               ssh_user,
+                               ssh_host,
+                               self.get_ssh_host_dest(args, ssh_host),
+                               self.get_ssh_host_bastion(args, ssh_host),
+                               self.get_scb_host(args),
+                               self.get_scb_ssh_host(ssh_host, args),
+                               host,
+                               self.get_scb_proxy_port(args))
 
-        scb_ssh_host = None
-        if scb_enabled:
-            # scb->bastion->host vs scb->bastion
-            scb_delimiter = "--" if "--" in ssh_host else "@"
-            scb_ssh_host = f"{ssh_host}{scb_delimiter}{scb_host}"
+        command = self.build_ssh_command(args, ssh_config)
+        display(command, color="purple")
 
-        if args.tunnel:
-            if args.ipaddress:
-                host_ip = host.vars.get('private_ip_address')
-            else:
-                host_ip = 'localhost'
-            if scb_enabled:
-                command = f"ssh -F {ssh_config} {ssh_user}@{scb_ssh_host} " \
-                          f"-4 -T -L {args.local}:{host_ip}:{args.remote:d}"
-            else:
-                command = f"ssh -F {ssh_config} {ssh_host} " \
-                          f"-4 -N -L {args.local}:{host_ip}:{args.remote:d}"
-        else:
-            if scb_enabled:
-                command = f"ssh -F {ssh_config} {ssh_user}@{scb_ssh_host}"
-                if args.ssh_dest_user and ssh_host_dest:
-                    command = (f"ssh -F {ssh_config} -t {ssh_user}@{ssh_host_bastion}@{scb_host} "
-                               f"ssh {args.ssh_dest_user}@{ssh_host_dest}")
-            else:
-                command = f"ssh -F {ssh_config} {ssh_host}"
-                if args.ssh_dest_user and ssh_host_dest:
-                    command = (f"ssh -F {ssh_config} -t {ssh_user}@{ssh_host_bastion} "
-                               f"ssh {args.ssh_dest_user}@{ssh_host_dest}")
-
-        if args.proxy:
-            if scb_enabled:
-                proxy_port = args.local or SshConfigGenerator.generate_ssh_scb_proxy_port(
-                    self.ansible_inventory.generated_path.removesuffix("/inventory"),
-                    args.auto_scb_port,
-                    scb_proxy_port
-                )
-                command = f"ssh -F {ssh_config} {ssh_user}@{scb_ssh_host} " \
-                          f"-4 -T -D {proxy_port} -o 'ExitOnForwardFailure yes'"
-            else:
-                command = f"ssh -F {ssh_config} {ssh_host} " \
-                          f"-4 -N -D {args.local} -f -o 'ExitOnForwardFailure yes'"
-
-        if args.ssh_opts:
-            command = f"{command} {' '.join(args.ssh_opts)}"
-
-        # Check if optional sshpass is available and print info message
-        sshpass_path = os.path.expanduser("~/bin/sshpass")
-        if (os.path.isfile(sshpass_path) and os.access(sshpass_path, os.X_OK)):
-            display("Using sshpass passwordless wrapper at %s" %
-                    (sshpass_path), color="green", stderr=True)
-        else:
-            display("sshpass passwordless wrapper NOT available in %s" %
-                    (sshpass_path), color="purple", stderr=True)
+        self.check_passwordless_wrapper()
 
         display(
             "SSH-ing to %s[%d] => %s" %
@@ -335,3 +215,243 @@ class SshRunner(object):
             stderr=True)
 
         return dict(command=command)
+
+    def get_ssh_config_prop(self, args):
+        return args.ssh_config or self.ops_config.get(
+            'ssh.config') or self.ansible_inventory.get_ssh_config()
+
+    def check_if_keygen_arg(self, args):
+        if args.keygen:
+            if self.cluster_config.has_ssh_keys:
+                err('Cluster already has ssh keys, refusing to overwrite')
+                sys.exit(2)
+            else:
+                pub_key_file = self.cluster_config.cluster_ssh_pubkey_file
+                prv_key_file = self.cluster_config.cluster_ssh_prvkey_file
+                display(
+                    'Trying to generate ssh keys in:\n{} and \n{}'.format(
+                        pub_key_file, prv_key_file))
+                if os.path.isfile(pub_key_file) or os.path.isfile(prv_key_file):
+                    err('Although we do not have a complete keyset, one of the files exists and we refuse to overwrite\n')
+                    sys.exit(2)
+                else:
+                    # generate ssh keypair. The passphrase will be the name of
+                    # the cluster
+                    cmd = "ssh-keygen -t rsa -b 4096 -N {} -f {}".format(self.cluster_name, prv_key_file).split(' ')
+                    print(cmd)
+                    call(cmd)
+            return
+
+    def set_args_index(self, args):
+        args.index = args.index - 1
+        if args.index < 0:
+            args.index = 0
+
+    def get_hosts_with_fallback(self, args, group):
+        hosts = self.get_ansible_hosts(group)
+        if len(hosts) <= args.index:
+            hosts = self.ansible_inventory.get_hosts(args.role)
+            self.exit_if_hosts_null(args, hosts)
+        return hosts
+
+    def exit_if_hosts_null(self, args, hosts):
+        if not hosts:
+            display("No host found in inventory, using provided name %s" %
+                    (args.role), color="purple", stderr=True)
+
+    def get_host_names(self, group, hosts):
+        return [host.name for host in hosts[:10]]
+
+    def get_ansible_hosts(self, group):
+        return self.ansible_inventory.get_hosts(group)
+
+    def resolve_host(self, args, host_names, group):
+        if host_names:
+            if args.index < len(host_names):
+                host = self.ansible_inventory.get_host(host_names[args.index])
+            else:
+                display(
+                    "Index out of bounds for %s" %
+                    (group), color="red", stderr=True)
+                return
+        else:
+            # no host found in inventory, use the role provided
+            host = Host(name=args.role)
+        return host
+
+    def resolve_ssh_host(self, args, host):
+        
+        if host and self.is_teleport_enabled(args):
+            return host.vars.get('ec2_tag_hostname') or host.vars.get('ec2_tag_CMDB_hostname') or host.vars.get('ec2_tag_CMDB_hostname') or host.name
+
+        if host and not self.is_teleport_enabled(args):
+            return host.vars.get('ansible_ssh_host') or host.name
+
+        if args.nossh:
+            return self.ansible_inventory.get_hosts(
+                'bastion')[0].vars.get('ansible_ssh_host')
+
+        bastion = self.ansible_inventory.get_hosts(
+                'bastion')[0].vars.get('ansible_ssh_host')
+        return f'{bastion}--{host.name}'
+  
+
+    def set_args_if_nossh(self, args):
+        if args.nossh:
+            args.tunnel = True
+            args.ipaddress = True
+
+    def get_ssh_host_parts(self, ssh_host):
+            return ssh_host.split('--')
+
+    def get_ssh_host_dest(self, args, ssh_host):
+        return self.get_ssh_host_parts(ssh_host)[1] if args.ssh_dest_user and len(self.get_ssh_host_parts(ssh_host)) > 1 else None
+
+    def get_ssh_host_bastion(self, args, ssh_host):
+        return self.get_ssh_host_parts(ssh_host)[0] if args.ssh_dest_user else None
+
+    def get_scb_ssh_host(self, ssh_host, args):
+        scb_delimiter = ("--" if "--" in ssh_host else "@") if self.is_scb_enabled(args) else None # scb->bastion->host vs scb->bastion
+        return f"{ssh_host}{scb_delimiter}{self.get_scb_host(args)}" if self.is_scb_enabled(args) else None
+
+    def ssh_opts_extend_with_user_arg(self, ssh_user, args):
+        if ssh_user and '-l' not in args.ssh_opts and not self.is_teleport_enabled(args):
+            args.ssh_opts.extend(['-l', ssh_user])
+
+    def get_ssh_user_from_config(self):
+        return self.cluster_config.get('ssh_user') or self.ops_config.get('ssh.user') or getpass.getuser()
+
+    def exit_when_local_arg_not_match_regex(self, args):
+        if args.local and not IP_HOST_REG_EX.match(args.local):
+            err('The --local parameter must be in the form of host-ip:port or port')
+            sys.exit(2)
+
+    def exit_when_tunnel_used_with_incorrect_parameters(self, args):
+        if args.tunnel or args.nossh:
+            if args.local is None or args.remote is None:
+                err('When using --tunnel or --nossh both the --local and --remote parameters are required')
+                sys.exit(2)
+
+    def exit_when_scb_proxy_used_with_incorect_parameters(self, args, scb_proxy_port):
+        if self.is_scb_enabled(args) and args.proxy and args.local is None and (args.auto_scb_port is False and not scb_proxy_port):
+            err('When using --proxy the --local parameter is required if not using '
+                    '--auto_scb_port and scb.proxy_port is not configured in the cluster config')
+            sys.exit(2)
+
+    def exit_when_scb_enabled_but_scb_host_not_set(self, scb_enabled, scb_host):
+        if scb_enabled and not scb_host:
+            err('When scb is enabled scb_host is required!')
+            sys.exit(2)
+
+    def get_scb_info_if_enabled(self, args):
+        scb_settings = self.cluster_config.get('scb', {})
+        return (True,
+                scb_settings.get('host') or self.ops_config.get('scb.host'),
+                scb_settings.get('proxy_port')) \
+            if scb_settings.get('enabled') and args.use_scb \
+            else (False, None, None)
+
+    def is_scb_enabled(self, args):
+        return True if self.get_cluster_config('scb').get('enabled') and self.use_scb_arg_set(args) else False
+
+    def get_scb_host(self, args):
+        return self.get_cluster_config('scb').get('host') if self.is_scb_enabled(args) and self.use_scb_arg_set(args) else None
+
+    def get_scb_proxy_port(self, args):
+        return self.get_cluster_config('scb').get('proxy_port') if self.is_scb_enabled(args) and self.use_scb_arg_set(args) else None
+
+    def use_scb_arg_set(self, args):
+        return True if args.use_scb else False
+
+    def get_cluster_config(self, section):
+        return self.cluster_config.get(section, {})
+
+    def is_teleport_enabled(self, args):
+         return True if self.get_cluster_config('teleport').get('enabled') and args.use_teleport else False
+
+    def check_passwordless_wrapper(self):
+        # Check if optional sshpass is available and print info message
+        sshpass_path = os.path.expanduser("~/bin/sshpass")
+        if (os.path.isfile(sshpass_path) and os.access(sshpass_path, os.X_OK)):
+            display("Using sshpass passwordless wrapper at %s" %
+                    (sshpass_path), color="green", stderr=True)
+        else:
+            display("sshpass passwordless wrapper NOT available in %s" %
+                    (sshpass_path), color="purple", stderr=True)
+
+    def wrap_command_with_opts(self, initial_command, args):
+        return f"{initial_command} {' '.join(args.ssh_opts)}"
+
+    def build_ssh_command(self, args, ssh_config):
+        if args.tunnel:
+            return self.build_tunnel_command(args, ssh_config)
+        elif args.proxy:
+            return self.build_proxy_command(args, ssh_config)
+        else:
+            return self.build_regular_command(args, ssh_config)
+
+    def build_regular_command(self, args, ssh_config):
+        if ssh_config.scb_enabled:
+            command = f"ssh -F {ssh_config.ssh_config_prop} {ssh_config.ssh_user}@{ssh_config.scb_ssh_host}"
+            if args.ssh_dest_user and ssh_config.ssh_host_dest:
+                command = (f"ssh -F {ssh_config.ssh_config_prop} -t {ssh_config.ssh_user}@{ssh_config.ssh_host_bastion}@{ssh_config.scb_host} "
+                                f"ssh {args.ssh_dest_user}@{ssh_config.ssh_host_dest}")
+        elif ssh_config.teleport_enabled:
+            ssh_opts = ' '.join(args.ssh_opts) if args.ssh_opts else ''
+            return (f"tsh ssh {ssh_opts} {ssh_config.ssh_user}@{ssh_config.ssh_host}" if ssh_opts 
+                            else f"tsh ssh {ssh_config.ssh_user}@{ssh_config.ssh_host}")
+        else:
+            command = f"ssh -F {ssh_config.ssh_config_prop} {ssh_config.ssh_host}"
+            if args.ssh_dest_user and ssh_config.ssh_host_dest:
+                command = (f"ssh -F {ssh_config.ssh_config_prop} -t {ssh_config.ssh_user}@{ssh_config.ssh_host_bastion} "
+                                f"ssh {args.ssh_dest_user}@{ssh_config.ssh_host_dest}")
+        return self.wrap_command_with_opts(command, args)
+
+    def build_tunnel_command(self, args, ssh_config):
+        if ssh_config.scb_enabled:
+            target_host = f"{ssh_config.ssh_user}@{ssh_config.scb_ssh_host}"
+            command = f"ssh -F {ssh_config.ssh_config_prop} {target_host} " \
+                   f"-4 -N -L {args.local}:{self.get_host_ip(args, ssh_config.host)}:{args.remote:d}"
+        elif ssh_config.teleport_enabled:
+            command = f"tsh ssh -L {args.local}:{self.get_host_ip(args, ssh_config.host)}:{args.remote} {ssh_config.ssh_host}"
+        else:
+            command = f"ssh -F {ssh_config.ssh_config_prop} {ssh_config.ssh_host} " \
+                   f"-4 -N -L {args.local}:{self.get_host_ip(args, ssh_config.host)}:{args.remote:d}"
+        return self.wrap_command_with_opts(command, args)
+
+    def build_proxy_command(self, args, ssh_config):
+        ssh_config_generator = SshConfigGenerator(self.ops_config.package_dir)
+        if ssh_config.scb_enabled:
+            proxy_port = args.local or ssh_config_generator.generate_ssh_scb_proxy_port(
+                self.ansible_inventory.generated_path.removesuffix("/inventory"), args.auto_scb_port,
+                ssh_config.scb_proxy_port)
+            command = f"ssh -F {ssh_config.ssh_config_prop} {ssh_config.ssh_user}@{ssh_config.scb_ssh_host} " \
+                      f"-4 -T -D {proxy_port} -o 'ExitOnForwardFailure yes'"
+        elif ssh_config.teleport_enabled:
+            proxy_port = args.local or ssh_config_generator.get_random_generated_port()
+            command = f"tsh ssh -D {proxy_port} {ssh_config.ssh_host}"
+        else:
+            command = f"ssh -F {ssh_config.ssh_config_prop} {ssh_config.ssh_host} " \
+                      f"-4 -N -D {args.local} -f -o 'ExitOnForwardFailure yes'"
+        return self.wrap_command_with_opts(command, args)
+
+    def get_host_ip(self, args, host):
+        return host.vars.get('private_ip_address') if args.ipaddress else 'localhost'
+
+
+
+
+class SshConfig(object):
+    def __init__(self, scb_enabled, teleport_enabled, ssh_config_prop, ssh_user, ssh_host, ssh_host_dest,
+                 ssh_host_bastion, scb_host, scb_ssh_host, host, scb_proxy_port):
+        self.scb_enabled = scb_enabled
+        self.teleport_enabled = teleport_enabled
+        self.ssh_config_prop = ssh_config_prop
+        self.ssh_user = ssh_user
+        self.ssh_host = ssh_host
+        self.ssh_host_dest = ssh_host_dest
+        self.ssh_host_bastion = ssh_host_bastion
+        self.scb_host = scb_host
+        self.scb_ssh_host = scb_ssh_host
+        self.host = host
+        self.scb_proxy_port = scb_proxy_port

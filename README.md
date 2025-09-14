@@ -538,6 +538,23 @@ If there are connection issues double check that the proxy is running.
 ...
 ```
 
+#### Teleport
+Teleport (https://goteleport.com/) provides secretless SSH.
+`ops` has support for using Teleport as ssh  for the following operations: `ssh, tunnel, proxy, ansible play, run and sync`
+
+In order to use Teleport an extra section needs to be added to the cluster config file:
+***
+```
+inventory:
+  - plugin: cns
+    args:
+      teleport_enabled: True -> add this to existing configuration
+
+
+teleport:
+  enabled: true -> add this whole block
+```
+
 ### Play
 
 Run an ansible playbook.
@@ -762,7 +779,7 @@ env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/
 
 ## Running tests
 
-- on your machine: `py.test tests`
+- on your machine: `python -m pytest tests` or `build_scripts/run_tests.sh`
 
 # Troubleshooting
 
