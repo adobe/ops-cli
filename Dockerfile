@@ -20,7 +20,7 @@ RUN pip --no-cache-dir install virtualenv \
     && python -m pip install --upgrade pip \
     && env CRYPTOGRAPHY_DONT_BUILD_RUST=1 pip install azure-cli==${AZURE_CLI_VERSION} \
     && deactivate
-# RUN bash build_scripts/freeze_requirements.sh  # Skip - requirements.txt already frozen
+RUN bash build_scripts/freeze_requirements.sh  
 RUN bash build_scripts/run_tests.sh
 RUN bash build_scripts/build_package.sh
 RUN apk del --purge build
@@ -32,7 +32,7 @@ ARG TARGETPLATFORM
 ARG TERRAFORM_VERSION="0.12.31"
 ARG VAULT_VERSION="1.1.3"
 ARG KUBECTL_VERSION="v1.17.0"
-ARG AWS_IAM_AUTHENTICATOR_VERSION="1.10.11/2018-12-06"
+ARG AWS_IAM_AUTHENTICATOR_VERSION="1.13.7/2019-06-11"
 ARG HELM_VERSION="v3.16.3"
 ARG HELM_FILE_VERSION="1.1.8"
 ARG HELM_DIFF_VERSION="2.11.0%2B5"
