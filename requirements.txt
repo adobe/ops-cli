@@ -3,7 +3,7 @@ awscli==1.42.30
 boto3==1.40.30
 botocore==1.40.30
 urllib3==2.5.0
-ansible==8.7.0
+ansible==12.2.0
 azure-common==1.1.28
 azure==4.0.0
 msrestazure==0.6.4
