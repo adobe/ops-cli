@@ -11,7 +11,6 @@ name: Release packages
 on:
   push:
     tags: [ '*' ]
-    branches: ['ci-fix']
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -41,7 +40,6 @@ jobs:
     - name: Test package 
       run: pip install --no-cache-dir dist/ops*.tar.gz && ops --verbose -h
     - name: Publish package
-      if: startsWith(github.ref, 'refs/tags/')
       uses: pypa/gh-action-pypi-publish@ab69e431e9c9f48a3310be0a56527c679f56e04d
       with:
         user: __token__
