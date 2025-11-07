@@ -11,6 +11,7 @@ name: Release packages
 on:
   push:
     tags: [ '*' ]
+    branches: ['ci-fix']
 
 env:
   # Use docker.io for Docker Hub if empty
