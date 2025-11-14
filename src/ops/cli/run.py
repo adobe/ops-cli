@@ -68,9 +68,10 @@ class CommandRunner(object):
         logger.info("Found extra_args %s", extra_args)
         inventory_path, ssh_config_paths = self.inventory_generator.generate()
         limit = args.host_pattern
-        ssh_config_path = SshConfigGenerator.get_ssh_config_path(self.cluster_config,
+        ssh_config_generator = SshConfigGenerator(self.ops_config.package_dir)
+        ssh_config_path = ssh_config_generator.get_ssh_config_path(self.cluster_config,
                                                                  ssh_config_paths,
-                                                                 args.use_scb)
+                                                                 args)
         extra_args = ' '.join(args.extra_args)
         command = """cd {root_dir}
 ANSIBLE_SSH_ARGS='-F {ssh_config}' ANSIBLE_CONFIG={ansible_config_path} ansible -i {inventory_path} '{limit}' \\

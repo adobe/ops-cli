@@ -39,6 +39,31 @@ def test_ssh_scb():
                     command['command'])
 
 
+def tests_ssh_teleport_with_user():
+    command = run(current_dir + '/fixture/inventory/clusters/plugin_generator_teleport.yaml', 'ssh',
+                 'bastion', '-l', 'remote_user')
+    assert re.match(r'tsh ssh remote_user@bastion.host', command['command'])
+
+
+def tests_ssh_teleport_without_user():
+    command = run(current_dir + '/fixture/inventory/clusters/plugin_generator_teleport.yaml', 'ssh',
+                 'bastion')
+    current_user = os.environ.get("USER") or "root"
+    assert re.match(r'tsh ssh {0}@bastion.host'.format(current_user), command['command'])
+
+
+def test_ssh_proxy_teleport():
+    command = run(current_dir + '/fixture/inventory/clusters/plugin_generator_teleport.yaml', 'ssh',
+                  '--proxy', '--local', '8888', 'bastion')
+    assert re.match(r'tsh ssh -D 8888 bastion.host', command['command'])
+
+def test_ssh_tunnel_teleport():
+    command = run(current_dir + '/fixture/inventory/clusters/plugin_generator_teleport.yaml', 'ssh',
+                  '--tunnel', '--remote', '80', '--local', '8080', 'bastion')
+
+    assert re.match(r'tsh ssh -L 8080:localhost:80 bastion.host', command['command'])
+
+
 def test_ssh_scb_noscb():
     command = run(current_dir + '/fixture/inventory/clusters/plugin_generator_scb.yaml', 'ssh',
                   '--noscb', 'bastion', '--', '-TD', '8157')
@@ -75,6 +100,8 @@ def test_ssh_scb_user_noscb():
 
     assert re.match('ssh -F .+/ssh.config bastion.host -l remote_user', command['command'])
     assert "scb.example.com" not in command['command']
+
+
 
 
 if not PY3:

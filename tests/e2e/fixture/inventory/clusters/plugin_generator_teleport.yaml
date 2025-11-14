@@ -1,0 +1,6 @@
+
+inventory:
+  - plugin: test_plugin
+
+teleport:
+  enabled: true
