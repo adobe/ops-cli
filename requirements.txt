@@ -1,7 +1,7 @@
 simpledi==0.4.1
 awscli==1.42.30
 boto3==1.40.30
-botocore==1.40.30
+botocore==1.40.74
 urllib3==2.5.0
 ansible==8.7.0
 azure-common==1.1.28
