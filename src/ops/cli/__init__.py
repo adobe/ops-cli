@@ -11,6 +11,7 @@
 import os
 from subprocess import Popen, PIPE
 import sys
+from shutil import which
 
 
 def get_output(command, trim=True):
@@ -41,3 +42,8 @@ def get_config_value(config, key):
         err("You must set the %s value in %s.yaml or in the cli as an extra variable: -e %s=value" %
             (e.message, config['cluster'], e.message))
         sys.exit(1)
+
+def check_if_teleport_binary_installed():
+    if which("tsh") is None:
+        err('tsh binary needs to be installed for Teleport to work!')
+        sys.exit(2)

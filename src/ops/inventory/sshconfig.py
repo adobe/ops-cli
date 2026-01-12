@@ -13,6 +13,7 @@ import socketserver
 from shutil import copy
 from pathlib import Path
 from ansible.playbook.play import display
+from . import check_if_teleport_binary_installed
 
 
 class SshConfigGenerator(object):
@@ -51,6 +52,7 @@ class SshConfigGenerator(object):
                           stderr=True)
             return self.generate_ssh_config_from_template(ssh_config_tpl_path, scb_proxy_port=ssh_proxy_port)
         elif teleport_enabled:
+            check_if_teleport_binary_installed()
             display.display(f"Using Teleport for SSH connections.\n"
                           f"Make sure you are logged in with 'tsh login'.",
                           color='blue',

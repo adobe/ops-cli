@@ -97,6 +97,7 @@ class SyncRunner(object):
             remote.pattern, stderr=True)
 
         if self.is_teleport_enabled(args):
+            check_if_teleport_binary_installed()
             command = self.execute_teleport_scp(args, src, dest)
         else:
             ssh_user = self.cluster_config.get('ssh_user') or self.ops_config.get('ssh.user') or getpass.getuser()

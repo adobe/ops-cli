@@ -16,7 +16,7 @@ from .parser import configure_common_arguments
 from ansible.inventory.host import Host
 from ops.inventory.sshconfig import SshConfigGenerator
 
-from . import err
+from . import err, check_if_teleport_binary_installed
 import sys
 import getpass
 import re
@@ -397,6 +397,7 @@ class SshRunner(object):
                 command = (f"ssh -F {ssh_config.ssh_config_prop} -t {ssh_config.ssh_user}@{ssh_config.ssh_host_bastion}@{ssh_config.scb_host} "
                                 f"ssh {args.ssh_dest_user}@{ssh_config.ssh_host_dest}")
         elif ssh_config.teleport_enabled:
+            check_if_teleport_binary_installed()
             ssh_opts = ' '.join(args.ssh_opts) if args.ssh_opts else ''
             return (f"tsh ssh {ssh_opts} {ssh_config.ssh_user}@{ssh_config.ssh_host}" if ssh_opts 
                             else f"tsh ssh {ssh_config.ssh_user}@{ssh_config.ssh_host}")
@@ -413,6 +414,7 @@ class SshRunner(object):
             command = f"ssh -F {ssh_config.ssh_config_prop} {target_host} " \
                    f"-4 -N -L {args.local}:{self.get_host_ip(args, ssh_config.host)}:{args.remote:d}"
         elif ssh_config.teleport_enabled:
+            check_if_teleport_binary_installed()
             command = f"tsh ssh -L {args.local}:{self.get_host_ip(args, ssh_config.host)}:{args.remote} {ssh_config.ssh_host}"
         else:
             command = f"ssh -F {ssh_config.ssh_config_prop} {ssh_config.ssh_host} " \
@@ -428,6 +430,7 @@ class SshRunner(object):
             command = f"ssh -F {ssh_config.ssh_config_prop} {ssh_config.ssh_user}@{ssh_config.scb_ssh_host} " \
                       f"-4 -T -D {proxy_port} -o 'ExitOnForwardFailure yes'"
         elif ssh_config.teleport_enabled:
+            check_if_teleport_binary_installed()
             proxy_port = args.local or ssh_config_generator.get_random_generated_port()
             command = f"tsh ssh -D {proxy_port} {ssh_config.ssh_host}"
         else:

@@ -8,4 +8,22 @@
 # OF ANY KIND, either express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
 
+import sys
+from shutil import which
 from .ec2inventory import Ec2Inventory
+
+def display(msg, **kwargs):
+    # use ansible pretty printer if available
+    try:
+        from ansible.playbook.play import display
+        display.display(msg, **kwargs)
+    except ImportError:
+        print(msg)
+
+def err(msg):
+    display(str(msg), stderr=True, color='red')
+
+def check_if_teleport_binary_installed():
+    if which("tsh") is None:
+        err('tsh binary needs to be installed for Teleport to work!')
+        sys.exit(2)
