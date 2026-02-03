@@ -12,6 +12,17 @@ WORKDIR /sources
 RUN wget -q -O terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_${TARGETARCH}.zip \
     && unzip terraform.zip -d /usr/local/bin \
     && rm -rf terraform.zip
+# Install tsh (Teleport CLI) for tests
+ARG TELEPORT_VERSION="18.6.5"
+RUN case ${TARGETARCH} in \
+      amd64) ARCH=amd64 ;; \
+      arm64) ARCH=arm64 ;; \
+      *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
+    esac \
+    && wget -q https://cdn.teleport.dev/teleport-v${TELEPORT_VERSION}-linux-${ARCH}-bin.tar.gz -O - | tar -xz \
+    && mv teleport/tsh /usr/local/bin/tsh \
+    && chmod +x /usr/local/bin/tsh \
+    && rm -rf teleport
 RUN apk add --virtual=build bash gcc libffi-dev musl-dev openssl-dev make git
 RUN ln -s /usr/local/bin/python /usr/bin/python
 RUN pip --no-cache-dir install virtualenv \
@@ -71,6 +82,9 @@ RUN wget -q https://amazon-eks.s3-us-west-2.amazonaws.com/${AWS_IAM_AUTHENTICATO
 
 RUN wget -q https://github.com/helmfile/helmfile/releases/download/v${HELM_FILE_VERSION}/helmfile_${HELM_FILE_VERSION}_linux_${TARGETARCH}.tar.gz -O - | tar -xzO helmfile > /usr/local/bin/helmfile \
     && chmod +x /usr/local/bin/helmfile
+
+# Copy tsh from compile-image stage (optional - only needed if you want tsh in final image)
+COPY --from=compile-image /usr/local/bin/tsh /usr/local/bin/tsh
 
 # install utils under `ops` user
 USER ops
