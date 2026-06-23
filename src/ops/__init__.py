@@ -13,8 +13,6 @@ import re
 from distutils.version import StrictVersion
 from subprocess import call, Popen, PIPE
 
-from six import PY3
-
 from .cli import display
 
 
@@ -34,7 +32,7 @@ class Executor(object):
         try:
             return self._execute(result, pass_trough, cwd)
         except Exception as ex:
-            display(str(ex) if PY3 else ex.message, stderr=True, color='red')
+            display(str(ex), stderr=True, color='red')
             display(
                 '------- TRACEBACK ----------',
                 stderr=True,

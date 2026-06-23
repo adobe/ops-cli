@@ -18,8 +18,6 @@ import re
 import consul
 import hashmerge
 
-from six import iteritems
-
 DEFAULT_CONNECT = {
     'host': '127.0.0.1',
     'port': 8500,
@@ -96,7 +94,7 @@ class SimpleConsul(object):
         index, keys_list = self.conn.kv.get(key + '/', recurse=recurse)
         if keys_list:
             keys_dict = {i['Key']: i['Value'] for i in keys_list}
-        for k, v in iteritems(keys_dict):
+        for k, v in keys_dict.items():
             tmp = {}
             path_atoms = k.split('/')
             leaf = path_atoms.pop()
@@ -119,5 +117,5 @@ class SimpleConsul(object):
             for item in value:
                 self.conn.kv.put(key, item, "True")
         elif isinstance(value, dict):
-            for k, v in iteritems(value):
+            for k, v in value.items():
                 self.put(key + '/' + k, v)

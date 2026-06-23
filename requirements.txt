@@ -15,5 +15,4 @@ passgen
 inflection==0.5.1
 kubernetes==33.1.0
 himl==0.18.0
-six
 GitPython==3.1.*

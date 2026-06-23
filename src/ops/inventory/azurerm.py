@@ -195,7 +195,7 @@ Version: 1.0.0
 '''
 
 import argparse
-from six.moves import configparser
+import configparser
 import json
 import os
 import re
@@ -204,8 +204,6 @@ import sys
 from distutils.version import LooseVersion
 
 from os.path import expanduser
-
-from six import iteritems
 
 HAS_AZURE = True
 HAS_AZURE_EXC = None
@@ -323,7 +321,7 @@ class AzureRM(object):
 
     def _get_env_credentials(self):
         env_credentials = dict()
-        for attribute, env_variable in iteritems(AZURE_CREDENTIAL_ENV_MAPPING):
+        for attribute, env_variable in AZURE_CREDENTIAL_ENV_MAPPING.items():
             env_credentials[attribute] = os.environ.get(env_variable, None)
 
         if env_credentials['profile'] is not None:
@@ -343,7 +341,7 @@ class AzureRM(object):
         self.log('Getting credentials')
 
         arg_credentials = dict()
-        for attribute, env_variable in iteritems(AZURE_CREDENTIAL_ENV_MAPPING):
+        for attribute, env_variable in AZURE_CREDENTIAL_ENV_MAPPING.items():
             arg_credentials[attribute] = getattr(params, attribute)
 
         # try module params
@@ -694,7 +692,7 @@ class AzureInventory(object):
         self._inventory['azure'].append(host_name)
 
         if self.group_by_tag and vars.get('tags'):
-            for key, value in iteritems(vars['tags']):
+            for key, value in vars['tags'].items():
                 safe_key = self._to_safe(key)
                 safe_value = self._to_safe(value)
                 if not self._inventory.get(safe_key):
@@ -756,7 +754,7 @@ class AzureInventory(object):
 
     def _get_env_settings(self):
         env_settings = dict()
-        for attribute, env_variable in iteritems(AZURE_CONFIG_SETTINGS):
+        for attribute, env_variable in AZURE_CONFIG_SETTINGS.items():
             env_settings[attribute] = os.environ.get(env_variable, None)
         return env_settings
 
@@ -773,7 +771,7 @@ class AzureInventory(object):
         config = None
         settings = None
         try:
-            config = ConfigParser.ConfigParser()
+            config = configparser.ConfigParser()
             config.read(path)
         except BaseException:
             pass

@@ -13,7 +13,6 @@ import os
 import pytest
 from ops import display
 
-from six import PY3
 
 from ops.main import AppContainer
 from simpledi import *
@@ -54,9 +53,3 @@ def test_loading_of_modules_and_extensions(capsys, app):
     # cluster is present as a variable in the command line
     assert '-e cluster=test' in command['command']
 
-if not PY3:
-    def test_ssh_user_unicode_dash(capsys, app):
-        with pytest.raises(UnicodeDecodeError):
-            root_dir = current_dir + '/fixture/ansible'
-            app([u'–vv', '--root-dir', root_dir, 'clusters/test.yaml', 'play',
-                               'playbooks/play_module.yaml']).run()

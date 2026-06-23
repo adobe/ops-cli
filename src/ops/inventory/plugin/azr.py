@@ -11,8 +11,6 @@
 
 from ops.inventory.azurerm import *
 from ansible.playbook.play import display
-from six import iteritems
-
 
 class DictGlue(object):
     def __init__(self, data={}):
@@ -96,7 +94,7 @@ class OpsAzureInventory(AzureInventory):
         self.get_inventory()
 
         bastions = {}
-        for host, hostvars in iteritems(self._inventory['_meta']['hostvars']):
+        for host, hostvars in self._inventory['_meta']['hostvars'].items():
             if ('role' in hostvars['tags'] and hostvars['tags']['role'] == 'bastion') or \
                     (self._args.bastion_tag in hostvars['tags'] and
                         hostvars['tags'][self._args.bastion_tag] == 'bastion'):
@@ -111,8 +109,7 @@ class OpsAzureInventory(AzureInventory):
                         color='yellow')
 
         if bastions:
-            for host, hostvars in iteritems(
-                    self._inventory['_meta']['hostvars']):
+            for host, hostvars in self._inventory['_meta']['hostvars'].items():
                 if ('role' in hostvars['tags'] and
                     hostvars['tags']['role'] == 'bastion') or \
                         (self._args.bastion_tag in hostvars['tags'] and
