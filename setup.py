@@ -11,10 +11,7 @@
 import os
 import sys
 
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from distutils.core import setup, find_packages
+from setuptools import setup, find_packages
 
 with open('README.md') as f:
     _readme = f.read()
@@ -28,7 +25,7 @@ setup(
     long_description=_readme + '\n\n',
     long_description_content_type='text/markdown',
     url='https://github.com/adobe/ops-cli',
-    python_requires='>=3.5',
+    python_requires='>=3.12',
     author='Adobe',
     author_email='noreply@adobe.com',
     license='Apache2',
@@ -39,9 +36,7 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
-        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
