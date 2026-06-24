@@ -17,7 +17,6 @@ from ops.terraform.terraform_cmd_generator import TerraformCommandGenerator
 from ops.hierarchical.composition_config_generator import TerraformConfigGenerator
 from distutils.version import StrictVersion
 from ops import validate_ops_version
-import pkg_resources
 
 logger = logging.getLogger(__name__)
 
