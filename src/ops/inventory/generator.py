@@ -11,7 +11,7 @@
 import os
 import tempfile
 import uuid
-from distutils.dir_util import copy_tree
+import shutil
 
 import ansible.inventory as ansible_inventory
 import ansible.vars as ansible_vars
@@ -198,7 +198,7 @@ class DirInventoryGenerator(object):
         return config.get('directory') is not None
 
     def generate(self, dest, config):
-        copy_tree(self.root_dir + '/' + config['directory'], dest)
+        shutil.copytree(self.root_dir + '/' + config['directory'], dest, dirs_exist_ok=True)
 
 
 class PluginInventoryGenerator(object):

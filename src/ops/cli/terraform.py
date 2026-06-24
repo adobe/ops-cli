@@ -15,7 +15,6 @@ from ops.git_utils import checkout_repo, setup_repo
 from ops.cli.parser import SubParserConfig
 from ops.terraform.terraform_cmd_generator import TerraformCommandGenerator
 from ops.hierarchical.composition_config_generator import TerraformConfigGenerator
-from distutils.version import StrictVersion
 from ops import validate_ops_version
 
 logger = logging.getLogger(__name__)
