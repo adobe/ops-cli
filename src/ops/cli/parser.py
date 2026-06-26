@@ -10,8 +10,6 @@
 
 import argparse
 
-import sys
-
 
 class RootParser(object):
     def __init__(self, sub_parsers=None):
@@ -50,26 +48,10 @@ class RootParser(object):
 
         return parser
 
-    @staticmethod
-    def _check_args_for_unicode(args):
-        if args is None:
-            args = sys.argv
-
-        try:
-            for value in args:
-                if isinstance(value, str):
-                    value.encode('utf-8')
-        except UnicodeDecodeError as e:
-            print('Invalid character in argument "{0}", most likely an "en dash", replace it with normal dash -'.format(
-                e.args[1]))
-            raise
-
     def parse_args(self, args=None):
-        RootParser._check_args_for_unicode(args)
         return self._get_parser().parse_args(args)
 
     def parse_known_args(self, args=None):
-        RootParser._check_args_for_unicode(args)
         return self._get_parser().parse_known_args(args)
 
 
