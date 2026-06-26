@@ -201,21 +201,16 @@ import os
 import re
 import sys
 
-from packaging.version import Version
-
 from os.path import expanduser
 
 HAS_AZURE = True
 HAS_AZURE_EXC = None
 
 try:
-    from msrestazure.azure_exceptions import CloudError
-    from azure.mgmt.compute import __version__ as azure_compute_version
-    from azure.common import AzureMissingResourceHttpError, AzureHttpError
-    from azure.common.credentials import ServicePrincipalCredentials, UserPassCredentials
-    from azure.mgmt.network.network_management_client import NetworkManagementClient
-    from azure.mgmt.resource.resources.resource_management_client import ResourceManagementClient
-    from azure.mgmt.compute.compute_management_client import ComputeManagementClient
+    from azure.identity import ClientSecretCredential, UsernamePasswordCredential
+    from azure.mgmt.network import NetworkManagementClient
+    from azure.mgmt.resource.resources import ResourceManagementClient
+    from azure.mgmt.compute import ComputeManagementClient
 except ImportError as exc:
     HAS_AZURE_EXC = exc
     HAS_AZURE = False
@@ -241,9 +236,6 @@ AZURE_CONFIG_SETTINGS = dict(
     group_by_security_group='AZURE_GROUP_BY_SECURITY_GROUP',
     group_by_tag='AZURE_GROUP_BY_TAG'
 )
-
-AZURE_MIN_VERSION = "0.30.0rc5"
-
 
 def azure_id_to_dict(id):
     pieces = re.sub(r'^\/', '', id).split('/')
@@ -277,18 +269,25 @@ class AzureRM(object):
         self.log("setting subscription_id")
         self.subscription_id = self.credentials['subscription_id']
 
-        if self.credentials.get('client_id') is not None and \
-           self.credentials.get('secret') is not None and \
-           self.credentials.get('tenant') is not None:
-            self.azure_credentials = ServicePrincipalCredentials(client_id=self.credentials['client_id'],
-                                                                 secret=self.credentials['secret'],
-                                                                 tenant=self.credentials['tenant'])
+        if self.credentials.get('client_id') is None or self.credentials.get('tenant') is None:
+            self.fail("Failed to authenticate with provided credentials. "
+                      "client_id and tenant are required for all authentication methods.")
+
+        if self.credentials.get('secret') is not None:
+            self.azure_credentials = ClientSecretCredential(
+                tenant_id=self.credentials['tenant'],
+                client_id=self.credentials['client_id'],
+                client_secret=self.credentials['secret'])
         elif self.credentials.get('ad_user') is not None and self.credentials.get('password') is not None:
-            self.azure_credentials = UserPassCredentials(
-                self.credentials['ad_user'], self.credentials['password'])
+            self.azure_credentials = UsernamePasswordCredential(
+                client_id=self.credentials['client_id'],
+                username=self.credentials['ad_user'],
+                password=self.credentials['password'],
+                tenant_id=self.credentials['tenant'])
         else:
             self.fail("Failed to authenticate with provided credentials. Some attributes were missing. "
-                      "Credentials must include client_id, secret and tenant or ad_user and password.")
+                      "Credentials must include client_id, tenant and secret (service principal) "
+                      "or client_id, tenant, ad_user and password (user/password).")
 
     def log(self, msg):
         if self.debug:
@@ -818,20 +817,3 @@ class AzureInventory(object):
         if not self.replace_dash_in_groups:
             regex += r"\-"
         return re.sub(regex + "]", "_", word)
-
-
-def main():
-    if not HAS_AZURE:
-        sys.exit(
-            "The Azure python sdk is not installed "
-            "(try 'pip install azure==2.0.0rc5') - {0}".format(HAS_AZURE_EXC))
-
-    if Version(azure_compute_version) != Version(AZURE_MIN_VERSION):
-        sys.exit("Expecting azure.mgmt.compute.__version__ to be {0}. Found version {1} "
-                 "Do you have Azure == 2.0.0rc5 installed?".format(AZURE_MIN_VERSION, azure_compute_version))
-
-    AzureInventory()
-
-
-if __name__ == '__main__':
-    main()
