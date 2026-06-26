@@ -10,7 +10,7 @@ azure-mgmt-network==30.2.0
 azure-mgmt-resource==26.0.0
 Jinja2==3.1.6
 hashmerge
-python-consul
+py-consul==1.7.1
 hvac==1.2.1
 passgen
 inflection==0.5.1
