@@ -17,16 +17,15 @@ Copyright (c) 2013-2015 Adobe Systems Inc (TechOps AppDev)
 """
 
 # This version of the class requires the following:
-# - Python 2.6
+# - Python 3.12
 # - Python support for Requests
 # - Python support for JSON
-# @version v1.10, 2016-06-30
 import socket
 import os
 import getpass
 import requests
 import inspect
-import urllib
+from urllib.parse import quote
 import json
 from os.path import expanduser
 
@@ -34,7 +33,7 @@ from os.path import expanduser
 class WebApiClient(object):
     """Class to allow easy access to the SKMS Web API"""
     # Version Constants
-    CLIENT_TYPE = "python3.7.requests"
+    CLIENT_TYPE = "python3.12.requests"
     CLIENT_VERSION = "1.10"
 
     # Properties
@@ -150,7 +149,7 @@ class WebApiClient(object):
                 if (
                     isinstance(session_info, dict) and
                     'skms_csrf_token' in session_info and
-                    isinstance(session_info['skms_csrf_token'], basestring) and
+                    isinstance(session_info['skms_csrf_token'], str) and
                     session_info['skms_csrf_token'].strip() != ""
                 ):
                     self.set_skms_csrf_token(session_info['skms_csrf_token'])
@@ -166,7 +165,7 @@ class WebApiClient(object):
     def set_skms_session_id(self, skms_session_id):
         """Set the SKMS session id"""
         if (
-            isinstance(skms_session_id, basestring) and
+            isinstance(skms_session_id, str) and
             skms_session_id.strip() != ""
         ):
             self.skms_session_id = skms_session_id
@@ -267,7 +266,7 @@ class WebApiClient(object):
                     verify=self.verify_ssl_chain,
                     timeout=self.request_timeout,
                     cert=self.trusted_cert_file_path,
-                    cookies={cookie_name: urllib.quote(self.skms_session_id)}
+                    cookies={cookie_name: quote(self.skms_session_id)}
                 )
             else:
                 # Creating new session
@@ -434,7 +433,7 @@ class WebApiClient(object):
         ):
             for message in response_dict['messages']:
                 if (
-                    isinstance(message_type, basestring) and
+                    isinstance(message_type, str) and
                     (message_type.strip() ==
                      "" or message['type'].lower() == message_type.lower())
                 ):

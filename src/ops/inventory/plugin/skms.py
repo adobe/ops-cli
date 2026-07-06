@@ -120,76 +120,66 @@ def skms(args):
 
         # step through device services to add them as groups
         for device_service in info['device_service']:
-            device_service = device_service.replace(
-                device_service_strip, '').encode('utf-8')
+            device_service = device_service.replace(device_service_strip, '')
 
             # add device service to top-level dictionary as a group
             if device_service not in dictionary_of_hosts:
                 dictionary_of_hosts[device_service] = {"hosts": []}
             # add host to array of that device service group
             if info['name'] not in dictionary_of_hosts[device_service]['hosts']:
-                dictionary_of_hosts[device_service]['hosts'].append(
-                    info['name'].encode('utf-8'))
+                dictionary_of_hosts[device_service]['hosts'].append(info['name'])
 
         # add environment to top-level dictionary as a group
         if info['environment'] not in dictionary_of_hosts:
-            dictionary_of_hosts[info['environment'].encode(
-                'utf-8')] = {"hosts": []}
+            dictionary_of_hosts[info['environment']] = {"hosts": []}
         # add host to array of that environment group
         if info['name'] not in dictionary_of_hosts[info['environment']]['hosts']:
-            dictionary_of_hosts[info['environment']]['hosts'].append(
-                info['name'].encode('utf-8'))
+            dictionary_of_hosts[info['environment']]['hosts'].append(info['name'])
 
         # add primary_ip_address to top-level dictionary as a group
         if info['primary_ip_address'] not in dictionary_of_hosts:
-            dictionary_of_hosts[info['primary_ip_address'].encode(
-                'utf-8')] = {"hosts": []}
+            dictionary_of_hosts[info['primary_ip_address']] = {"hosts": []}
         if info['name'] not in dictionary_of_hosts[info['primary_ip_address']]['hosts']:
-            dictionary_of_hosts[info['primary_ip_address']
-                                ]['hosts'].append(info['name'].encode('utf-8'))
+            dictionary_of_hosts[info['primary_ip_address']]['hosts'].append(info['name'])
 
         # add owner to top-level dictionary as a group
         if info['owner'] not in dictionary_of_hosts:
-            dictionary_of_hosts[info['owner'].encode('utf-8')] = {"hosts": []}
+            dictionary_of_hosts[info['owner']] = {"hosts": []}
         if info['name'] not in dictionary_of_hosts[info['owner']]['hosts']:
-            dictionary_of_hosts[info['owner']]['hosts'].append(
-                info['name'].encode('utf-8'))
+            dictionary_of_hosts[info['owner']]['hosts'].append(info['name'])
 
         # add site to top-level dictionary as a group
         if info['site'] not in dictionary_of_hosts:
-            dictionary_of_hosts[info['site'].encode('utf-8')] = {"hosts": []}
+            dictionary_of_hosts[info['site']] = {"hosts": []}
         if info['name'] not in dictionary_of_hosts[info['site']]['hosts']:
-            dictionary_of_hosts[info['site']]['hosts'].append(
-                info['name'].encode('utf-8'))
+            dictionary_of_hosts[info['site']]['hosts'].append(info['name'])
 
         # add cluster to top-level dictionary as a group
         if info['cluster'] not in dictionary_of_hosts:
-            dictionary_of_hosts[info['cluster'].encode(
-                'utf-8')] = {"hosts": []}
+            dictionary_of_hosts[info['cluster']] = {"hosts": []}
         if info['name'] not in dictionary_of_hosts[info['cluster']]['hosts']:
-            dictionary_of_hosts[info['cluster']]['hosts'].append(
-                info['name'].encode('utf-8'))
+            dictionary_of_hosts[info['cluster']]['hosts'].append(info['name'])
 
         # tie some extra information to hostname in the meta variables
-        dictionary_of_hosts['_meta']['hostvars'][info['name'].encode('utf-8')] = {
-            'ec2_id': info['device_id'].encode('utf-8'),
-            'ansible_ssh_host': info['primary_ip_address'].encode('utf-8'),
-            'ansible_host': info['primary_ip_address'].encode('utf-8'),
-            'computer_name': info['computer_name'].encode('utf-8'),
-            'location': info['location_name'].encode('utf-8'),
-            'name': info['name'].split('.')[0].encode('utf-8'),
-            'operating_system': info['operating_system'].encode('utf-8'),
-            'private_ip': info['primary_ip_address'].encode('utf-8'),
+        dictionary_of_hosts['_meta']['hostvars'][info['name']] = {
+            'ec2_id': info['device_id'],
+            'ansible_ssh_host': info['primary_ip_address'],
+            'ansible_host': info['primary_ip_address'],
+            'computer_name': info['computer_name'],
+            'location': info['location_name'],
+            'name': info['name'].split('.')[0],
+            'operating_system': info['operating_system'],
+            'private_ip': info['primary_ip_address'],
             'tags': {
-                'Adobe:Environment': info['environment'].encode('utf-8'),
-                'Adobe:Owner': info['owner'].encode('utf-8'),
-                'CMDB_device_service': device_service.encode('utf-8'),
-                'CMDB_environment': info['environment'].encode('utf-8'),
-                'CMDB_hostname': info['name'].split('.')[0].encode('utf-8'),
-                'cluster': info['cluster'].encode('utf-8'),
-                'environment': info['environment'].encode('utf-8'),
-                'role': device_service.encode('utf-8'),
-                'site': info['site'].encode('utf-8'),
+                'Adobe:Environment': info['environment'],
+                'Adobe:Owner': info['owner'],
+                'CMDB_device_service': device_service,
+                'CMDB_environment': info['environment'],
+                'CMDB_hostname': info['name'].split('.')[0],
+                'cluster': info['cluster'],
+                'environment': info['environment'],
+                'role': device_service,
+                'site': info['site'],
             }
         }
 

@@ -11,6 +11,7 @@ azure-mgmt-resource==26.0.0
 Jinja2==3.1.6
 hashmerge==0.2
 py-consul==1.7.1
+requests==2.34.2
 hvac==2.4.0
 passgen==1.1.1
 inflection==0.5.1
