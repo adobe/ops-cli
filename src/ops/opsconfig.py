@@ -31,7 +31,7 @@ def file_tree(config_path, search_fname):
     return file_stack
 
 
-class OpsConfig(object):
+class OpsConfig:
     """
     Parses the all .opsconfig.yaml files that it can find starting from the
     first down the path to the one in the current dir

@@ -49,9 +49,9 @@ class HelmfileParserConfig(SubParserConfig):
         '''
 
 
-class HelmfileRunner(CompositionConfigGenerator, object):
+class HelmfileRunner(CompositionConfigGenerator):
     def __init__(self, ops_config, cluster_config_path, execute):
-        super(HelmfileRunner, self).__init__(["helmfiles"])
+        super().__init__(["helmfiles"])
         logging.basicConfig(level=logging.INFO)
         self.ops_config = ops_config
         self.cluster_config_path = cluster_config_path

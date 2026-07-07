@@ -151,7 +151,7 @@ class SshParserConfig(SubParserConfig):
         '''
 
 
-class SshRunner(object):
+class SshRunner:
 
     def __init__(self, cluster_config_path, cluster_config,
                  ansible_inventory, ops_config, cluster_name, root_dir):
@@ -444,7 +444,7 @@ class SshRunner(object):
 
 
 
-class SshConfig(object):
+class SshConfig:
     def __init__(self, scb_enabled, teleport_enabled, ssh_config_prop, ssh_user, ssh_host, ssh_host_dest,
                  ssh_host_bastion, scb_host, scb_ssh_host, host, scb_proxy_port):
         self.scb_enabled = scb_enabled

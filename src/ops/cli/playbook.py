@@ -57,7 +57,7 @@ class PlaybookParserConfig(SubParserConfig):
         return 'Run an Ansible playbook'
 
 
-class PlaybookRunner(object):
+class PlaybookRunner:
     def __init__(self, ops_config, root_dir, inventory_generator,
                  cluster_config_path, cluster_config):
         """

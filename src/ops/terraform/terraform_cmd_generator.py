@@ -18,7 +18,7 @@ from subprocess import Popen, PIPE
 from ops.cli import err, display
 
 
-class TerraformCommandGenerator(object):
+class TerraformCommandGenerator:
     def __init__(self, root_dir, cluster_config,
                  inventory_generator, ops_config, template):
         self.cluster_config = cluster_config

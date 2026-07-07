@@ -75,10 +75,10 @@ class CompositionConfigGenerator:
             prefix, composition)
 
 
-class TerraformConfigGenerator(CompositionConfigGenerator, object):
+class TerraformConfigGenerator(CompositionConfigGenerator):
 
     def __init__(self, composition_order, excluded_config_keys):
-        super(TerraformConfigGenerator, self).__init__(composition_order)
+        super().__init__(composition_order)
         self.excluded_config_keys = excluded_config_keys
 
     def generate_files(self, config_path, composition_path, composition):
@@ -118,7 +118,7 @@ class TerraformConfigGenerator(CompositionConfigGenerator, object):
                                               print_data=True)
 
 
-class CompositionSorter(object):
+class CompositionSorter:
     def __init__(self, composition_order):
         self.composition_order = composition_order
 
@@ -130,7 +130,7 @@ class CompositionSorter(object):
         return tuple(reversed(result)) if reverse else result
 
 
-class HierarchicalConfigGenerator(object):
+class HierarchicalConfigGenerator:
     def __init__(self):
         self.config_processor = ConfigProcessor()
 

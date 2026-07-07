@@ -64,7 +64,7 @@ class SyncParserConfig(SubParserConfig):
         """
 
 
-class SyncRunner(object):
+class SyncRunner:
 
     def __init__(self, cluster_config, root_dir,
                  ansible_inventory, inventory_generator, ops_config):
@@ -159,7 +159,7 @@ class SyncRunner(object):
     def is_teleport_enabled(self, args):
          return True if self.cluster_config.get('teleport', {}).get('enabled') and args.use_teleport else False
 
-class PathExpr(object):
+class PathExpr:
 
     def __init__(self, path):
         self._path = path

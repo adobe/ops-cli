@@ -39,7 +39,7 @@ class InventoryParserConfig(SubParserConfig):
         return parser
 
 
-class InventoryRunner(object):
+class InventoryRunner:
     def __init__(self, ansible_inventory, cluster_name):
         """
         :type ansible_inventory: ops.inventory.generator.AnsibleInventory

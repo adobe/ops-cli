@@ -32,7 +32,7 @@ class ConfigGeneratorParserConfig(SubParserConfig):
         '''
 
 
-class ConfigGeneratorRunner(object):
+class ConfigGeneratorRunner:
     def __init__(self, cluster_config_path):
         self.cluster_config_path = cluster_config_path
 

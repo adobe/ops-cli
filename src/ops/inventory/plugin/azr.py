@@ -12,7 +12,7 @@
 from ops.inventory.azurerm import *
 from ansible.playbook.play import display
 
-class DictGlue(object):
+class DictGlue:
     def __init__(self, data={}):
         self.__dict__.update(data)
 

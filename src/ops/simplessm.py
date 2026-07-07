@@ -15,7 +15,7 @@ import boto3
 import os
 
 
-class SimpleSSM(object):
+class SimpleSSM:
     def __init__(self, aws_profile, region_name):
         self.initial_aws_profile = os.getenv('AWS_PROFILE', None)
         self.aws_profile = aws_profile

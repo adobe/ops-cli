@@ -47,7 +47,7 @@ def configure_logging(args):
 
 class AppContainer(Container):
     def __init__(self, argv=None):
-        super(AppContainer, self).__init__()
+        super().__init__()
 
         self.argv = instance(argv)
 

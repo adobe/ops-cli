@@ -16,7 +16,7 @@ from ansible.playbook.play import display
 from . import check_if_teleport_binary_installed
 
 
-class SshConfigGenerator(object):
+class SshConfigGenerator:
     SSH_CONFIG_FILE = "ssh.config"
     SSH_SCB_PROXY_TPL_FILE = "ssh.scb.proxy.config.tpl"
     SSH_TELEPORT_PROXY_TPL_FILE = "ssh.teleport.config.tpl"

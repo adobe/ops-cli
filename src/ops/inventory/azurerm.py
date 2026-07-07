@@ -247,7 +247,7 @@ def azure_id_to_dict(id):
     return result
 
 
-class AzureRM(object):
+class AzureRM:
 
     def __init__(self, args):
         self._args = args
@@ -405,7 +405,7 @@ class AzureRM(object):
         return self._compute_client
 
 
-class AzureInventory(object):
+class AzureInventory:
 
     def __init__(self):
 

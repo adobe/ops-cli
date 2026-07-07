@@ -25,7 +25,7 @@ class VarsModule(BaseVarsPlugin):
     def __init__(self, *args):
         """ constructor """
 
-        super(VarsModule, self).__init__(*args)
+        super().__init__(*args)
 
         logger.debug("Running plugin: %s with cluster config %s" % (__file__, os.environ['OPS_CLUSTER_CONFIG']))
 
@@ -33,5 +33,5 @@ class VarsModule(BaseVarsPlugin):
         self.config = app.cluster_config.all()
 
     def get_vars(self, loader, path, entities, cache=True):
-        super(VarsModule, self).get_vars(loader, path, entities)
+        super().get_vars(loader, path, entities)
         return self.config

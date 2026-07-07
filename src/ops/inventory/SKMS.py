@@ -30,7 +30,7 @@ import json
 from os.path import expanduser
 
 
-class WebApiClient(object):
+class WebApiClient:
     """Class to allow easy access to the SKMS Web API"""
     # Version Constants
     CLIENT_TYPE = "python3.12.requests"

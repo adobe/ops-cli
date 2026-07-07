@@ -12,7 +12,7 @@ def my_filter(string):
     return 'filtered: ' + string
 
 
-class FilterModule(object):
+class FilterModule:
     def filters(self):
         return {
             'my_filter': my_filter

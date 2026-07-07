@@ -67,7 +67,7 @@ def load_extra_vars(loader):
     return extra_vars
 
 
-class ClusterConfig(object):
+class ClusterConfig:
     def __init__(self, cluster_config_generator,
                  ops_config, cluster_config_path):
         """
@@ -130,7 +130,7 @@ class ClusterConfig(object):
             self.has_ssh_keys = False
 
 
-class JinjaConfigGenerator(object):
+class JinjaConfigGenerator:
     def __init__(self, console_args, cluster_config_path, template):
         self.cluster_config_path = cluster_config_path
         self.console_args = console_args
@@ -162,7 +162,7 @@ class JinjaConfigGenerator(object):
         return yaml.safe_load(rendered)
 
 
-class ClusterConfigGenerator(object):
+class ClusterConfigGenerator:
     def __init__(self, console_args, cluster_config_path, template):
         self.template = template
         self.cluster_config_path = cluster_config_path

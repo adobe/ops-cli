@@ -29,7 +29,7 @@ from .cli import display
 MAX_LDAP_ATTEMPTS = 3
 
 
-class SimpleVault(object):
+class SimpleVault:
     p_vault_conn = None
     # persistent vault connection
 
@@ -233,7 +233,7 @@ class SimpleVault(object):
         return self.vault_conn.is_authenticated()
 
 
-class ManagedVaultSecret(object):
+class ManagedVaultSecret:
     p_sv = None
     # Persistent SimpleVault accessory object
 
@@ -274,14 +274,14 @@ class ManagedVaultSecret(object):
             except Exception as e:
                 display(
                     'MANAGED-SECRET: could not obtain a proper'
-                    ' Vault connection.\n{}'.format(e.message)
+                    ' Vault connection.\n{}'.format(str(e))
                 )
                 raise e
         try:
             self.current_data = self.sv.get(path=path, fetch_all=True)
         except Exception as e:
             display('MANAGED-SECRET: could not confirm if secret at path {} does or not already exist. '
-                    'Exception was:\n{}'.format(path, e.message))
+                    'Exception was:\n{}'.format(path, str(e)))
             raise e
         if self.current_data.get(key):
             # something exists on that path, we assume the secret already

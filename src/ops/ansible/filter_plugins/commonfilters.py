@@ -35,7 +35,7 @@ def read_consul(key_path, consul_url="http://localhost:8500", recurse=True, show
         ret = sc.get(key_path,recurse)
     except Exception as e:
         if show_error:
-            ret['error'] = e.message
+            ret['error'] = str(e)
     return ret
 
 def read_envvar(varname, default=None):
@@ -50,7 +50,7 @@ def read_yaml(fname, show_error=False):
         ret = y.safe_load(f.read())
     except Exception as e:
         if show_error:
-            ret['error'] = e.message
+            ret['error'] = str(e)
     return ret
 
 def flatten_tree(d, parent_key='', sep='/'):
@@ -138,7 +138,7 @@ def escape_json(input):
         return escaped[1:-1]
     return escaped
 
-class FilterModule(object):
+class FilterModule:
     
     def filters(self):
         return {

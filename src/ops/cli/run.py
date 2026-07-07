@@ -53,7 +53,7 @@ class CommandParserConfig(SubParserConfig):
         return 'run'
 
 
-class CommandRunner(object):
+class CommandRunner:
 
     def __init__(self, ops_config, root_dir, inventory_generator,
                  cluster_config_path, cluster_config):

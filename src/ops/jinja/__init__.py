@@ -14,7 +14,7 @@ from jinja2.loaders import ChoiceLoader
 from ansible.plugins.loader import PluginLoader
 
 
-class Template(object):
+class Template:
 
     def __init__(self, root_dir, ops_config):
         loader = ChoiceLoader([

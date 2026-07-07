@@ -36,7 +36,7 @@ class PackerParserConfig(SubParserConfig):
         '''
 
 
-class PackerRunner(object):
+class PackerRunner:
     def __init__(self, root_dir, cluster_config):
         self.cluster_config = cluster_config
         self.root_dir = root_dir

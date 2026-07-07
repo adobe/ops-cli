@@ -40,7 +40,7 @@ def get_config_value(config, key):
         return config[key]
     except KeyError as e:
         err("You must set the %s value in %s.yaml or in the cli as an extra variable: -e %s=value" %
-            (e.message, config['cluster'], e.message))
+            (str(e), config['cluster'], str(e)))
         sys.exit(1)
 
 def check_if_teleport_binary_installed():

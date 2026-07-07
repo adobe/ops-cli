@@ -16,7 +16,7 @@ import boto3
 from botocore.exceptions import NoRegionError, NoCredentialsError, PartialCredentialsError
 
 
-class Ec2Inventory(object):
+class Ec2Inventory:
 
 
     @staticmethod

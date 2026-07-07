@@ -32,7 +32,7 @@ DEFAULT_PARAMS = {
 }
 
 
-class SimpleConsul(object):
+class SimpleConsul:
     """ Simple wrapper class for interacting with Consul. Focused mainly on KV operations"""
 
     consul_params = {}

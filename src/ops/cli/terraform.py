@@ -151,7 +151,7 @@ class TerraformParserConfig(SubParserConfig):
         '''
 
 
-class TerraformRunner(object):
+class TerraformRunner:
     def __init__(self, root_dir, cluster_config_path, cluster_config, inventory_generator, 
                  ops_config, template, execute):
         self.cluster_config_path = cluster_config_path

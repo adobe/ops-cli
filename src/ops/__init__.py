@@ -24,7 +24,7 @@ def validate_ops_version(min_ops_version):
                         "https://github.com/adobe/ops-cli#installing".format(current_ops_version, min_ops_version))
 
 
-class Executor(object):
+class Executor:
     """ All cli commands usually return a dict(command=...) that will be executed by this handler"""
 
     def __call__(self, result, pass_trough=True, cwd=None):
