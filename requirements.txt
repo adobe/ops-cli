@@ -16,5 +16,5 @@ hvac==2.4.0
 passgen==1.1.1
 inflection==0.5.1
 packaging==26.2
-himl==0.20.0
+himl==0.21.0
 GitPython==3.1.*
