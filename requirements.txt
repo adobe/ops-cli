@@ -6,7 +6,7 @@ urllib3==2.7.0
 ansible==11.13.0
 azure-identity==1.25.3
 azure-mgmt-compute==38.1.0
-azure-mgmt-network==30.2.0
+azure-mgmt-network==31.0.1
 azure-mgmt-resource==26.0.0
 Jinja2==3.1.6
 hashmerge==0.2
