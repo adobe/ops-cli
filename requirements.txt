@@ -3,7 +3,7 @@ awscli==1.45.47
 boto3==1.43.47
 botocore==1.43.47
 urllib3==2.7.0
-ansible==11.13.0
+ansible==12.2.0
 azure-identity==1.25.3
 azure-mgmt-compute==38.1.0
 azure-mgmt-network==31.0.1
