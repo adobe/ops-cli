@@ -17,4 +17,4 @@ passgen==1.1.1
 inflection==0.5.1
 packaging==26.2
 himl==0.21.0
-GitPython==3.1.*
+GitPython==3.2.*
