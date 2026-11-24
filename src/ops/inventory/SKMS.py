@@ -17,7 +17,7 @@ Copyright (c) 2013-2015 Adobe Systems Inc (TechOps AppDev)
 """
 
 # This version of the class requires the following:
-# - Python 3.12
+# - Python 3.14
 # - Python support for Requests
 # - Python support for JSON
 import socket
@@ -33,7 +33,7 @@ from os.path import expanduser
 class WebApiClient:
     """Class to allow easy access to the SKMS Web API"""
     # Version Constants
-    CLIENT_TYPE = "python3.12.requests"
+    CLIENT_TYPE = "python3.14.requests"
     CLIENT_VERSION = "1.10"
 
     # Properties
