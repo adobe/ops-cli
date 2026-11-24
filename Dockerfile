@@ -1,4 +1,4 @@
-FROM python:3.14.10-alpine3.24 AS compile-image
+FROM python:3.15.2-alpine3.24 AS compile-image
 ARG TARGETARCH
 ARG TARGETPLATFORM
 ARG TERRAFORM_VERSION="0.15.5"
@@ -37,7 +37,7 @@ RUN bash build_scripts/build_package.sh
 RUN apk del --purge build
 
 
-FROM python:3.14.10-alpine3.24
+FROM python:3.15.2-alpine3.24
 ARG TARGETARCH
 ARG TARGETPLATFORM
 ARG TERRAFORM_VERSION="0.15.5"
